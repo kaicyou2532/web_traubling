@@ -1,0 +1,131 @@
+"use client"
+
+import { useState, useRef } from "react"
+import { ChevronRightIcon } from "@heroicons/react/24/solid"
+
+const domesticDestinations = [
+  {
+    id: 1,
+    city: "京都",
+    country: "日本",
+    image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop",
+  },
+  {
+    id: 2,
+    city: "札幌",
+    country: "日本",
+    image: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=2070&auto=format&fit=crop",
+  },
+  {
+    id: 3,
+    city: "福岡",
+    country: "日本",
+    image: "https://images.unsplash.com/photo-1617876139746-56e60b7a3c68?q=80&w=2070&auto=format&fit=crop",
+  },
+  {
+    id: 4,
+    city: "沖縄",
+    country: "日本",
+    image: "https://images.unsplash.com/photo-1604842585455-e731d3f2de9d?q=80&w=2070&auto=format&fit=crop",
+  },
+  {
+    id: 5,
+    city: "箱根",
+    country: "日本",
+    image: "https://images.unsplash.com/photo-1492571350019-22de08371fd3?q=80&w=2070&auto=format&fit=crop",
+  },
+]
+
+const internationalDestinations = [
+  {
+    id: 6,
+    city: "パリ",
+    country: "フランス",
+    image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073&auto=format&fit=crop",
+  },
+  {
+    id: 7,
+    city: "ニューヨーク",
+    country: "アメリカ",
+    image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=2070&auto=format&fit=crop",
+  },
+  {
+    id: 8,
+    city: "ロンドン",
+    country: "イギリス",
+    image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=2070&auto=format&fit=crop",
+  },
+  {
+    id: 9,
+    city: "バルセロナ",
+    country: "スペイン",
+    image: "https://images.unsplash.com/photo-1583422409516-2895a77efded?q=80&w=2070&auto=format&fit=crop",
+  },
+  {
+    id: 10,
+    city: "シドニー",
+    country: "オーストラリア",
+    image: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?q=80&w=2070&auto=format&fit=crop",
+  },
+]
+
+const DestinationList = ({ destinations }: { destinations: typeof domesticDestinations }) => {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [showScrollButton, setShowScrollButton] = useState(true)
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const scrollAmount = scrollRef.current.offsetWidth
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" })
+    }
+  }
+
+  return (
+    <div className="relative">
+      <div ref={scrollRef} className="flex space-x-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
+        {destinations.map((destination) => (
+          <div
+            key={destination.id}
+            className="relative flex-none w-[300px] h-[400px] rounded-xl overflow-hidden snap-start"
+          >
+            <img
+              src={destination.image || "/placeholder.svg"}
+              alt={`${destination.city}, ${destination.country}`}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute bottom-6 left-6 text-white">
+              <h3 className="text-2xl font-bold">{destination.city}</h3>
+              <p className="text-lg font-medium">{destination.country}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {showScrollButton && (
+        <button
+          onClick={handleScroll}
+          className="absolute right-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+          aria-label="次の目的地を表示"
+        >
+          <ChevronRightIcon className="h-6 w-6 text-gray-600" />
+        </button>
+      )}
+    </div>
+  )
+}
+
+export default function DestinationScroll() {
+  return (
+    <div className="container mx-auto px-4 py-12">
+      <h2 className="text-3xl font-bold mb-8 text-gray-800">人気の観光地のお悩みを確認する</h2>
+
+      <h3 className="text-2xl font-semibold mb-4 text-gray-700">国内の人気都市</h3>
+      <DestinationList destinations={domesticDestinations} />
+
+      <h3 className="text-2xl font-semibold mb-4 mt-12 text-gray-700">海外の人気都市</h3>
+      <DestinationList destinations={internationalDestinations} />
+    </div>
+  )
+}
+
