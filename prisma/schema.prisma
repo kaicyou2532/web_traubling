@@ -60,6 +60,7 @@ model User {
   Account       Account[]
   Authenticator Authenticator[]
   Session       Session[]
+  Post          Post[]
 }
 
 model VerificationToken {
@@ -68,4 +69,54 @@ model VerificationToken {
   expires    DateTime @db.Timestamp(6)
 
   @@id([identifier, token])
+}
+
+
+model Post {
+  id           Int      @id @default(autoincrement())
+  countryId    Int      
+  troubleId    Int      
+  travelMonth  String @db.VarChar(2)
+  travelYear   String @db.VarChar(4)
+  travelDate   DateTime
+  title        String
+  content      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  userId       String
+  isDraft      Boolean
+
+  user     User     @relation(fields: [userId], references: [id])
+  country  Country  @relation(fields: [countryId], references: [id])
+  trouble  Trouble  @relation(fields: [troubleId], references: [id])
+  comments Comment[]
+}
+
+model Country {
+  id     Int    @id @default(autoincrement())
+  enName String
+  jaName String
+
+  posts  Post[]
+}
+
+model City {
+  id     Int    @id @default(autoincrement())
+  enName String
+  jaName String
+}
+
+model Trouble {
+  id      Int    @id @default(autoincrement())
+  enName String
+  jaName String
+
+  posts   Post[]
+}
+
+model Comment {
+  id      Int    @id @default(autoincrement())
+  content String
+  postId  Int
+  post    Post   @relation(fields: [postId], references: [id])
 }
