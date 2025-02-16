@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { countries } from "@/lib/countries"
-import { Editor } from "@/app/components/TextEditor"
+import { useState } from "react";
+import Image from "next/image";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { countries } from "@/lib/countries";
+import { Editor } from "@/app/components/TextEditor";
 
 interface PostFormProps {
-  onSubmit: (data: any) => void;
-  initialData?: Partial<FormDataType>; // `Partial<>` を使い、部分データも受け付ける
+  onSubmit: (data: FormDataType) => void;
+  initialData?: Partial<FormDataType>;
 }
 
 interface FormDataType {
@@ -39,23 +39,21 @@ const defaultFormData: FormDataType = {
   images: [],
 };
 
-export function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
+function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
   const [formData, setFormData] = useState<FormDataType>({
     ...defaultFormData,
-    ...initialData, // `initialData` が部分的でも正しく適用
+    ...initialData,
   });
 
   const [dragActive, setDragActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 国名フィルタリング
   const filteredCountries = countries.filter(
     (country) =>
       country.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       country.japaneseName.includes(searchTerm)
   );
 
-  // ドラッグ & ドロップ処理
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -199,3 +197,5 @@ export function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
     </form>
   );
 }
+
+export default PostForm;
