@@ -100,9 +100,6 @@ export default function CategoryScroll() {
               <p className="text-gray-200 text-sm leading-relaxed">
                 旅行中に起こりうる様々な分野のトラブルや困りごとをチェックして、あなたの旅をより快適に。
               </p>
-              <button className="mt-auto bg-white/20 text-white px-6 py-2 rounded-full hover:bg-white/30 transition-colors">
-                更に表示
-              </button>
             </div>
           </div>
 
@@ -110,12 +107,12 @@ export default function CategoryScroll() {
           {categories.map((category) => (
             <div
               key={category.id}
-              className="relative flex-none w-[300px] h-[400px] rounded-xl overflow-hidden snap-start bg-white shadow-md"
+              className="relative flex-none w-[300px] h-[400px] rounded-xl overflow-hidden snap-start bg-white shadow-md transition-transform duration-300 ease-in-out hover:-translate-y-2"
             >
               <img
                 src={category.image || "/placeholder.svg"}
                 alt={category.name}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 ease-in-out hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-6 text-white">

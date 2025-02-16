@@ -119,12 +119,12 @@ const DestinationList = ({
         {destinations.map((destination) => (
           <div
             key={destination.id}
-            className="relative flex-none w-[300px] h-[400px] rounded-xl overflow-hidden snap-start bg-white shadow-md"
+            className="relative flex-none w-[300px] h-[400px] rounded-xl overflow-hidden snap-start bg-white shadow-md transition-transform duration-300 ease-in-out hover:-translate-y-2"
           >
             <img
               src={destination.image || "/placeholder.svg"}
               alt={destination.city}
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 ease-in-out hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             <div className="absolute bottom-6 left-6 text-white">

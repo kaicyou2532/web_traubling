@@ -27,14 +27,23 @@ export default function Header() {
             </li>
             <li>
               <Link
-                href="/regions"
+                href="/cities/international"
                 className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
               >
                 <MapIcon className="h-5 w-5" />
-                <span>国別気を付けること</span>
+                <span>海外で気をつけること</span>
               </Link>
             </li>
             <li>
+            <Link
+                href="/cities/japan"
+                className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
+              >
+                <MapIcon className="h-5 w-5" />
+                <span>国内で気をつけること</span>
+              </Link>
+            </li>
+            {/* <li>
               <Link
                 href="/consult"
                 className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
@@ -42,7 +51,7 @@ export default function Header() {
                 <ChatBubbleLeftRightIcon className="h-5 w-5" />
                 <span>相談する</span>
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link
                 href="/post"
