@@ -5,6 +5,7 @@ import SearchBar from "./components/SearchBar"
 import DestinationScroll from "./components/DestinationScroll"
 import CategoryScroll from "./components/CategoryScroll"
 import MapSection from "./components/MapSection"
+import UsefulTroubleReports from "./components/UsefulTroubleReports"
 
 export default function Home() {
   return (
@@ -24,6 +25,7 @@ export default function Home() {
       </div>
       <DestinationScroll />
       <CategoryScroll />
+      <UsefulTroubleReports />
       <MapSection />
       <div className="container mx-auto px-8">
         <div className="flex justify-between items-center my-8">
