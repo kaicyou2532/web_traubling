@@ -15,7 +15,7 @@ const domesticDestinations = [
   },
   {
     id: 2,
-    city: "札幌",
+    city: "東京",
     country: "日本",
     troubles: 245,
     category: "観光地",
@@ -27,7 +27,7 @@ const domesticDestinations = [
     country: "日本",
     troubles: 312,
     category: "観光地",
-    image: "https://images.unsplash.com/photo-1617876139746-56e60b7a3c68?q=80&w=2070&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1605088298038-2876387a80c1?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: 4,

@@ -19,7 +19,7 @@ export default function Home() {
       >
         <div className="absolute inset-0 bg-black opacity-50"></div>
         <div className="relative z-10 text-center">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-8 leading-tight">旅のお悩み解決サイト</h1>
+          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-8 leading-tight">旅の困りごとを共有</h1>
           <SearchBar />
         </div>
       </div>

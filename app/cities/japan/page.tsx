@@ -9,7 +9,7 @@ interface City {
   enName: string
   jaName: string
   Photourl: string
-  CountryId: number // CountryId を追加
+  Countryid: number // CountryId を追加
 }
 
 const bannerImageURL =
@@ -27,7 +27,7 @@ export default function JapaneseCitiesPage() {
         if (!response.ok) throw new Error("API Error")
         const data: City[] = await response.json()
         // CountryId が 1 の都市のみをセット
-        setCities(data.filter(city => city.CountryId === 1))
+        setCities(data.filter(city => city.Countryid === 1))
       } catch (error) {
         console.error("Failed to fetch cities:", error)
       }

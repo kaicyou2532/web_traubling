@@ -93,21 +93,24 @@ model Post {
 }
 
 model Country {
-  id     Int    @id @default(autoincrement())
-  enName String
-  jaName String
-
-  posts  Post[]
+  id       Int    @id @default(autoincrement())
+  enName   String
+  jaName   String
+  posts    Post[]
+  cities   City[] @relation("CountryToCity") // ✅ `City` とのリレーションを追加
+  @@map("Country")  
 }
 
 model City {
-  id     Int    @id @default(autoincrement())
-  enName String
-  jaName String
+  id        Int     @id @default(autoincrement())
+  enName    String
+  jaName    String
   CountryId Int
-  Photourl String
+  Photourl  String
+  country   Country @relation("CountryToCity", fields: [CountryId], references: [id]) // ✅ `Country` とのリレーションを追加
   @@map("City")
 }
+
 
 model Trouble {
   id      Int    @id @default(autoincrement())
