@@ -104,6 +104,8 @@ model City {
   id     Int    @id @default(autoincrement())
   enName String
   jaName String
+  Photourl String
+  @@map("City")
 }
 
 model Trouble {
