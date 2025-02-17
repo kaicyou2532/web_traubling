@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { countries } from "@/lib/countries";
 import { Editor } from "@/app/components/TextEditor";
 
+
 interface PostFormProps {
   onSubmit: (data: FormDataType) => void;
   initialData?: Partial<FormDataType>;
@@ -18,6 +19,7 @@ interface PostFormProps {
 
 interface FormDataType {
   country: string;
+  otherCountry: string;
   problemType: string;
   otherDetails?: string;
   visitMonth: string;
@@ -30,6 +32,7 @@ interface FormDataType {
 // デフォルトのフォームデータ
 const defaultFormData: FormDataType = {
   country: "",
+  otherCountry: "",
   problemType: "",
   otherDetails: "",
   visitMonth: "",
@@ -92,7 +95,7 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
             <SelectTrigger>
               <SelectValue placeholder="Select a country" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <div className="sticky top-0 p-2 bg-white">
                 <Input
                   placeholder="Search countries..."
@@ -101,13 +104,23 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
                   className="w-full"
                 />
               </div>
-              {filteredCountries.map((country) => (
-                <SelectItem key={country.code} value={country.code}>
-                  {country.name} ({country.japaneseName})
-                </SelectItem>
-              ))}
+              <div className="max-h-[200px] overflow-y-auto">
+                {[...filteredCountries, { code: "other", name: "Other", japaneseName: "その他" }].map((country) => (
+                  <SelectItem key={country.code}　value={country.code}　className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer">
+                    {country.name} ({country.japaneseName})
+                  </SelectItem>
+                ))}
+              </div>
             </SelectContent>
           </Select>
+          {formData.country === "other" && (
+            <Input
+              placeholder="Enter your country"
+              value={formData.otherCountry || ""}
+              onChange={(e) => setFormData({ ...formData, otherCountry: e.target.value })}
+              className="mt-2"
+            />
+          )}
         </div>
 
         {/* 問題タイプ */}
@@ -117,11 +130,11 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
             <SelectTrigger>
               <SelectValue placeholder="Select problem type" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               {["language", "food", "clothes", "temperature", "hotel", "internet", "hospitability", "other"].map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </SelectItem>
+                <SelectItem　key={type}　value={type}　className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer">
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -144,10 +157,10 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
               <SelectTrigger>
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white" position="popper">
                 {Array.from({ length: 12 }, (_, i) => (
-                  <SelectItem key={i + 1} value={String(i + 1)}>
-                    {new Date(0, i).toLocaleString("default", { month: "long" })}
+                  <SelectItem key={i + 1} value={String(i + 1)}　className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer">
+                    {new Date(0, i).toLocaleString("en-US", { month: "long" })}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -159,11 +172,11 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
               <SelectTrigger>
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white" position="popper">
                 {Array.from({ length: 20 }, (_, i) => {
                   const year = new Date().getFullYear() - i;
                   return (
-                    <SelectItem key={year} value={String(year)}>
+                    <SelectItem key={year} value={String(year)}　className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer">
                       {year}
                     </SelectItem>
                   );
