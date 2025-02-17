@@ -11,9 +11,13 @@ interface City {
   Photourl: string
 }
 
+const bannerImageURL =
+  "https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80"
+
 export default function JapaneseCitiesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [cities, setCities] = useState<City[]>([])
+  const [bannerSrc, setBannerSrc] = useState(bannerImageURL)
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -35,13 +39,16 @@ export default function JapaneseCitiesPage() {
 
   return (
     <div>
-      <div
-        className="relative h-[40vh] bg-cover bg-center"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80')",
-        }}
-      >
+      {/* バナー画像 */}
+      <div className="relative h-[40vh] bg-cover bg-center">
+        <img
+          src={bannerSrc}
+          alt="バナー画像"
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = bannerImageURL
+          }}
+        />
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 className="text-5xl font-bold text-white mb-4">日本の人気都市</h1>
@@ -71,6 +78,9 @@ export default function JapaneseCitiesPage() {
                     src={city.Photourl || "/placeholder.svg"}
                     alt={city.jaName}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = bannerImageURL
+                    }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-40" />
                   <div className="absolute bottom-4 left-4 text-white">
