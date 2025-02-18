@@ -78,7 +78,6 @@ model Post {
   troubleId    Int      
   travelMonth  String @db.VarChar(2)
   travelYear   String @db.VarChar(4)
-  travelDate   DateTime
   title        String
   content      String
   createdAt    DateTime @default(now())
