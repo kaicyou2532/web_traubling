@@ -116,7 +116,7 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
           </Select>
           {formData.country === "other" && (
             <Input
-              placeholder="Enter your country"
+              placeholder="訪問した国を入力してください"
               value={formData.otherCountry || ""}
               onChange={(e) => setFormData({ ...formData, otherCountry: e.target.value })}
               className="mt-2"
@@ -132,7 +132,7 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
               <SelectValue placeholder="トラブルの分野を選択してください" />
             </SelectTrigger>
             <SelectContent className="bg-white">
-              {["language", "food", "clothes", "temperature", "hotel", "internet", "hospitability", "other"].map((type) => (
+              {["言語", "食べ物", "服装", "気候", "ホテル", "インターネット回線", "ホスピタリティ", "その他"].map((type) => (
                 <SelectItem　key={type}　value={type}　className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer">
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </SelectItem>
@@ -142,9 +142,9 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
         </div>
 
         {/* "Other" の場合の入力欄 */}
-        {formData.problemType === "other" && (
+        {formData.problemType === "その他" && (
           <Textarea
-            placeholder="If you choose 'Other,' please provide details here."
+            placeholder="トラブルの分野を入力してください"
             value={formData.otherDetails}
             onChange={(e) => setFormData({ ...formData, otherDetails: e.target.value })}
           />
