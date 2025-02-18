@@ -85,15 +85,16 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
       }}
       className="max-w-2xl mx-auto space-y-8"
     >
-      <h1 className="font-bold text-4xl md:text-5xl">Post Form</h1>
+      <div className="space-y-6"></div>
+      <h1 className="font-bold text-4xl md:text-5xl">トラブルを共有する</h1>
 
       <div className="space-y-6">
         {/* 国選択 */}
         <div className="space-y-2">
-          <Label className="text-lg font-semibold text-green-700">Which Country?</Label>
+          <Label className="text-lg font-semibold text-green-700">訪れた国</Label>
           <Select value={formData.country} onValueChange={(value) => setFormData({ ...formData, country: value })}>
             <SelectTrigger>
-              <SelectValue placeholder="Select a country" />
+              <SelectValue placeholder="訪問した国を選択してください" />
             </SelectTrigger>
             <SelectContent className="bg-white">
               <div className="sticky top-0 p-2 bg-white">
@@ -125,10 +126,10 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
 
         {/* 問題タイプ */}
         <div className="space-y-2">
-          <Label className="text-lg font-semibold text-green-700">What kind of problem?</Label>
+          <Label className="text-lg font-semibold text-green-700">どのような問題に遭遇しましたか?</Label>
           <Select value={formData.problemType} onValueChange={(value) => setFormData({ ...formData, problemType: value })}>
             <SelectTrigger>
-              <SelectValue placeholder="Select problem type" />
+              <SelectValue placeholder="トラブルの分野を選択してください" />
             </SelectTrigger>
             <SelectContent className="bg-white">
               {["language", "food", "clothes", "temperature", "hotel", "internet", "hospitability", "other"].map((type) => (
@@ -152,25 +153,25 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
         {/* 訪問日時 */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-lg font-semibold text-green-700">Visit Month</Label>
+            <Label className="text-lg font-semibold text-green-700">訪問時期</Label>
             <Select value={formData.visitMonth} onValueChange={(value) => setFormData({ ...formData, visitMonth: value })}>
               <SelectTrigger>
-                <SelectValue placeholder="Month" />
+                <SelectValue placeholder="月" />
               </SelectTrigger>
               <SelectContent className="bg-white" position="popper">
                 {Array.from({ length: 12 }, (_, i) => (
                   <SelectItem key={i + 1} value={String(i + 1)}　className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer">
-                    {new Date(0, i).toLocaleString("en-US", { month: "long" })}
+                    {new Date(0, i).toLocaleString("default", { month: "long" })}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label className="text-lg font-semibold text-green-700">Visit Year</Label>
+            <Label className="text-lg font-semibold text-green-700">　</Label>
             <Select value={formData.visitYear} onValueChange={(value) => setFormData({ ...formData, visitYear: value })}>
               <SelectTrigger>
-                <SelectValue placeholder="Year" />
+                <SelectValue placeholder="年" />
               </SelectTrigger>
               <SelectContent className="bg-white" position="popper">
                 {Array.from({ length: 20 }, (_, i) => {
@@ -188,17 +189,17 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
 
         {/* 体験談 */}
         <div className="space-y-2">
-          <Label className="text-lg font-semibold text-green-700">Write your experience</Label>
+          <Label className="text-lg font-semibold text-green-700">経験したトラブルの詳細</Label>
           <Editor value={formData.experience} onChange={(value) => setFormData({ ...formData, experience: value })} />
         </div>
 
         {/* タイトル */}
         <div className="space-y-2">
-          <Label className="text-lg font-semibold text-green-700">Title</Label>
+          <Label className="text-lg font-semibold text-green-700">タイトル</Label>
           <Input
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="Enter a title for your post"
+            placeholder="投稿にタイトルをつけてください"
           />
         </div>
 
