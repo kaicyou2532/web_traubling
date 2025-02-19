@@ -100,6 +100,9 @@ export default function CategoryScroll() {
               <p className="text-gray-200 text-sm leading-relaxed">
                 旅行中に起こりうる様々な分野のトラブルや困りごとをチェックして、あなたの旅をより快適に。
               </p>
+              <button className="mt-auto bg-white/20 text-white px-6 py-2 rounded-full hover:bg-white/30 transition-colors">
+                更に表示
+              </button>
             </div>
           </div>
 

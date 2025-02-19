@@ -5,8 +5,8 @@ import SearchBar from "./components/SearchBar"
 import SearchResults from "./components/SearchResults"
 import DomesticContent from "./components/DomesticContent"
 import InternationalContent from "./components/InternationalContent"
-import CategoryScroll from "./components/CategoryScroll"
-import MapSection from "./components/MapSection"
+import CategoryContent from "./components/CategoryContent"
+import RegionContent from "./components/RegionContent"
 
 export default function Home() {
   const [isSearching, setIsSearching] = useState(false)
@@ -23,6 +23,31 @@ export default function Home() {
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category)
     setIsSearching(false)
+  }
+
+  const renderContent = () => {
+    if (isSearching) {
+      return <SearchResults category={searchCategory} subCategory={searchSubCategory} />
+    }
+
+    switch (selectedCategory) {
+      case "domestic":
+        return <DomesticContent />
+      case "overseas":
+        return <InternationalContent />
+      case "category":
+        return <CategoryContent />
+      case "region":
+        return <RegionContent />
+      case "all":
+      default:
+        return (
+          <>
+            <DomesticContent />
+            <InternationalContent />
+          </>
+        )
+    }
   }
 
   return (
@@ -54,22 +79,7 @@ export default function Home() {
         </div>
       </div>
 
-      {isSearching ? (
-        <SearchResults category={searchCategory} subCategory={searchSubCategory} />
-      ) : (
-        <>
-          {selectedCategory === "domestic" && <DomesticContent />}
-          {selectedCategory === "overseas" && <InternationalContent />}
-          {selectedCategory === "all" && (
-            <>
-              <DomesticContent />
-              <InternationalContent />
-            </>
-          )}
-          {selectedCategory === "category" && <CategoryScroll />}
-          {selectedCategory === "region" && <MapSection />}
-        </>
-      )}
+      {renderContent()}
     </div>
   )
 }
