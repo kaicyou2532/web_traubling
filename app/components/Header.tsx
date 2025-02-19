@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
 import {
   UserCircleIcon,
@@ -6,8 +9,10 @@ import {
   MagnifyingGlassIcon,
   ShareIcon,
 } from "@heroicons/react/24/solid"
+import { AuthModal } from "@/app/components/login"
 
 export default function Header() {
+  const [isAuthOpen, setIsAuthOpen] = useState(false)
   return (
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -62,13 +67,14 @@ export default function Header() {
               </Link>
             </li>
             <li>
-              <button className="text-gray-700 hover:text-custom-green transition-colors">
+              <button className="text-gray-700 hover:text-custom-green transition-colors" onClick={() => setIsAuthOpen(true)}>
                 <UserCircleIcon className="h-8 w-8" />
               </button>
             </li>
           </ul>
         </nav>
       </div>
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
     </header>
   )
 }
