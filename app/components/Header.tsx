@@ -1,18 +1,14 @@
-"use client"
-
-import { useState } from "react"
 import Link from "next/link"
 import {
   UserCircleIcon,
   MapIcon,
-  ChatBubbleLeftRightIcon,
   MagnifyingGlassIcon,
   ShareIcon,
 } from "@heroicons/react/24/solid"
-import { AuthModal } from "@/app/components/login"
+import { AuthModal } from "../components/login"
 
 export default function Header() {
-  const [isAuthOpen, setIsAuthOpen] = useState(false)
+
   return (
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -40,7 +36,7 @@ export default function Header() {
               </Link>
             </li>
             <li>
-            <Link
+              <Link
                 href="/cities/japan"
                 className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
               >
@@ -66,15 +62,14 @@ export default function Header() {
                 <span>トラブルを共有する</span>
               </Link>
             </li>
-            <li>
-              <button className="text-gray-700 hover:text-custom-green transition-colors" onClick={() => setIsAuthOpen(true)}>
+            <AuthModal>
+              <button className="text-gray-700 hover:text-custom-green transition-colors">
                 <UserCircleIcon className="h-8 w-8" />
               </button>
-            </li>
+            </AuthModal>
           </ul>
         </nav>
       </div>
-      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
     </header>
   )
 }
