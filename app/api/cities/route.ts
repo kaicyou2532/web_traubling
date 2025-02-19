@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
 
@@ -5,17 +6,17 @@ const prisma = new PrismaClient()
 
 export async function GET() {
   try {
-    // `CountryId !== 1` の `City` を取得し、`Country` の情報も取得
+    // CountryId !== 1 の City を取得し、Country の情報も取得
     const cities = await prisma.city.findMany({
       where: {
         CountryId: { not: 1 }, // ✅ 日本以外の都市を取得
       },
       include: {
-        country: true, // ✅ `Country` の情報も含める
+        country: true, // ✅ Country の情報も含める
       },
     })
 
-    // `CountryId` ごとに `City` をグループ化
+    // CountryId ごとに City をグループ化
     const groupedData = cities.reduce((acc, city) => {
       const countryId = city.country.id
       if (!acc[countryId]) {
