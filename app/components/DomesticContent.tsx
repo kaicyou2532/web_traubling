@@ -1,4 +1,3 @@
-import DestinationScroll from "./DestinationScroll"
 import UsefulTroubleReports from "./UsefulTroubleReports"
 import TroubleList from "./TroubleList"
 import Link from "next/link"
@@ -7,9 +6,11 @@ import { PlusCircleIcon } from "@heroicons/react/24/solid"
 export default function DomesticContent() {
   return (
     <>
-      <DestinationScroll category="domestic" />
       <div className="bg-gray-100 py-12">
-        <UsefulTroubleReports category="domestic" />
+        <div className="container mx-auto px-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-8">国内の役立つトラブル報告</h2>
+          <UsefulTroubleReports category="domestic" />
+        </div>
       </div>
       <div className="bg-white py-12">
         <div className="container mx-auto px-8">

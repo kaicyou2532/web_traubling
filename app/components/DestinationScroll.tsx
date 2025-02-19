@@ -102,7 +102,8 @@ const DestinationList = ({
   }
 
   return (
-    <div className="relative">
+    <div className="relative mb-12">
+      <h3 className="text-2xl font-semibold mb-4 text-gray-700">{title}</h3>
       <div ref={scrollRef} className="flex space-x-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
         {/* Introduction Card */}
         <div className="relative flex-none w-[300px] h-[400px] rounded-xl overflow-hidden snap-start bg-[#1a2b4b] text-white">
@@ -154,39 +155,20 @@ const DestinationList = ({
   )
 }
 
-export default function DestinationScroll({ category = "all" }: { category: string }) {
-  const filteredDestinations =
-    category === "domestic"
-      ? domesticDestinations
-      : category === "overseas"
-        ? internationalDestinations
-        : [...domesticDestinations, ...internationalDestinations]
-
+export default function DestinationScroll() {
   return (
     <div className="container mx-auto px-4 py-12">
       <h2 className="text-3xl font-bold mb-8 text-gray-800">人気の観光地のお悩みを確認する</h2>
-
-      {(category === "all" || category === "domestic") && (
-        <>
-          <h3 className="text-2xl font-semibold mb-4 text-gray-700">国内の人気都市</h3>
-          <DestinationList
-            destinations={category === "domestic" ? domesticDestinations : filteredDestinations}
-            title="国内の人気都市"
-            description="国内の人気観光地で起きているトラブルや困りごとをチェックして、あなたの旅行に役立てましょう。"
-          />
-        </>
-      )}
-
-      {(category === "all" || category === "overseas") && (
-        <>
-          <h3 className="text-2xl font-semibold mb-4 mt-12 text-gray-700">海外の人気都市</h3>
-          <DestinationList
-            destinations={category === "overseas" ? internationalDestinations : filteredDestinations}
-            title="海外の人気都市"
-            description="海外の人気都市で実際に起きたトラブルの解決方法や対策をご紹介します。"
-          />
-        </>
-      )}
+      <DestinationList
+        destinations={domesticDestinations}
+        title="国内の人気都市"
+        description="国内の人気観光地で起きているトラブルや困りごとをチェックして、あなたの旅行に役立てましょう。"
+      />
+      <DestinationList
+        destinations={internationalDestinations}
+        title="海外の人気都市"
+        description="海外の人気都市で実際に起きたトラブルの解決方法や対策をご紹介します。"
+      />
     </div>
   )
 }

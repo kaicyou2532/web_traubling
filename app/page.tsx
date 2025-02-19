@@ -7,6 +7,7 @@ import DomesticContent from "./components/DomesticContent"
 import InternationalContent from "./components/InternationalContent"
 import CategoryContent from "./components/CategoryContent"
 import RegionContent from "./components/RegionContent"
+import DestinationScroll from "./components/DestinationScroll"
 
 export default function Home() {
   const [isSearching, setIsSearching] = useState(false)
@@ -43,6 +44,9 @@ export default function Home() {
       default:
         return (
           <>
+            <div className="bg-white py-12">
+              <DestinationScroll />
+            </div>
             <DomesticContent />
             <InternationalContent />
           </>

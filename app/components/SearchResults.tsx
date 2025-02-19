@@ -105,16 +105,16 @@ export default function SearchResults({ category, subCategory }: SearchResultsPr
           <div className="space-y-10">
             {filteredResults.map((result) => (
               <Link href={`/reports/${result.id}`} key={result.id}>
-                <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
-                  <div className="p-8">
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200">
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                       <MapPinIcon className="h-4 w-4" />
                       <span>
                         {result.city}, {result.country}
                       </span>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2 text-gray-800">{result.title}</h3>
-                    <p className="text-gray-600 mb-6 line-clamp-2">{result.content}</p>
+                    <h3 className="text-xl font-semibold mb-3 text-gray-800">{result.title}</h3>
+                    <p className="text-gray-600 mb-4 line-clamp-2">{result.content}</p>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {result.tags.map((tag) => (
                         <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
@@ -122,7 +122,7 @@ export default function SearchResults({ category, subCategory }: SearchResultsPr
                         </span>
                       ))}
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center text-custom-green">
                           <HandThumbUpIcon className="h-5 w-5 mr-1" />
