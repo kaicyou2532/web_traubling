@@ -1,45 +1,75 @@
-import Link from "next/link"
-import { PlusCircleIcon } from "@heroicons/react/24/solid"
-import TroubleList from "./components/TroubleList"
+"use client"
+
+import { useState } from "react"
 import SearchBar from "./components/SearchBar"
-import DestinationScroll from "./components/DestinationScroll"
+import SearchResults from "./components/SearchResults"
+import DomesticContent from "./components/DomesticContent"
+import InternationalContent from "./components/InternationalContent"
 import CategoryScroll from "./components/CategoryScroll"
 import MapSection from "./components/MapSection"
-import UsefulTroubleReports from "./components/UsefulTroubleReports"
 
 export default function Home() {
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchCategory, setSearchCategory] = useState("all")
+  const [searchSubCategory, setSearchSubCategory] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
+
+  const handleSearch = (searchTerm: string, category: string, subCategory?: string) => {
+    setIsSearching(true)
+    setSearchCategory(category)
+    setSearchSubCategory(subCategory || "")
+  }
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category)
+    setIsSearching(false)
+  }
+
   return (
     <div>
       <div
-        className="relative h-[60vh] bg-cover bg-center flex items-center justify-center"
+        className={`relative bg-cover bg-center flex items-center justify-center transition-all duration-300 ${
+          isSearching ? "h-[30vh]" : "h-[60vh]"
+        }`}
         style={{
           backgroundImage:
             "url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop')",
         }}
       >
         <div className="absolute inset-0 bg-black opacity-50"></div>
-        <div className="relative z-10 text-center">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-8 leading-tight">旅の困りごとを共有</h1>
-          <SearchBar />
-        </div>
-      </div>
-      <DestinationScroll />
-      <CategoryScroll />
-      <UsefulTroubleReports />
-      <MapSection />
-      <div className="container mx-auto px-8">
-        <div className="flex justify-between items-center my-8">
-          <h2 className="text-3xl font-bold text-gray-800">最近の投稿</h2>
-          <Link
-            href="/post"
-            className="bg-custom-green text-white px-6 py-3 rounded-full flex items-center hover:bg-custom-green/90 transition-colors font-medium"
+        <div className="relative z-10 text-center w-full">
+          <h1
+            className={`font-extrabold text-white mb-8 leading-tight transition-all duration-300 ${
+              isSearching ? "text-3xl md:text-4xl" : "text-4xl md:text-6xl"
+            }`}
           >
-            <PlusCircleIcon className="h-5 w-5 mr-2" />
-            投稿する
-          </Link>
+            旅のお悩み解決サイト
+          </h1>
+          <SearchBar
+            isCompact={isSearching}
+            onSearch={handleSearch}
+            selectedCategory={selectedCategory}
+            onCategoryChange={handleCategoryChange}
+          />
         </div>
-        <TroubleList />
       </div>
+
+      {isSearching ? (
+        <SearchResults category={searchCategory} subCategory={searchSubCategory} />
+      ) : (
+        <>
+          {selectedCategory === "domestic" && <DomesticContent />}
+          {selectedCategory === "overseas" && <InternationalContent />}
+          {selectedCategory === "all" && (
+            <>
+              <DomesticContent />
+              <InternationalContent />
+            </>
+          )}
+          {selectedCategory === "category" && <CategoryScroll />}
+          {selectedCategory === "region" && <MapSection />}
+        </>
+      )}
     </div>
   )
 }

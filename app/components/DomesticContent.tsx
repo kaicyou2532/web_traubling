@@ -154,7 +154,7 @@ const DestinationList = ({
   )
 }
 
-export default function DestinationScroll({ category = "all" }: { category: string }) {
+export default function DestinationScroll({ category = "all" }: { category?: string }) {
   const filteredDestinations =
     category === "domestic"
       ? domesticDestinations
