@@ -1,26 +1,19 @@
-"use client"
-
-import { X } from "lucide-react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { ReactNode } from "react"
+import { signIn } from "@/auth"
 
-interface AuthModalProps {
-  isOpen: boolean
-  onClose: () => void
+type Props = {
+  children: ReactNode
 }
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export function AuthModal({ children }: Props) {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[300px] bg-white rounded-[24px] !rounded-[24px] p-0 border-none">
-
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none"
-        >
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </button>
+    <Dialog>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+      <DialogContent className="max-w-[300px] bg-white !rounded-[24px] p-0 border-none">
         <div className="px-9 py-10">
           <h2 className="text-xl font-semibold text-custom-green mb-8 text-center">
             traublingにログインして
@@ -34,12 +27,17 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             >
               Googleアカウントを使う
             </Button>
-            <Button
-              variant="outline"
-              className="w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              Discordアカウントを使う
-            </Button>
+            <form action={async () => {
+              "use server"
+              await signIn("discord")
+            }}>
+              <Button
+                variant="outline"
+                className="w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
+              >
+                Discordアカウントを使う
+              </Button>
+            </form>
             <Button
               variant="outline"
               className="w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
