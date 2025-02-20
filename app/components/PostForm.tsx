@@ -86,12 +86,12 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
       className="max-w-2xl mx-auto space-y-8"
     >
       <div className="space-y-6"></div>
-      <h1 className="font-bold text-4xl md:text-5xl">トラブルを共有する</h1>
+      <h1 className="font-bold text-4xl md:text-5xl text-custom-green">トラブルを共有する</h1>
 
       <div className="space-y-6">
         {/* 国選択 */}
         <div className="space-y-2">
-          <Label className="text-lg font-semibold text-green-700">訪れた国</Label>
+          <Label className="text-lg font-semibold text-custom-green">訪れた国</Label>
           <Select value={formData.country} onValueChange={(value) => setFormData({ ...formData, country: value })}>
             <SelectTrigger>
               <SelectValue placeholder="訪問した国を選択してください" />
@@ -126,7 +126,7 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
 
         {/* 問題タイプ */}
         <div className="space-y-2">
-          <Label className="text-lg font-semibold text-green-700">どのような問題に遭遇しましたか?</Label>
+          <Label className="text-lg font-semibold text-custom-green">どのような問題に遭遇しましたか?</Label>
           <Select value={formData.problemType} onValueChange={(value) => setFormData({ ...formData, problemType: value })}>
             <SelectTrigger>
               <SelectValue placeholder="トラブルの分野を選択してください" />
@@ -153,7 +153,7 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
         {/* 訪問日時 */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-lg font-semibold text-green-700">訪問時期</Label>
+            <Label className="text-lg font-semibold text-custom-green">訪問時期</Label>
             <Select value={formData.visitMonth} onValueChange={(value) => setFormData({ ...formData, visitMonth: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="月" />
@@ -189,24 +189,25 @@ function PostForm({ onSubmit, initialData = {} }: PostFormProps) {
 
         {/* 体験談 */}
         <div className="space-y-2">
-          <Label className="text-lg font-semibold text-green-700">経験したトラブルの詳細</Label>
+          <Label className="text-lg font-semibold text-custom-green">経験したトラブルの詳細</Label>
           <Editor value={formData.experience} onChange={(value) => setFormData({ ...formData, experience: value })} />
         </div>
 
         {/* タイトル */}
         <div className="space-y-2">
-          <Label className="text-lg font-semibold text-green-700">タイトル</Label>
+          <Label className="text-lg font-semibold text-custom-green">タイトル</Label>
           <Input
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             placeholder="投稿にタイトルをつけてください"
           />
         </div>
-
         {/* 送信ボタン */}
-        <Button type="submit" className="w-full bg-green-500 hover:bg-green-600 text-white">
+        <Button type="submit" className="w-full bg-gray-700 hover:bg-custom-green text-white">
           Save and Preview
         </Button>
+        <div className="space-y-2">
+        </div>
       </div>
     </form>
   );
