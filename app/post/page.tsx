@@ -1,20 +1,29 @@
 import { prisma } from "@/lib/prisma";
 import PostForm from "../components/PostForm";
 import type { Metadata } from 'next'
- 
+import { auth } from "@/auth";
+import { notFound } from "next/navigation";
+
 export const metadata: Metadata = {
   title: '投稿',
   description: '投稿ページ',
 }
 
 export default async function PostPage() {
+
+  const session = await auth()
+
+  if (!session) {
+    notFound()
+  }
+  
   const troubles = await prisma.trouble.findMany();
   const countries = await prisma.country.findMany();
   const cities = await prisma.city.findMany();
 
   return (
     <div>
-      <PostForm troubleType={troubles} countries={countries} cities={cities}/>
+      <PostForm troubleType={troubles} countries={countries} cities={cities} />
     </div>
   );
 }
