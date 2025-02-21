@@ -8,10 +8,10 @@ datasource db {
 }
 
 model Account {
-  userId            String  @map("userId")
+  userId            String
   type              String
   provider          String
-  providerAccountId String  @map("providerAccountId")
+  providerAccountId String
   refresh_token     String?
   access_token      String?
   expires_at        Int?
@@ -19,59 +19,66 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  createdAt         DateTime @default(now()) @db.Timestamp(6) @map("created_at")
-  updatedAt         DateTime @default(now()) @db.Timestamp(6) @map("updated_at")
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
   @@id([provider, providerAccountId])
-  @@map("Account")
 }
-
-model Authenticator {
-  credentialID         String  @unique @map("credential_id")
-  userId               String  @map("userId")
-  providerAccountId    String  @map("providerAcountId")
-  credentialPublicKey  String  @map("credentialPublicKey")
-  counter              Int
-  credentialDeviceType String  @map("credentialDeviceType")
-  credentialBackedUp   Boolean @map("credentialBackedUp")
-  transports           String?
-  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@id([userId, credentialID])
-  @@map("Authenticator")
-}
-
+ 
 model Session {
-  sessionToken String   @id @map("session_token")
-  userId       String   @map("userId")
-  expires      DateTime @db.Timestamp(6)
-  createdAt    DateTime @default(now()) @db.Timestamp(6) @map("created_at")
-  updatedAt    DateTime @default(now()) @db.Timestamp(6) @map("updated_at")
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
-  @@map("Session")
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+ 
+  @@id([identifier, token])
+}
+
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@id([userId, credentialID])
 }
 
 model User {
-  id            String  @id @default(dbgenerated("gen_random_uuid()"))
-  name        String  @map("name")
-  email         String  @unique
-  emailVerified DateTime? @db.Timestamp(6) @map("emailVerified")
+  id            String          @id @default(cuid())
+  name          String?         @map("name")
+  email         String          @unique
+  emailVerified DateTime?       @map("emailVerified") 
   image         String?
-  createdAt     DateTime @default(now()) @db.Timestamp(6) @map("created_at")
-  updatedAt     DateTime @default(now()) @db.Timestamp(6) @map("updated_at")
-  Account       Account[]
+  createdAt     DateTime        @default(now()) 
+  updatedAt     DateTime        @updatedAt 
+  accounts      Account[]
+  sessions      Session[]
+  posts         Post[]
   Authenticator Authenticator[]
-  Session       Session[]
-  Post          Post[]
-
-  @@map("User")
 }
 
 model Post {
   id          Int      @id @default(autoincrement())
-  countryId   Int      @map("countryId")
+  countryId   Int      @map("countryId") @default(10000)
   cityId      Int      @map("cityId") @default(100)
   troubleId   Int      @map("troubleId")
   travelMonth Int      @map("travelMonth")
@@ -81,46 +88,38 @@ model Post {
   createdAt   DateTime @default(now()) @map("createdAt")
   updatedAt   DateTime @updatedAt @map("updatedAt")
   userId      String   @map("userId")
-  isDraft     Boolean  @map("isDraft")
+  likeCount   Int      @default(0) @map("likeCount")
 
-  user    User    @relation(fields: [userId], references: [id])
-  country Country @relation(fields: [countryId], references: [id])
-  city    City    @relation(fields: [cityId], references: [id])
-  trouble Trouble @relation(fields: [troubleId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
+  country  Country   @relation(fields: [countryId], references: [id])
+  city     City     @relation(fields: [cityId], references: [id])
+  trouble  Trouble   @relation(fields: [troubleId], references: [id])
   comments Comment[]
-
-  @@map("Post")  
 }
+
 model Country {
   id     Int    @id @default(autoincrement())
   enName String @map("enName")
   jaName String @map("jaName")
   posts  Post[]
-  cities City[] @relation("CountryToCity")
-
-  @@map("Country")
+  cities City[]
 }
 
 model City {
   id        Int     @id @default(autoincrement())
   enName    String  @map("enName")
   jaName    String  @map("jaName")
-  CountryId Int     @map("CountryId")
-  Photourl  String  @map("Photourl")
-  country   Country @relation("CountryToCity", fields: [CountryId], references: [id])
-  Posts Post[]
-
-  @@map("City")
+  countryId Int     @map("countryId") @default(10000)
+  photoUrl  String?  @map("photoUrl")
+  country   Country @relation(fields: [countryId], references: [id])
+  posts     Post[]
 }
 
 model Trouble {
   id     Int    @id @default(autoincrement())
   enName String @map("enName")
   jaName String @map("jaName")
-
   posts  Post[]
-
-  @@map("Trouble")
 }
 
 model Comment {
@@ -128,7 +127,4 @@ model Comment {
   content String
   postId  Int    @map("postId")
   post    Post   @relation(fields: [postId], references: [id])
-
-  @@map("Comment")
 }
-
