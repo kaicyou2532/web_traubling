@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter, Noto_Sans_JP, Roboto } from "next/font/google"
 import type React from "react"
 import Header from "./components/Header"
+import Footer from "./components/Footer"
 
 const inter = Inter({ subsets: ["latin"] })
 const notoSansJP = Noto_Sans_JP({ subsets: ["latin"], weight: ["400", "500", "700"] })
@@ -23,9 +24,7 @@ export default function RootLayout({
       <body className={`${notoSansJP.className} ${roboto.className} font-medium antialiased`}>
         <Header />
         {children}
-        <footer className="bg-gray-800 text-white p-4 text-center">
-          <p>&copy; 2024 traubling. All rights reserved.</p>
-        </footer>
+        <Footer />
       </body>
     </html>
   )
