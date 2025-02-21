@@ -10,9 +10,9 @@ interface Post {
   content: string
   country: { id: number; jaName: string; enName: string } | null
   comments: { id: number }[]
-  user: { name: string } | null
-  isDraft: boolean
+  user: { name: string }
   tags: string[]
+  isJapan: boolean
 }
 
 export default function RecentPosts({ category }: { category: string }) {
@@ -23,9 +23,15 @@ export default function RecentPosts({ category }: { category: string }) {
     async function fetchPosts() {
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/post?category=${category}`)
+        const res = await fetch("/api/search")
         const data = await res.json()
-        setPosts(data)
+        let filteredPosts = data
+        if (category === "domestic") {
+          filteredPosts = data.filter((post: Post) => post.isJapan)
+        } else if (category === "overseas") {
+          filteredPosts = data.filter((post: Post) => !post.isJapan)
+        }
+        setPosts(filteredPosts)
       } catch (error) {
         console.error("Error fetching posts:", error)
       } finally {
@@ -37,6 +43,10 @@ export default function RecentPosts({ category }: { category: string }) {
 
   if (isLoading) {
     return <div className="text-center py-12">読み込み中...</div>
+  }
+
+  if (posts.length === 0) {
+    return <div className="text-center py-12">投稿がありません。</div>
   }
 
   return (
@@ -52,8 +62,8 @@ export default function RecentPosts({ category }: { category: string }) {
               <h3 className="text-xl font-semibold mb-3 text-gray-800">{post.title}</h3>
               <p className="text-gray-600 mb-4 line-clamp-3">{post.content}</p>
               <div className="flex flex-wrap gap-2 mb-4">
-                {post.tags.map((tag) => (
-                  <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                {post.tags.map((tag, index) => (
+                  <span key={index} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
                     {tag}
                   </span>
                 ))}
@@ -65,7 +75,7 @@ export default function RecentPosts({ category }: { category: string }) {
                     <span>{post.comments.length}</span>
                   </div>
                 </div>
-                <span className="text-sm text-gray-500">{post.user?.name || "匿名"}</span>
+                <span className="text-sm text-gray-500">{post.user.name}</span>
               </div>
             </div>
           </div>

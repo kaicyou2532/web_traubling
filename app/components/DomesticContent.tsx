@@ -6,7 +6,6 @@ export default function DomesticContent() {
   return (
     <div className="space-y-12">
       <section>
-        <h2 className="text-3xl font-bold mb-8 text-gray-800">人気の観光地のお悩みを確認する</h2>
         <DestinationScroll category="domestic" />
       </section>
       <section>
