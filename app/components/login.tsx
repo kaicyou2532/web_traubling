@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ReactNode } from "react"
 import { signIn } from "@/auth"
+import { SiDiscord, SiGoogle } from "@icons-pack/react-simple-icons"
 
 type Props = {
   children: ReactNode
@@ -23,9 +24,10 @@ export function AuthModal({ children }: Props) {
           <div className="space-y-4">
             <Button
               variant="outline"
-              className="w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
             >
-              Googleアカウントを使う
+              <SiGoogle/>
+                Googleアカウントを使う
             </Button>
             <form action={async () => {
               "use server"
@@ -33,8 +35,9 @@ export function AuthModal({ children }: Props) {
             }}>
               <Button
                 variant="outline"
-                className="w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
               >
+                <SiDiscord/>
                 Discordアカウントを使う
               </Button>
             </form>
