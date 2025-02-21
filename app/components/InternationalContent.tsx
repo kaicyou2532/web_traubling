@@ -25,7 +25,7 @@ export default function InternationalContent() {
               投稿する
             </Link>
           </div>
-          <TroubleList category="overseas" />
+          <TroubleList />
         </div>
       </div>
     </>

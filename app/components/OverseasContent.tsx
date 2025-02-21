@@ -6,7 +6,8 @@ export default function OverseasContent() {
   return (
     <div className="space-y-12">
       <section>
-        <DestinationScroll category="overseas" />
+        {/* <DestinationScroll category="overseas" /> */}
+        <DestinationScroll/>
       </section>
       <section>
         <h2 className="text-3xl font-bold mb-8 text-gray-800">ランキング</h2>
