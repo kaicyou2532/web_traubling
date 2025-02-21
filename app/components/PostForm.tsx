@@ -48,6 +48,7 @@ function PostForm({ troubleType, countries }: Props) {
   for (let i = 1; i <= 12; i++) {
     monthItems.push(
       <SelectItem
+        key={i}
         value={i.toString()}
         className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
       >
@@ -61,6 +62,7 @@ function PostForm({ troubleType, countries }: Props) {
   for (let year = 2025; year >= 2005; year--) {
     yearItems.push(
       <SelectItem
+        key={year}
         value={year.toString()}
         className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
       >
@@ -151,6 +153,7 @@ function PostForm({ troubleType, countries }: Props) {
               </div>
               {filteredCountries.map((country) => (
                 <SelectItem
+                  key={country.id}
                   value={country.id.toString()}
                   className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
                 >
