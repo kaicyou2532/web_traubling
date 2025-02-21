@@ -77,8 +77,8 @@ model Post {
   id           Int      @id @default(autoincrement())
   countryId    Int      
   troubleId    Int      
-  travelMonth  String @db.VarChar(2)
-  travelYear   String @db.VarChar(4)
+  travelMonth  Int
+  travelYear   Int
   title        String
   content      String
   createdAt    DateTime @default(now())

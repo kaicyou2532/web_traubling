@@ -1,15 +1,19 @@
-"use client";  // 追加することで Client Component に変換
-
+import { prisma } from "@/lib/prisma";
 import PostForm from "../components/PostForm";
+import type { Metadata } from "next";
 
-export default function PostPage() {
-  const handleSubmit = (data: any) => {
-    console.log("Form submitted:", data);
-  };
+export const meta: Metadata = {
+  title: "投稿ページ",
+  description: "投稿ページ",
+};
+
+export default async function PostPage() {
+  const troubles = await prisma.trouble.findMany();
+  const countries = await prisma.country.findMany();
 
   return (
     <div>
-      <PostForm onSubmit={handleSubmit} />
+      <PostForm troubleType={troubles} countries={countries}/>
     </div>
   );
 }
