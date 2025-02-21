@@ -15,30 +15,36 @@ import dynamic from "next/dynamic";
 type Props = {
   troubleType: Trouble[];
   countries: Country[];
+  cities: Country[];
 };
 
 
 // フォームで管理したいデータの型
 type FormDataType = {
   countryId: number;
+  cityId: number;
   troubleId: number;
   travelMonth: number;
   travelYear: number;
   title: string;
 };
 
-function PostForm({ troubleType, countries }: Props) {
+function PostForm({ troubleType, countries, cities }: Props) {
   // フォーム入力内容
   const [formData, setFormData] = useState<FormDataType>({
     countryId: 0,
+    cityId: 0,
     troubleId: 0,
     travelMonth: 0,
     travelYear: 0,
     title: "",
   });
 
-  // 検索ワードを管理
+  // 国検索ワード
   const [searchTerm, setSearchTerm] = useState("");
+
+  // 都市検索ワード
+  const [searchCityTerm, setSearchCityTerm] = useState("");
 
   // エディター
   const [textValue, setValue] = useState("");
@@ -77,17 +83,23 @@ function PostForm({ troubleType, countries }: Props) {
     country.jaName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // 検索ワードに合致する都市
+  const filteredCities = cities.filter((city) =>
+    city.jaName.toLowerCase().includes(searchCityTerm.toLowerCase())
+  );
+
   // フォーム送信時
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const countryId = formData.countryId;
+    const cityId = formData.cityId;
     const troubleId = formData.troubleId;
     const travelMonth = formData.travelMonth;
     const travelYear = formData.travelYear;
     const titleLength = formData.title.length;
     const contentLength = textValue.length;
 
-    if (countryId === 0 || troubleId === 0 || travelMonth === 0 || travelYear === 0 || titleLength === 0 || contentLength === 0) {
+    if (countryId === 0 || cityId === 0 || troubleId === 0 || travelMonth === 0 || travelYear === 0 || titleLength === 0 || contentLength === 0) {
       window.alert("全ての項目を入力してください");
       return;
     }
@@ -146,7 +158,6 @@ function PostForm({ troubleType, countries }: Props) {
               <div className="sticky top-0 z-10 p-2 bg-white">
                 <Input
                   placeholder="Search countries..."
-                  key={searchTerm}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full"
@@ -159,6 +170,43 @@ function PostForm({ troubleType, countries }: Props) {
                   className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
                 >
                   {country.jaName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* 訪問都市 */}
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Label className="text-2xl font-semibold text-custom-green">
+            訪れた都市
+          </Label>
+          <Select
+            value={formData.cityId ? formData.cityId.toString() : ""}
+            onValueChange={(value) => setFormData({ ...formData, cityId: Number(value) })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="訪問した都市を選択してください" />
+            </SelectTrigger>
+
+            <SelectContent className="bg-white">
+              <div className="sticky top-0 z-10 p-2 bg-white">
+                <Input
+                  placeholder="Search cities..."
+                  value={searchCityTerm}
+                  onChange={(e) => setSearchCityTerm(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              {filteredCities.map((city) => (
+                <SelectItem
+                  key={city.id}
+                  value={city.id.toString()}
+                  className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
+                >
+                  {city.jaName}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -10,10 +10,11 @@ export const metadata: Metadata = {
 export default async function PostPage() {
   const troubles = await prisma.trouble.findMany();
   const countries = await prisma.country.findMany();
+  const cities = await prisma.city.findMany();
 
   return (
     <div>
-      <PostForm troubleType={troubles} countries={countries}/>
+      <PostForm troubleType={troubles} countries={countries} cities={cities}/>
     </div>
   );
 }
