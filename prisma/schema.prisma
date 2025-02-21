@@ -8,10 +8,10 @@ datasource db {
 }
 
 model Account {
-  userId            String
+  userId            String  @map("userId")
   type              String
   provider          String
-  providerAccountId String
+  providerAccountId String  @map("providerAccountId")
   refresh_token     String?
   access_token      String?
   expires_at        Int?
@@ -19,122 +19,126 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  createdAt         DateTime @default(now()) @db.Timestamp(6)
-  updatedAt         DateTime @default(now()) @db.Timestamp(6)
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  createdAt         DateTime @default(now()) @db.Timestamp(6) @map("created_at")
+  updatedAt         DateTime @default(now()) @db.Timestamp(6) @map("updated_at")
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([provider, providerAccountId])
+  @@map("Account")
 }
 
 model Authenticator {
-  credentialID         String  @unique
-  userId               String
-  providerAccountId    String
-  credentialPublicKey  String
+  credentialID         String  @unique @map("credential_id")
+  userId               String  @map("userId")
+  providerAccountId    String  @map("providerAcountId")
+  credentialPublicKey  String  @map("credentialPublicKey")
   counter              Int
-  credentialDeviceType String
-  credentialBackedUp   Boolean
+  credentialDeviceType String  @map("credentialDeviceType")
+  credentialBackedUp   Boolean @map("credentialBackedUp")
   transports           String?
   user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([userId, credentialID])
+  @@map("Authenticator")
 }
 
 model Session {
-  sessionToken String   @id
-  userId       String
+  sessionToken String   @id @map("session_token")
+  userId       String   @map("userId")
   expires      DateTime @db.Timestamp(6)
-  createdAt    DateTime @default(now()) @db.Timestamp(6)
-  updatedAt    DateTime @default(now()) @db.Timestamp(6)
+  createdAt    DateTime @default(now()) @db.Timestamp(6) @map("created_at")
+  updatedAt    DateTime @default(now()) @db.Timestamp(6) @map("updated_at")
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("Session")
 }
 
 model User {
-  id            String          @id @default(dbgenerated("gen_random_uuid()"))
-  name          String?
-  email         String          @unique
-  emailVerified DateTime?       @db.Timestamp(6)
+  id            String  @id @default(dbgenerated("gen_random_uuid()"))
+  name        String  @map("name")
+  email         String  @unique
+  emailVerified DateTime? @db.Timestamp(6) @map("emailVerified")
   image         String?
-  createdAt     DateTime        @default(now()) @db.Timestamp(6)
-  updatedAt     DateTime        @default(now()) @db.Timestamp(6)
+  createdAt     DateTime @default(now()) @db.Timestamp(6) @map("created_at")
+  updatedAt     DateTime @default(now()) @db.Timestamp(6) @map("updated_at")
   Account       Account[]
   Authenticator Authenticator[]
   Session       Session[]
   Post          Post[]
-  likes         Like[] 
+  likes         Like[]
+
+  @@map("User")
 }
-
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime @db.Timestamp(6)
-
-  @@id([identifier, token])
-}
-
 
 model Post {
-  id           Int      @id @default(autoincrement())
-  countryId    Int      
-  troubleId    Int      
-  travelMonth  Int
-  travelYear   Int
-  title        String
-  content      String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  userId       String
-  isDraft      Boolean
+  id          Int      @id @default(autoincrement())
+  countryId   Int      @map("countryId")
+  troubleId   Int      @map("troubleId")
+  travelMonth Int      @map("travelMonth")
+  travelYear  Int      @map("travelYear")
+  title       String
+  content     String
+  createdAt   DateTime @default(now()) @map("createdAt")
+  updatedAt   DateTime @updatedAt @map("updatedAt")
+  userId      String   @map("userId")
+  isDraft     Boolean  @map("isDraft")
 
-  user     User     @relation(fields: [userId], references: [id])
-  country  Country  @relation(fields: [countryId], references: [id])
-  trouble  Trouble  @relation(fields: [troubleId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  country Country @relation(fields: [countryId], references: [id])
+  trouble Trouble @relation(fields: [troubleId], references: [id])
   comments Comment[]
   likes    Like[]
-}
 
+  @@map("Post")  
+}
 model Country {
-  id       Int    @id @default(autoincrement())
-  enName   String
-  jaName   String
-  posts    Post[]
-  cities   City[] @relation("CountryToCity") // ✅ `City` とのリレーションを追加
-  @@map("Country")  
+  id     Int    @id @default(autoincrement())
+  enName String @map("enName")
+  jaName String @map("jaName")
+  posts  Post[]
+  cities City[] @relation("CountryToCity")
+
+  @@map("Country")
 }
 
 model City {
   id        Int     @id @default(autoincrement())
-  enName    String
-  jaName    String
-  CountryId Int
-  Photourl  String
-  country   Country @relation("CountryToCity", fields: [CountryId], references: [id]) // ✅ `Country` とのリレーションを追加
+  enName    String  @map("enName")
+  jaName    String  @map("jaName")
+  CountryId Int     @map("CountryId")
+  Photourl  String  @map("Photourl")
+  country   Country @relation("CountryToCity", fields: [CountryId], references: [id])
+
   @@map("City")
 }
 
-
 model Trouble {
-  id      Int    @id @default(autoincrement())
-  enName String
-  jaName String
+  id     Int    @id @default(autoincrement())
+  enName String @map("enName")
+  jaName String @map("jaName")
 
-  posts   Post[]
+  posts  Post[]
+
+  @@map("Trouble")
 }
 
 model Comment {
   id      Int    @id @default(autoincrement())
   content String
-  postId  Int
+  postId  Int    @map("postId")
   post    Post   @relation(fields: [postId], references: [id])
+
+  @@map("Comment")
 }
 
 model Like {
-  userId    String
-  postId    Int
-  createdAt DateTime @default(now())
-  
+  userId    String   @map("userId")
+  postId    Int      @map("postId")
+  createdAt DateTime @default(now()) @map("created_at")
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
+
   @@id([userId, postId])
+  @@map("Like")
 }

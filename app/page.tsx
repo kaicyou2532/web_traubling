@@ -7,16 +7,17 @@ import DomesticContent from "./components/DomesticContent"
 import InternationalContent from "./components/InternationalContent"
 import CategoryContent from "./components/CategoryContent"
 import RegionContent from "./components/RegionContent"
-import DestinationScroll from "./components/DestinationScroll"
 
 export default function Home() {
   const [isSearching, setIsSearching] = useState(false)
   const [searchCategory, setSearchCategory] = useState("all")
   const [searchSubCategory, setSearchSubCategory] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const [searchTerm, setSearchTerm] = useState("")
 
   const handleSearch = (searchTerm: string, category: string, subCategory?: string) => {
     setIsSearching(true)
+    setSearchTerm(searchTerm)
     setSearchCategory(category)
     setSearchSubCategory(subCategory || "")
   }
@@ -24,11 +25,19 @@ export default function Home() {
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category)
     setIsSearching(false)
+    setSearchTerm("") // 検索語をクリア
   }
 
   const renderContent = () => {
-    if (isSearching) {
-      return <SearchResults category={searchCategory} subCategory={searchSubCategory} />
+    if (isSearching || selectedCategory === "all") {
+      return (
+        <SearchResults
+          category={searchCategory}
+          subCategory={searchSubCategory}
+          searchTerm={searchTerm}
+          isSearching={isSearching}
+        />
+      )
     }
 
     switch (selectedCategory) {
@@ -40,17 +49,8 @@ export default function Home() {
         return <CategoryContent />
       case "region":
         return <RegionContent />
-      case "all":
       default:
-        return (
-          <>
-            <div className="bg-white py-12">
-              <DestinationScroll />
-            </div>
-            <DomesticContent />
-            <InternationalContent />
-          </>
-        )
+        return null
     }
   }
 
