@@ -15,13 +15,8 @@ interface Post {
   isJapan: boolean
 }
 
-interface SearchResultsProps {
-  searchTerm: string
-}
-
-export default function SearchResults({ searchTerm }: SearchResultsProps) {
+export default function RecentPosts({ category }: { category: string }) {
   const [posts, setPosts] = useState<Post[]>([])
-  const [filteredPosts, setFilteredPosts] = useState<Post[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -30,7 +25,13 @@ export default function SearchResults({ searchTerm }: SearchResultsProps) {
       try {
         const res = await fetch("/api/search")
         const data = await res.json()
-        setPosts(data)
+        let filteredPosts = data
+        if (category === "domestic") {
+          filteredPosts = data.filter((post: Post) => post.isJapan)
+        } else if (category === "overseas") {
+          filteredPosts = data.filter((post: Post) => !post.isJapan)
+        }
+        setPosts(filteredPosts)
       } catch (error) {
         console.error("Error fetching posts:", error)
       } finally {
@@ -38,33 +39,19 @@ export default function SearchResults({ searchTerm }: SearchResultsProps) {
       }
     }
     fetchPosts()
-  }, [])
-
-  useEffect(() => {
-    const lowercasedSearchTerm = searchTerm.toLowerCase()
-    const filtered = posts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(lowercasedSearchTerm) ||
-        post.content.toLowerCase().includes(lowercasedSearchTerm) ||
-        post.tags.some((tag) => tag.toLowerCase().includes(lowercasedSearchTerm)) ||
-        post.country?.jaName.toLowerCase().includes(lowercasedSearchTerm) ||
-        post.country?.enName.toLowerCase().includes(lowercasedSearchTerm),
-    )
-    setFilteredPosts(filtered)
-  }, [searchTerm, posts])
+  }, [category])
 
   if (isLoading) {
     return <div className="text-center py-12">読み込み中...</div>
   }
 
-  if (filteredPosts.length === 0) {
-    return <div className="text-center py-12">検索結果がありません。</div>
+  if (posts.length === 0) {
+    return <div className="text-center py-12">投稿がありません。</div>
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold mb-4">検索結果: {filteredPosts.length}件</h2>
-      {filteredPosts.map((post) => (
+      {posts.map((post) => (
         <Link href={`/reports/${post.id}`} key={post.id}>
           <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
             <div className="p-6">

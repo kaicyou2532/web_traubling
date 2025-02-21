@@ -3,6 +3,7 @@ import TroubleList from "./TroubleList"
 import Link from "next/link"
 import { PlusCircleIcon } from "@heroicons/react/24/solid"
 
+
 export default function InternationalContent() {
   return (
     <>
@@ -24,7 +25,7 @@ export default function InternationalContent() {
               投稿する
             </Link>
           </div>
-          <TroubleList category="overseas" />
+          <TroubleList />
         </div>
       </div>
     </>

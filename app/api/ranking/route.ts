@@ -17,4 +17,4 @@ const GET = async () => {
     return NextResponse.json(post, { status: 200 })
 }
 
-export default GET
+export { GET }

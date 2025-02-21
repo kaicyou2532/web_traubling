@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Country, Trouble } from "@prisma/client";
-import ReactQuill from "react-quill";
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
+import dynamic from "next/dynamic";
 
 
 // Props の定義
@@ -48,6 +49,7 @@ function PostForm({ troubleType, countries }: Props) {
   for (let i = 1; i <= 12; i++) {
     monthItems.push(
       <SelectItem
+        key={i}
         value={i.toString()}
         className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
       >
@@ -61,6 +63,7 @@ function PostForm({ troubleType, countries }: Props) {
   for (let year = 2025; year >= 2005; year--) {
     yearItems.push(
       <SelectItem
+        key={year}
         value={year.toString()}
         className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
       >
@@ -121,14 +124,14 @@ function PostForm({ troubleType, countries }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8">
-      <h1 className="font-bold text-4xl md:text-5xl space-y-6 mt-8">
+      <h2 className="font-bold text-4xl md:text-5xl space-y-6 mt-8 text-custom-green">
         トラブルを共有する
-      </h1>
+      </h2>
 
       {/* 訪問国 */}
       <div className="space-y-6">
         <div className="space-y-2">
-          <Label className="text-lg font-semibold text-green-700">
+          <Label className="text-2xl font-semibold text-custom-green">
             訪れた国
           </Label>
           <Select
@@ -151,6 +154,7 @@ function PostForm({ troubleType, countries }: Props) {
               </div>
               {filteredCountries.map((country) => (
                 <SelectItem
+                  key={country.id}
                   value={country.id.toString()}
                   className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
                 >
@@ -164,7 +168,7 @@ function PostForm({ troubleType, countries }: Props) {
 
       {/* トラブルの種類 */}
       <div className="space-y-2">
-        <Label className="text-lg font-semibold text-green-700">
+        <Label className="text-2xl font-semibold text-custom-green">
           どのような問題に遭遇しましたか？
         </Label>
         <Select
@@ -193,7 +197,7 @@ function PostForm({ troubleType, countries }: Props) {
       {/* 月・年 */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-lg font-semibold text-green-700">
+          <Label className="text-2xl font-semibold text-custom-green">
             訪問時期
           </Label>
           <Select
@@ -211,7 +215,7 @@ function PostForm({ troubleType, countries }: Props) {
         </div>
 
         <div className="space-y-2">
-          <Label className="text-lg font-semibold text-green-700" >　</Label>
+          <Label className="text-2xl font-semibold text-custom-green" >　</Label>
           <Select
             value={formData.travelYear ? formData.travelYear.toString() : ""}
             onValueChange={(value) => setFormData({ ...formData, travelYear: Number(value) })}
@@ -228,7 +232,7 @@ function PostForm({ troubleType, countries }: Props) {
 
       {/* エディター */}
       <div className="space-y-2">
-        <Label className="text-lg font-semibold text-green-700">
+        <Label className="text-2xl font-semibold text-custom-green">
           経験したトラブルの詳細
         </Label>
         <ReactQuill theme="snow" value={textValue} onChange={setValue} />
@@ -236,7 +240,7 @@ function PostForm({ troubleType, countries }: Props) {
 
       {/* タイトル */}
       <div className="space-y-2">
-        <Label className="text-lg font-semibold text-green-700">
+        <Label className="text-2xl font-semibold text-custom-green">
           タイトル
         </Label>
         <Input
@@ -250,9 +254,9 @@ function PostForm({ troubleType, countries }: Props) {
       <div className="mb-2">
         <Button
           type="submit"
-          className="w-full bg-green-500 hover:bg-green-600 text-white mb-8"
+          className="w-full bg-gray-700 hover:bg-custom-green text-white mb-8"
         >
-          Save and Preview
+          投稿する
         </Button>
         <div className="space-y-2">
         </div>

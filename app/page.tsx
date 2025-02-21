@@ -3,54 +3,44 @@
 import { useState } from "react"
 import SearchBar from "./components/SearchBar"
 import SearchResults from "./components/SearchResults"
+import AllContent from "./components/AllContent"
 import DomesticContent from "./components/DomesticContent"
-import InternationalContent from "./components/InternationalContent"
+import OverseasContent from "./components/OverseasContent"
 import CategoryContent from "./components/CategoryContent"
-import RegionContent from "./components/RegionContent"
-import DestinationScroll from "./components/DestinationScroll"
 
 export default function Home() {
   const [isSearching, setIsSearching] = useState(false)
   const [searchCategory, setSearchCategory] = useState("all")
-  const [searchSubCategory, setSearchSubCategory] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [searchTerm, setSearchTerm] = useState("")
 
-  const handleSearch = (searchTerm: string, category: string, subCategory?: string) => {
+  const handleSearch = (term: string, category: string) => {
     setIsSearching(true)
+    setSearchTerm(term)
     setSearchCategory(category)
-    setSearchSubCategory(subCategory || "")
   }
 
   const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category)
+    setSearchCategory(category)
     setIsSearching(false)
+    setSearchTerm("")
   }
 
   const renderContent = () => {
     if (isSearching) {
-      return <SearchResults category={searchCategory} subCategory={searchSubCategory} />
+      return <SearchResults searchTerm={searchTerm} />
     }
 
-    switch (selectedCategory) {
+    switch (searchCategory) {
+      case "all":
+        return <AllContent />
       case "domestic":
         return <DomesticContent />
       case "overseas":
-        return <InternationalContent />
+        return <OverseasContent />
       case "category":
         return <CategoryContent />
-      case "region":
-        return <RegionContent />
-      case "all":
       default:
-        return (
-          <>
-            <div className="bg-white py-12">
-              <DestinationScroll />
-            </div>
-            <DomesticContent />
-            <InternationalContent />
-          </>
-        )
+        return <AllContent />
     }
   }
 
@@ -77,13 +67,13 @@ export default function Home() {
           <SearchBar
             isCompact={isSearching}
             onSearch={handleSearch}
-            selectedCategory={selectedCategory}
+            selectedCategory={searchCategory}
             onCategoryChange={handleCategoryChange}
           />
         </div>
       </div>
 
-      {renderContent()}
+      <div className="container mx-auto px-4 py-12">{renderContent()}</div>
     </div>
   )
 }

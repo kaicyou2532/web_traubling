@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import PostForm from "../components/PostForm";
-import type { Metadata } from "next";
-
-export const meta: Metadata = {
-  title: "投稿ページ",
-  description: "投稿ページ",
-};
+import type { Metadata } from 'next'
+ 
+export const metadata: Metadata = {
+  title: '投稿',
+  description: '投稿ページ',
+}
 
 export default async function PostPage() {
   const troubles = await prisma.trouble.findMany();
