@@ -98,7 +98,7 @@ export default async function Header() {
                       </Link>
                     </SheetClose>
                   </li>
-                  <li>
+                  {session && <li>
                     <SheetClose asChild>
                       <Link
                         href="/post"
@@ -108,7 +108,7 @@ export default async function Header() {
                         <span>トラブルを共有する</span>
                       </Link>
                     </SheetClose>
-                  </li>
+                  </li>}
                 </ul>
               </nav>
             </SheetContent>
