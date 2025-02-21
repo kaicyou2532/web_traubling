@@ -6,7 +6,7 @@ export default function DomesticContent() {
   return (
     <div className="space-y-12">
       <section>
-        <DestinationScroll category="domestic" />
+        <DestinationScroll />
       </section>
       <section>
         <h2 className="text-3xl font-bold mb-8 text-gray-800">ランキング</h2>

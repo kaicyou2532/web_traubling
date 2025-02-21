@@ -1,7 +1,7 @@
 import Image from "next/image"
-import CommonIssues from "@/components/CommonIssues"
-import CitySpecificTroubles from "@/components/CitySpecificTroubles"
-import CityPrecautions from "@/components/CityPrecautions"
+import CommonIssues from "@/app/components/CommonIssues"
+import CitySpecificTroubles from "@/app/components/CitySpecificTroubles"
+import CityPrecautions from "@/app/components/CityPrecautions"
 
 export default function CityPage({ params }: { params: { city: string } }) {
   //実際の実装では、この情報データベースから取得する
