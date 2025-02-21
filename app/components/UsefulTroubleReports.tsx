@@ -48,17 +48,15 @@ export default function UsefulTroubleReports({ category = "all" }: { category?: 
   const orderedReports = [filteredReports[1], filteredReports[0], filteredReports[2]].filter(Boolean)
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <h2 className="text-3xl font-bold mb-12 text-gray-800 text-center">役に立ったトラブル報告</h2>
+    <div className="container mx-auto px-4 pt-12 pb-16">
+      <h2 className="text-3xl font-bold mb-8 text-gray-800">ランキング</h2>
       {orderedReports.length > 0 ? (
         <div className="flex flex-col md:flex-row justify-center items-end space-y-4 md:space-y-0 md:space-x-6">
           {orderedReports.map((report, index) => (
             <Link
               href={`/reports/${report.id}`}
               key={report.id}
-              className={`w-full md:w-80 transform transition-all duration-300 hover:-translate-y-1 ${
-                index === 1 ? "md:-translate-y-8" : index === 0 ? "md:-translate-y-4" : ""
-              }`}
+              className={`w-full transform transition-all duration-300 hover:-translate-y-1}`}
             >
               <div className={`${medals[index].color} rounded-t-xl p-2 text-center font-bold ${medals[index].text}`}>
                 {medals[index].label}

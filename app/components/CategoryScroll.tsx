@@ -88,9 +88,8 @@ export default function CategoryScroll() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <h2 className="text-3xl font-bold mb-8 text-gray-800">分野別の困りごとを確認する</h2>
-
+    <div className="container mx-auto px-4 pb-16">
+      <h2 className="text-3xl font-bold mb-8 text-gray-800">分野別</h2>
       <div className="relative">
         <div ref={scrollRef} className="flex space-x-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
           {/* Introduction Card */}
