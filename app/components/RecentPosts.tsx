@@ -50,9 +50,10 @@ export default function RecentPosts({ category }: { category: string }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 py-12">
+      <h2 className="text-3xl font-bold mb-8 text-gray-800">最近の投稿</h2>
       {posts.map((post) => (
-        <Link href={`/reports/${post.id}`} key={post.id}>
+        <Link href={`/reports/${post.id}`} key={post.id} className="space-y-2 block">
           <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
             <div className="p-6">
               <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
@@ -60,7 +61,7 @@ export default function RecentPosts({ category }: { category: string }) {
                 <span>{post.country?.jaName || "不明"}</span>
               </div>
               <h3 className="text-xl font-semibold mb-3 text-gray-800">{post.title}</h3>
-              <p className="text-gray-600 mb-4 line-clamp-3">{post.content}</p>
+              <div className="text-gray-600 mb-4 line-clamp-3" dangerouslySetInnerHTML={{ __html: post.content }} />
               <div className="flex flex-wrap gap-2 mb-4">
                 {post.tags.map((tag, index) => (
                   <span key={index} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
@@ -75,7 +76,7 @@ export default function RecentPosts({ category }: { category: string }) {
                     <span>{post.comments.length}</span>
                   </div>
                 </div>
-                <span className="text-sm text-gray-500">{post.user.name}</span>
+                <span className="text-sm text-[#007B63]">{post.user.name}</span>
               </div>
             </div>
           </div>
