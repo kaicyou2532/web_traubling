@@ -14,13 +14,13 @@ export function AuthModal({ children }: Props) {
         {children}
       </DialogTrigger>
       <DialogContent className="max-w-[300px] bg-white !rounded-[24px] p-0 border-none">
-        <div className="px-9 py-10">
+        <div className="px-8 py-8">
           <h2 className="text-xl font-semibold text-custom-green mb-8 text-center">
             traublingにログインして
             <br />
             トラブルを共有しよう！
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-4">
             <Button
               variant="outline"
               className="w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
@@ -38,12 +38,6 @@ export function AuthModal({ children }: Props) {
                 Discordアカウントを使う
               </Button>
             </form>
-            <Button
-              variant="outline"
-              className="w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              ???
-            </Button>
           </div>
         </div>
       </DialogContent>

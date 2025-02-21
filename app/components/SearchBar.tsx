@@ -59,7 +59,7 @@ export default function SearchBar({ isCompact = false, onSearch, selectedCategor
                 }`}
               >
                 <category.icon className="h-4 w-4" />
-                <span className="font-medium">{category.name}</span>
+                <span className="font-medium md:block hidden">{category.name}</span>
               </button>
             ))}
           </div>
