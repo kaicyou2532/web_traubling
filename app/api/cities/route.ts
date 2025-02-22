@@ -33,7 +33,7 @@ export async function GET() {
       if (!acc[countryId]) {
         acc[countryId] = {
           id: city.countryId,
-          jaName: city.jaName,
+          jaName: city.country.jaName,
           cities: [],
         };
       }
