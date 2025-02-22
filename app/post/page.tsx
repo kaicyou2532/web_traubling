@@ -16,10 +16,22 @@ export default async function PostPage() {
   if (!session) {
     notFound()
   }
-  
-  const troubles = await prisma.trouble.findMany();
-  const countries = await prisma.country.findMany();
-  const cities = await prisma.city.findMany();
+
+  const troubles = await prisma.trouble.findMany({
+    orderBy: {
+      id: 'asc'
+    }
+  });
+  const countries = await prisma.country.findMany({
+    orderBy: {
+      id: 'asc'
+    }
+  });
+  const cities = await prisma.city.findMany({
+    orderBy: {
+      id: 'asc'
+    }
+  });
 
   return (
     <div>
