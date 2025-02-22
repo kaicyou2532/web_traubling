@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">トラブリング</h3>
+            <h3 className="text-white font-semibold text-lg mb-4">Traubling</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/" className="hover:text-white transition-colors">
@@ -70,7 +70,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm">&copy; 2024 traubling. All rights reserved.</p>
+          <p className="text-sm">&copy; 2025 Traubling. All rights reserved.</p>
           <nav className="mt-4 md:mt-0">
             <ul className="flex space-x-4 text-sm">
               <li>
