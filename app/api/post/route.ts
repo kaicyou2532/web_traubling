@@ -25,8 +25,7 @@ const POST = async (req: NextRequest) => {
             travelMonth,
             travelYear,
             content,
-            title,
-            isDraft: true
+            title
         }
     })
     return NextResponse.json(post, { status: 201 })
