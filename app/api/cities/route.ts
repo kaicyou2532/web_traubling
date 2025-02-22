@@ -1,54 +1,46 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from "next/server"
+import { PrismaClient } from "@prisma/client"
 
-const prisma = new PrismaClient();
-
-type GroupedData = {
-  [key: number]: {
-    id: number;
-    jaName: string;
-    cities: {
-      id: number;
-      enName: string;
-      jaName: string;
-      Photourl: string;
-    }[];
-  };
-}
+const prisma = new PrismaClient()
 
 export async function GET() {
   try {
+    // `City` を取得し、`CountryId` を使って `Country` を紐付ける
     const cities = await prisma.city.findMany({
-      where: {
-        countryId: { not: 1 }, 
-      },
       include: {
-        country: true, 
+        country: {
+          select: {
+            id: true,
+            jaName: true,
+          },
+        },
       },
-    });
+    })
 
-
-    const groupedData = cities.reduce((acc: GroupedData, city) => {
-      const countryId = city.countryId;
+    // `Country` ごとに `City` をグループ化
+    const groupedData = cities.reduce((acc, city) => {
+      const countryId = city.country.id
       if (!acc[countryId]) {
         acc[countryId] = {
-          id: city.countryId,
-          jaName: city.jaName,
+          id: city.country.id,
+          jaName: city.country.jaName,
           cities: [],
-        };
+        }
       }
       acc[countryId].cities.push({
         id: city.id,
         enName: city.enName,
         jaName: city.jaName,
-        Photourl: city.photoUrl ?? "",
-      });
-      return acc;
-    }, {} as GroupedData);
+        Photourl: city.Photourl,
+      })
+      return acc
+    }, {})
 
-    return NextResponse.json(Object.values(groupedData)); 
+    return NextResponse.json(Object.values(groupedData))
   } catch (error) {
-    console.error("Failed to fetch data:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("Failed to fetch data:", error)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
+
+
