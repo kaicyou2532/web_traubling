@@ -54,11 +54,11 @@ export default function SearchResults({ searchTerm }: SearchResultsProps) {
   }, [searchTerm, posts])
 
   if (isLoading) {
-    return <div className="text-center py-12">読み込み中...</div>
+    return <div className="h-[450px] flex items-center justify-center">読み込み中...</div>
   }
 
   if (filteredPosts.length === 0) {
-    return <div className="text-center py-12">検索結果がありません。</div>
+    return <div className="h-[450px] flex items-center justify-center">検索結果がありません。</div>
   }
 
   return (

@@ -10,10 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Country, Trouble } from "@prisma/client"
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false })
 import "react-quill/dist/quill.snow.css"
-import dynamic from "next/dynamic"
 // Dialogコンポーネントのインポートを更新
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 
 // Props の定義
 type Props = {
@@ -146,13 +146,13 @@ function PostForm({ troubleType, countries, cities }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8">
-      <h2 className="font-bold text-4xl md:text-5xl space-y-6 mt-8 text-custom-green">トラブルを共有する</h2>
+    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8 px-3 py-10">
+      <h2 className="font-bold text-3xl md:text-4xl space-y-6 mt-8 text-custom-green ml-[-2px]">トラブルを共有する</h2>
 
       {/* 訪問国 */}
       <div className="space-y-6">
         <div className="space-y-2">
-          <Label className="text-2xl font-semibold text-custom-green">訪れた国</Label>
+          <Label className="text-xl md:text-2xl font-semibold text-custom-green">訪れた国</Label>
           <Select
             value={formData.countryId ? formData.countryId.toString() : ""}
             onValueChange={(value) => setFormData({ ...formData, countryId: Number(value) })}
@@ -187,7 +187,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
       {/* 訪問都市 */}
       <div className="space-y-6">
         <div className="space-y-2">
-          <Label className="text-2xl font-semibold text-custom-green">訪れた都市</Label>
+          <Label className="text-xl md:text-2xl font-semibold text-custom-green">訪れた都市</Label>
           <Select
             value={formData.cityId ? formData.cityId.toString() : ""}
             onValueChange={(value) => setFormData({ ...formData, cityId: Number(value) })}
@@ -221,7 +221,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
 
       {/* トラブルの種類 */}
       <div className="space-y-2">
-        <Label className="text-2xl font-semibold text-custom-green">どのような問題に遭遇しましたか？</Label>
+        <Label className="text-xl md:text-2xl font-semibold text-custom-green">どのような問題に遭遇しましたか？</Label>
         <Select
           key={formData.troubleId}
           value={formData.troubleId ? formData.troubleId.toString() : ""}
@@ -246,9 +246,9 @@ function PostForm({ troubleType, countries, cities }: Props) {
       </div>
 
       {/* 月・年 */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-2xl font-semibold text-custom-green">訪問時期</Label>
+      <div className="flex gap-5 items-end">
+        <div className="space-y-2 w-[50%]">
+          <Label className="text-xl md:text-2xl font-semibold text-custom-green">訪問時期</Label>
           <Select
             key={formData.travelMonth}
             value={formData.travelMonth ? formData.travelMonth.toString() : ""}
@@ -263,8 +263,8 @@ function PostForm({ troubleType, countries, cities }: Props) {
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label className="text-2xl font-semibold text-custom-green">　</Label>
+        <div className="space-y-2 w-[50%]">
+          <Label className="text-xl md:text-2xl font-semibold text-custom-green"></Label>
           <Select
             value={formData.travelYear ? formData.travelYear.toString() : ""}
             onValueChange={(value) => setFormData({ ...formData, travelYear: Number(value) })}
@@ -281,13 +281,13 @@ function PostForm({ troubleType, countries, cities }: Props) {
 
       {/* エディター */}
       <div className="space-y-2">
-        <Label className="text-2xl font-semibold text-custom-green">経験したトラブルの詳細</Label>
+        <Label className="text-xl md:text-2xl font-semibold text-custom-green">経験したトラブルの詳細</Label>
         <ReactQuill theme="snow" value={textValue} onChange={setValue} />
       </div>
 
       {/* タイトル */}
       <div className="space-y-2">
-        <Label className="text-2xl font-semibold text-custom-green">タイトル</Label>
+        <Label className="text-xl md:text-2xl font-semibold text-custom-green">タイトル</Label>
         <Input
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -304,7 +304,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
       </div>
       {/* Confirmation Dialog */}
       <Dialog open={isConfirmationOpen} onOpenChange={setIsConfirmationOpen}>
-        <DialogContent className="sm:max-w-[400px]　bg-white">
+        <DialogContent className="sm:max-w-[400px] bg-white">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center">投稿が完了しました</DialogTitle>
           </DialogHeader>

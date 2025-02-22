@@ -17,6 +17,7 @@ import { AuthModal } from "../components/login"
 import { auth, signOut } from "@/auth"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
 
 export default async function Header() {
 
@@ -60,7 +61,9 @@ export default async function Header() {
 
           <Sheet>
             <SheetTrigger asChild>
-              <Bars3Icon className="h-8 w-8 text-gray-700" />
+              <button>
+                <Bars3Icon className="text-gray-700 w-8 h-8"/>
+              </button>
             </SheetTrigger>
             <SheetContent className="bg-white">
               <nav>
