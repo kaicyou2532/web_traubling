@@ -15,7 +15,7 @@ const domesticDestinations = [
   },
   {
     id: 2,
-    city: "札幌",
+    city: "東京",
     country: "日本",
     troubles: 245,
     category: "観光地",
@@ -27,7 +27,7 @@ const domesticDestinations = [
     country: "日本",
     troubles: 312,
     category: "観光地",
-    image: "https://images.unsplash.com/photo-1617876139746-56e60b7a3c68?q=80&w=2070&auto=format&fit=crop",
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwc8821GE6WI-ISmcNCi2muGrazmgyF7CUAg&s",
   },
   {
     id: 4,
@@ -35,7 +35,7 @@ const domesticDestinations = [
     country: "日本",
     troubles: 478,
     category: "観光地",
-    image: "https://images.unsplash.com/photo-1604842585455-e731d3f2de9d?q=80&w=2070&auto=format&fit=crop",
+    image: "https://www.ana.co.jp/japan-travel-planner/okinawa/img/hero.jpg",
   },
 ]
 
