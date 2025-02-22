@@ -1,33 +1,36 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Country, Trouble } from "@prisma/client";
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-import "react-quill/dist/quill.snow.css";
-import dynamic from "next/dynamic";
+import type React from "react"
 
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import type { Country, Trouble } from "@prisma/client"
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false })
+import "react-quill/dist/quill.snow.css"
+import dynamic from "next/dynamic"
+// Dialogコンポーネントのインポートを更新
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import Link from "next/link"
 
 // Props の定義
 type Props = {
-  troubleType: Trouble[];
-  countries: Country[];
-  cities: Country[];
-};
-
+  troubleType: Trouble[]
+  countries: Country[]
+  cities: Country[]
+}
 
 // フォームで管理したいデータの型
 type FormDataType = {
-  countryId: number;
-  cityId: number;
-  troubleId: number;
-  travelMonth: number;
-  travelYear: number;
-  title: string;
-};
+  countryId: number
+  cityId: number
+  troubleId: number
+  travelMonth: number
+  travelYear: number
+  title: string
+}
 
 function PostForm({ troubleType, countries, cities }: Props) {
   // フォーム入力内容
@@ -38,20 +41,21 @@ function PostForm({ troubleType, countries, cities }: Props) {
     travelMonth: 0,
     travelYear: 0,
     title: "",
-  });
+  })
 
   // 国検索ワード
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("")
 
   // 都市検索ワード
-  const [searchCityTerm, setSearchCityTerm] = useState("");
+  const [searchCityTerm, setSearchCityTerm] = useState("")
 
   // エディター
-  const [textValue, setValue] = useState("");
+  const [textValue, setValue] = useState("")
 
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
 
   // 月の選択肢
-  const monthItems = [];
+  const monthItems = []
   for (let i = 1; i <= 12; i++) {
     monthItems.push(
       <SelectItem
@@ -60,12 +64,12 @@ function PostForm({ troubleType, countries, cities }: Props) {
         className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
       >
         {i}月
-      </SelectItem>
-    );
+      </SelectItem>,
+    )
   }
 
   // 年の選択肢
-  const yearItems = [];
+  const yearItems = []
   for (let year = 2025; year >= 2005; year--) {
     yearItems.push(
       <SelectItem
@@ -74,39 +78,44 @@ function PostForm({ troubleType, countries, cities }: Props) {
         className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
       >
         {year}年
-      </SelectItem>
-    );
+      </SelectItem>,
+    )
   }
 
   // 検索ワードに合致する国
   const filteredCountries = countries.filter((country) =>
-    country.jaName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    country.jaName.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
   // 検索ワードに合致する都市
-  const filteredCities = cities.filter((city) =>
-    city.jaName.toLowerCase().includes(searchCityTerm.toLowerCase())
-  );
+  const filteredCities = cities.filter((city) => city.jaName.toLowerCase().includes(searchCityTerm.toLowerCase()))
 
   // フォーム送信時
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const countryId = formData.countryId;
-    const cityId = formData.cityId;
-    const troubleId = formData.troubleId;
-    const travelMonth = formData.travelMonth;
-    const travelYear = formData.travelYear;
-    const titleLength = formData.title.length;
-    const contentLength = textValue.length;
+    e.preventDefault()
+    const countryId = formData.countryId
+    const cityId = formData.cityId
+    const troubleId = formData.troubleId
+    const travelMonth = formData.travelMonth
+    const travelYear = formData.travelYear
+    const titleLength = formData.title.length
+    const contentLength = textValue.length
 
-    if (countryId === 0 || cityId === 0 || troubleId === 0 || travelMonth === 0 || travelYear === 0 || titleLength === 0 || contentLength === 0) {
-      window.alert("全ての項目を入力してください");
-      return;
+    if (
+      countryId === 0 ||
+      cityId === 0 ||
+      troubleId === 0 ||
+      travelMonth === 0 ||
+      travelYear === 0 ||
+      titleLength === 0 ||
+      contentLength === 0
+    ) {
+      window.alert("全ての項目を入力してください")
+      return
     }
-    console.log("Submitted form data:", formData);
-    console.log("Editor content:", textValue);
+    console.log("Submitted form data:", formData)
+    console.log("Editor content:", textValue)
     console.log(`"${textValue}"`)
-
 
     const payload = {
       countryId: formData.countryId,
@@ -116,37 +125,34 @@ function PostForm({ troubleType, countries, cities }: Props) {
       travelYear: formData.travelYear,
       content: textValue,
       title: formData.title,
-    };
+    }
 
     try {
       const response = await fetch("/api/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error("APIエラー");
+        throw new Error("APIエラー")
       }
-      const data = await response.json();
-      console.log("API response:", data);
+      const data = await response.json()
+      console.log("API response:", data)
+      setIsConfirmationOpen(true) // Open the confirmation dialog
     } catch (error) {
-      console.error("Error posting data:", error);
+      console.error("Error posting data:", error)
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8">
-      <h2 className="font-bold text-4xl md:text-5xl space-y-6 mt-8 text-custom-green">
-        トラブルを共有する
-      </h2>
+      <h2 className="font-bold text-4xl md:text-5xl space-y-6 mt-8 text-custom-green">トラブルを共有する</h2>
 
       {/* 訪問国 */}
       <div className="space-y-6">
         <div className="space-y-2">
-          <Label className="text-2xl font-semibold text-custom-green">
-            訪れた国
-          </Label>
+          <Label className="text-2xl font-semibold text-custom-green">訪れた国</Label>
           <Select
             value={formData.countryId ? formData.countryId.toString() : ""}
             onValueChange={(value) => setFormData({ ...formData, countryId: Number(value) })}
@@ -181,9 +187,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
       {/* 訪問都市 */}
       <div className="space-y-6">
         <div className="space-y-2">
-          <Label className="text-2xl font-semibold text-custom-green">
-            訪れた都市
-          </Label>
+          <Label className="text-2xl font-semibold text-custom-green">訪れた都市</Label>
           <Select
             value={formData.cityId ? formData.cityId.toString() : ""}
             onValueChange={(value) => setFormData({ ...formData, cityId: Number(value) })}
@@ -217,9 +221,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
 
       {/* トラブルの種類 */}
       <div className="space-y-2">
-        <Label className="text-2xl font-semibold text-custom-green">
-          どのような問題に遭遇しましたか？
-        </Label>
+        <Label className="text-2xl font-semibold text-custom-green">どのような問題に遭遇しましたか？</Label>
         <Select
           key={formData.troubleId}
           value={formData.troubleId ? formData.troubleId.toString() : ""}
@@ -246,9 +248,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
       {/* 月・年 */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-2xl font-semibold text-custom-green">
-            訪問時期
-          </Label>
+          <Label className="text-2xl font-semibold text-custom-green">訪問時期</Label>
           <Select
             key={formData.travelMonth}
             value={formData.travelMonth ? formData.travelMonth.toString() : ""}
@@ -264,7 +264,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
         </div>
 
         <div className="space-y-2">
-          <Label className="text-2xl font-semibold text-custom-green" >　</Label>
+          <Label className="text-2xl font-semibold text-custom-green">　</Label>
           <Select
             value={formData.travelYear ? formData.travelYear.toString() : ""}
             onValueChange={(value) => setFormData({ ...formData, travelYear: Number(value) })}
@@ -281,17 +281,13 @@ function PostForm({ troubleType, countries, cities }: Props) {
 
       {/* エディター */}
       <div className="space-y-2">
-        <Label className="text-2xl font-semibold text-custom-green">
-          経験したトラブルの詳細
-        </Label>
+        <Label className="text-2xl font-semibold text-custom-green">経験したトラブルの詳細</Label>
         <ReactQuill theme="snow" value={textValue} onChange={setValue} />
       </div>
 
       {/* タイトル */}
       <div className="space-y-2">
-        <Label className="text-2xl font-semibold text-custom-green">
-          タイトル
-        </Label>
+        <Label className="text-2xl font-semibold text-custom-green">タイトル</Label>
         <Input
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -301,17 +297,27 @@ function PostForm({ troubleType, countries, cities }: Props) {
 
       {/* 送信 */}
       <div className="mb-2">
-        <Button
-          type="submit"
-          className="w-full bg-gray-700 hover:bg-custom-green text-white mb-8"
-        >
+        <Button type="submit" className="w-full bg-gray-700 hover:bg-custom-green text-white mb-8">
           投稿する
         </Button>
-        <div className="space-y-2">
-        </div>
+        <div className="space-y-2"></div>
       </div>
+      {/* Confirmation Dialog */}
+      <Dialog open={isConfirmationOpen} onOpenChange={setIsConfirmationOpen}>
+        <DialogContent className="sm:max-w-[400px]　bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">投稿が完了しました</DialogTitle>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center">
+            <Link href="/">
+              <Button className="bg-gray-700 hover:bg-custom-green text-white">トップページに戻る</Button>
+            </Link>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </form>
-  );
+  )
 }
 
-export default PostForm;
+export default PostForm
+
