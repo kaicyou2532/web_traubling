@@ -110,6 +110,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
 
     const payload = {
       countryId: formData.countryId,
+      cityId: formData.cityId,
       troubleId: formData.troubleId,
       travelMonth: formData.travelMonth,
       travelYear: formData.travelYear,
