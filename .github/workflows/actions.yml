@@ -19,6 +19,8 @@ jobs:
           docker system prune -f
 
       - name: Build images with no cache
+        env: 
+          HUSKY: '0'
         run: docker compose build --no-cache 
 
       - name: Start container

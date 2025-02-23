@@ -4,8 +4,6 @@ WORKDIR /app
 
 COPY package*.json ./
 
-ENV HUSKY=0
-
 RUN npm install --legacy-peer-deps --verbose
 
 COPY . .
