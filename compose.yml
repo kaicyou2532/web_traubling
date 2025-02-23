@@ -1,6 +1,9 @@
 services:
   nextjs:
-    build: ./
+    build: 
+      context: ./
+      args:
+        HUSKY: "0"
     container_name: nextjs
     ports:
       - "3000:3000"
