@@ -1,12 +1,11 @@
 services:
   nextjs:
-    build: 
-      context: ./
-      args:
-        HUSKY: "0"
+    build: .
     container_name: nextjs
     ports:
       - "3000:3000"
+    env_file:
+      - /var/www/app_config/.env
 
   nginx:
     image: nginx:stable-alpine

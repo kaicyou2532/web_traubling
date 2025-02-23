@@ -1,8 +1,5 @@
 FROM node:latest
 
-ARG HUSKY
-ENV HUSKY=${HUSKY}
-
 WORKDIR /app
 
 COPY package*.json ./
