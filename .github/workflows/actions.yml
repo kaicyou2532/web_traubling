@@ -1,5 +1,4 @@
-name: Build and deploy
-
+name: self-hosted runner🚀
 on:
   push:
     branches:
@@ -8,26 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: [self-hosted, linux]
-
+    runs-on: self-hosted
     steps:
-      - name: Delete runnning container
-        run: docker compose down
-
-      - name: Delete unused image
-        run: docker image prune -a -f
-
-      - name: Delete unused container
-        run: docker container prune -a -f
-
-      - name: Checkout repository
-        run: actions/checkout@v3
-
-      # - name: Setup Docker buildx
-      #   uses: docker/setup-buildx-action@v2.2.1
-
-      - name: Build Docker image
-        run: docker compose build --no-cache --platform linux/amd64
-    
-      - name: Docker compose up
-        run: docker compose up -d
+      - uses: actions/checkout@v2
+      - run: echo self-hosted runner working🎉
