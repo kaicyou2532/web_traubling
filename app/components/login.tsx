@@ -22,13 +22,18 @@ export function AuthModal({ children }: Props) {
             トラブルを共有しよう！
           </h2>
           <div className="space-y-4">
-            <Button
-              variant="outline"
-              className="flex items-center gap-3 w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              <SiGoogle/>
+            <form action={async () => {
+              "use server"
+              await signIn("google")
+            }}>
+              <Button
+                variant="outline"
+                className="flex items-center gap-3 w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
+              >
+                <SiGoogle />
                 Googleアカウントを使う
-            </Button>
+              </Button>
+            </form>
             <form action={async () => {
               "use server"
               await signIn("discord")
@@ -37,7 +42,7 @@ export function AuthModal({ children }: Props) {
                 variant="outline"
                 className="flex items-center gap-3 w-full h-12 border-2 rounded-xl border-gray-200 hover:bg-gray-50 transition-colors"
               >
-                <SiDiscord/>
+                <SiDiscord />
                 Discordアカウントを使う
               </Button>
             </form>
