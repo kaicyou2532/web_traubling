@@ -19,7 +19,7 @@ jobs:
           docker system prune -f
 
       - name: Build images with no cache
-        run: docker compose build --no-cache
+        run: docker compose build --no-cache --network=host
 
       - name: Start container
         run: docker compose up -d
