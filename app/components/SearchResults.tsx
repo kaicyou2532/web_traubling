@@ -88,7 +88,7 @@ export default function SearchResults({ searchTerm }: SearchResultsProps) {
                     <span>{post.comments.length}</span>
                   </div>
                 </div>
-                <span className="text-sm text-gray-500">{post.user.name}</span>
+                <span className="text-sm text-[#007B63]">{post.user.name}</span>
               </div>
             </div>
           </div>
