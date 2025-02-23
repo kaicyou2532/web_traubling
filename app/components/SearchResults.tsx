@@ -65,7 +65,7 @@ export default function SearchResults({ searchTerm }: SearchResultsProps) {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold mb-4">検索結果: {filteredPosts.length}件</h2>
       {filteredPosts.map((post) => (
-        <Link href={`/reports/${post.id}`} key={post.id}>
+        <Link href={`/reports/${post.id}`} className="block" key={post.id}>
           <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
             <div className="p-6">
               <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
@@ -73,7 +73,7 @@ export default function SearchResults({ searchTerm }: SearchResultsProps) {
                 <span>{post.country?.jaName || "不明"}</span>
               </div>
               <h3 className="text-xl font-semibold mb-3 text-gray-800">{post.title}</h3>
-              <p className="text-gray-600 mb-4 line-clamp-3">{post.content}</p>
+              <div className="text-gray-600 mb-4 line-clamp-3" dangerouslySetInnerHTML={{ __html: post.content }} />
               <div className="flex flex-wrap gap-2 mb-4">
                 {post.tags.map((tag, index) => (
                   <span key={index} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
