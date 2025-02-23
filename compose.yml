@@ -2,6 +2,8 @@ services:
   nextjs:
     build: ./
     container_name: nextjs
+    networks:
+      - host
     ports:
       - "3000:3000"
 
