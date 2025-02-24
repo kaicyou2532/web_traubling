@@ -1,0 +1,33 @@
+name: Deploy Next.js to Debian
+
+on:
+  push:
+    branches:
+      - main  # main ブランチに push されたときに実行
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t next-app:latest .
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/next-app || (git clone https://github.com/YOUR-USERNAME/YOUR-REPO.git ~/next-app && cd ~/next-app)
+            git pull origin main
+            docker stop next-container || true
+            docker rm next-container || true
+            docker rmi next-app:latest || true
+            docker build -t next-app:latest .
+            docker run -d --name next-container -p 3000:3000 next-app:latest
