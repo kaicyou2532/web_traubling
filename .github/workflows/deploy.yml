@@ -1,0 +1,25 @@
+name: Deploy Next.js to Debian (Self-hosted Runner)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted  # Self-hosted Runner を指定
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker
+        run: |
+          sudo apt update
+          sudo apt install -y docker.io docker-compose
+
+      - name: Build and Deploy Next.js
+        run: |
+          cd ~/next-app  # Next.js アプリのディレクトリ
+          docker-compose down
+          docker-compose build
+          docker-compose up -d
