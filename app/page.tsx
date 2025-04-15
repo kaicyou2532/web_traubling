@@ -62,7 +62,7 @@ export default function Home() {
               isSearching ? "text-3xl md:text-4xl" : "text-4xl md:text-6xl"
             }`}
           >
-            旅のお悩み解決サイト
+            旅のお悩みを共有
           </h1>
           <SearchBar
             isCompact={isSearching}

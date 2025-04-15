@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import {
   GlobeAsiaAustraliaIcon,
@@ -14,7 +13,7 @@ import {
 
 const categories = [
   { id: "all", name: "全て", icon: HomeIcon },
-  { id: "region", name: "国・地域別", icon: GlobeAsiaAustraliaIcon },
+  { id: "region", name: "国・都市別", icon: GlobeAsiaAustraliaIcon },
   { id: "category", name: "分野別", icon: TagIcon },
   { id: "domestic", name: "日本国内", icon: MapIcon },
   { id: "overseas", name: "海外", icon: GlobeAmericasIcon },
@@ -24,24 +23,34 @@ const subCategories = ["交通", "宿泊", "食事", "観光", "買い物", "文
 
 interface SearchBarProps {
   isCompact?: boolean
-  onSearch?: (searchTerm: string, category: string, subCategory?: string) => void
+  onSearch?: (searchTerm: string, category: string, subCategory?: string, countryFilter?: string) => void
   selectedCategory: string
   onCategoryChange?: (category: string) => void
+  countryFilter?: string
+  onCountryChange?: (value: string) => void
 }
 
-export default function SearchBar({ isCompact = false, onSearch, selectedCategory, onCategoryChange }: SearchBarProps) {
+export default function SearchBar({
+  isCompact = false,
+  onSearch,
+  selectedCategory,
+  onCategoryChange,
+  countryFilter = "",
+  onCountryChange,
+}: SearchBarProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [currentCategory, setCurrentCategory] = useState(selectedCategory)
   const [selectedSubCategory, setSelectedSubCategory] = useState("")
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    onSearch?.(searchTerm, currentCategory, selectedSubCategory)
+    onSearch?.(searchTerm, currentCategory, selectedSubCategory, countryFilter)
   }
 
   return (
-    <div className={`w-full max-w-3xl mx-auto px-4 ${isCompact ? "py-4" : ""}`}>
+    <div className={`w-full max-w-4xl mx-auto px-4 ${isCompact ? "py-4" : ""}`}>
       <div className="flex flex-col gap-4">
+        {/* カテゴリーボタン */}
         <div className="flex justify-center">
           <div className="flex justify-between bg-white/20 backdrop-blur-sm rounded-full p-1 w-full">
             {categories.map((category) => (
@@ -50,9 +59,8 @@ export default function SearchBar({ isCompact = false, onSearch, selectedCategor
                 onClick={() => {
                   setCurrentCategory(category.id)
                   onCategoryChange?.(category.id)
-                  if (category.id !== "category") {
-                    setSelectedSubCategory("")
-                  }
+                  if (category.id !== "category") setSelectedSubCategory("")
+                  if (category.id !== "region") onCountryChange?.("")
                 }}
                 className={`flex items-center justify-center px-2 py-1 rounded-full gap-1 transition-colors flex-1 text-sm ${
                   currentCategory === category.id ? "bg-white text-gray-900" : "text-white hover:bg-white/10"
@@ -64,7 +72,10 @@ export default function SearchBar({ isCompact = false, onSearch, selectedCategor
             ))}
           </div>
         </div>
-        <form onSubmit={handleSearch} className="flex w-full">
+
+        {/* 検索フォーム */}
+        <form onSubmit={handleSearch} className="flex flex-wrap gap-2 w-full">
+          {/* フリーワード検索 */}
           <div className="relative flex-grow">
             <input
               type="text"
@@ -80,8 +91,23 @@ export default function SearchBar({ isCompact = false, onSearch, selectedCategor
               検索
             </button>
           </div>
+
+          {/* 都市名・国名の入力（regionカテゴリの時のみ） */}
+          {currentCategory === "region" && (
+            <div className="flex-grow">
+              <input
+                type="text"
+                placeholder="都市名や国名を入力"
+                value={countryFilter}
+                onChange={(e) => onCountryChange?.(e.target.value)}
+                className="w-full px-4 py-2 border-2 border-white bg-white bg-opacity-20 rounded-full text-white placeholder-gray-200 focus:outline-none focus:border-custom-green transition-colors"
+              />
+            </div>
+          )}
+
+          {/* サブカテゴリ選択（categoryカテゴリの時のみ） */}
           {currentCategory === "category" && (
-            <div className="relative ml-2">
+            <div className="relative">
               <select
                 value={selectedSubCategory}
                 onChange={(e) => setSelectedSubCategory(e.target.value)}
@@ -102,4 +128,3 @@ export default function SearchBar({ isCompact = false, onSearch, selectedCategor
     </div>
   )
 }
-

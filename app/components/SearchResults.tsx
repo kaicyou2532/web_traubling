@@ -17,20 +17,35 @@ interface Post {
 
 interface SearchResultsProps {
   searchTerm: string
+  category: string
+  subCategory?: string
+  countryFilter?: string
 }
 
-export default function SearchResults({ searchTerm }: SearchResultsProps) {
+const POSTS_PER_PAGE = 10
+
+export default function SearchResults({ searchTerm, category, subCategory, countryFilter }: SearchResultsProps) {
   const [posts, setPosts] = useState<Post[]>([])
-  const [filteredPosts, setFilteredPosts] = useState<Post[]>([])
+  const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     async function fetchPosts() {
       setIsLoading(true)
       try {
-        const res = await fetch("/api/search")
+        const params = new URLSearchParams({
+          term: searchTerm,
+          category,
+          subCategory: subCategory || "",
+          country: countryFilter || "",
+          page: currentPage.toString(),
+        })
+
+        const res = await fetch(`/api/search?${params.toString()}`)
         const data = await res.json()
-        setPosts(data)
+        setPosts(data.posts || [])
+        setTotalCount(data.totalCount || 0)
       } catch (error) {
         console.error("Error fetching posts:", error)
       } finally {
@@ -38,33 +53,22 @@ export default function SearchResults({ searchTerm }: SearchResultsProps) {
       }
     }
     fetchPosts()
-  }, [])
+  }, [searchTerm, category, subCategory, countryFilter, currentPage])
 
-  useEffect(() => {
-    const lowercasedSearchTerm = searchTerm.toLowerCase()
-    const filtered = posts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(lowercasedSearchTerm) ||
-        post.content.toLowerCase().includes(lowercasedSearchTerm) ||
-        post.tags.some((tag) => tag.toLowerCase().includes(lowercasedSearchTerm)) ||
-        post.country?.jaName.toLowerCase().includes(lowercasedSearchTerm) ||
-        post.country?.enName.toLowerCase().includes(lowercasedSearchTerm),
-    )
-    setFilteredPosts(filtered)
-  }, [searchTerm, posts])
+  const totalPages = Math.ceil(totalCount / POSTS_PER_PAGE)
 
   if (isLoading) {
     return <div className="h-[450px] flex items-center justify-center">読み込み中...</div>
   }
 
-  if (filteredPosts.length === 0) {
+  if (posts.length === 0) {
     return <div className="h-[450px] flex items-center justify-center">検索結果がありません。</div>
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold mb-4">検索結果: {filteredPosts.length}件</h2>
-      {filteredPosts.map((post) => (
+      <h2 className="text-2xl font-bold mb-4">検索結果: {totalCount}件</h2>
+      {posts.map((post) => (
         <Link href={`/reports/${post.id}`} className="block" key={post.id}>
           <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
             <div className="p-6">
@@ -82,11 +86,9 @@ export default function SearchResults({ searchTerm }: SearchResultsProps) {
                 ))}
               </div>
               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center text-gray-500">
-                    <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
-                    <span>{post.comments.length}</span>
-                  </div>
+                <div className="flex items-center text-gray-500">
+                  <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
+                  <span>{post.comments.length}</span>
                 </div>
                 <span className="text-sm text-[#007B63]">{post.user.name}</span>
               </div>
@@ -94,7 +96,22 @@ export default function SearchResults({ searchTerm }: SearchResultsProps) {
           </div>
         </Link>
       ))}
+
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6 space-x-2">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-3 py-1 rounded-full ${
+                currentPage === i + 1 ? "bg-custom-green text-white" : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
-

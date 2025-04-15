@@ -15,23 +15,27 @@ interface Post {
   isJapan: boolean
 }
 
+const POSTS_PER_PAGE = 10
+
 export default function RecentPosts({ category }: { category: string }) {
   const [posts, setPosts] = useState<Post[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [totalCount, setTotalCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     async function fetchPosts() {
       setIsLoading(true)
       try {
-        const res = await fetch("/api/search")
+        const params = new URLSearchParams({
+          term: "", // 空検索（全件取得）
+          category,
+          page: currentPage.toString(),
+        })
+        const res = await fetch(`/api/search?${params}`)
         const data = await res.json()
-        let filteredPosts = data
-        if (category === "domestic") {
-          filteredPosts = data.filter((post: Post) => post.isJapan)
-        } else if (category === "overseas") {
-          filteredPosts = data.filter((post: Post) => !post.isJapan)
-        }
-        setPosts(filteredPosts)
+        setPosts(data.posts || [])
+        setTotalCount(data.totalCount || 0)
       } catch (error) {
         console.error("Error fetching posts:", error)
       } finally {
@@ -39,15 +43,12 @@ export default function RecentPosts({ category }: { category: string }) {
       }
     }
     fetchPosts()
-  }, [category])
+  }, [category, currentPage])
 
-  if (isLoading) {
-    return <div className="text-center py-12">読み込み中...</div>
-  }
+  const totalPages = Math.ceil(totalCount / POSTS_PER_PAGE)
 
-  if (posts.length === 0) {
-    return <div className="text-center py-12">投稿がありません。</div>
-  }
+  if (isLoading) return <div className="text-center py-12">読み込み中...</div>
+  if (posts.length === 0) return <div className="text-center py-12">投稿がありません。</div>
 
   return (
     <div className="space-y-6 px-4 py-12">
@@ -64,17 +65,13 @@ export default function RecentPosts({ category }: { category: string }) {
               <div className="text-gray-600 mb-4 line-clamp-3" dangerouslySetInnerHTML={{ __html: post.content }} />
               <div className="flex flex-wrap gap-2 mb-4">
                 {post.tags.map((tag, index) => (
-                  <span key={index} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-                    {tag}
-                  </span>
+                  <span key={index} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">{tag}</span>
                 ))}
               </div>
               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center text-gray-500">
-                    <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
-                    <span>{post.comments.length}</span>
-                  </div>
+                <div className="flex items-center text-gray-500">
+                  <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
+                  <span>{post.comments.length}</span>
                 </div>
                 <span className="text-sm text-[#007B63]">{post.user.name}</span>
               </div>
@@ -82,7 +79,19 @@ export default function RecentPosts({ category }: { category: string }) {
           </div>
         </Link>
       ))}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6 space-x-2">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-3 py-1 rounded-full ${currentPage === i + 1 ? "bg-custom-green text-white" : "bg-gray-200 text-gray-700"}`}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
-
