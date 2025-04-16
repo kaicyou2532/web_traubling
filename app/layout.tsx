@@ -4,6 +4,7 @@ import { Inter, Noto_Sans_JP, Roboto } from "next/font/google"
 import type React from "react"
 import Header from "./components/Header"
 import Footer from "./components/Footer"
+import { SessionProvider } from "next-auth/react"
 
 const inter = Inter({ subsets: ["latin"] })
 const notoSansJP = Noto_Sans_JP({ subsets: ["latin"], weight: ["400", "500", "700"] })
@@ -22,11 +23,12 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={`${notoSansJP.className} ${roboto.className} font-medium antialiased`}>
-        <Header />
-        {children}
-        <Footer />
+        <SessionProvider>
+          <Header />
+          {children}
+          <Footer />
+        </SessionProvider>
       </body>
     </html>
   )
 }
-

@@ -1,43 +1,91 @@
+// import { NextRequest, NextResponse } from "next/server"
+// import { auth } from "@/auth"
+// import { prisma } from "@/lib/prisma"
+// import { getServerSession } from "next-auth/next"
+
+// export async function GET(req: NextRequest) {
+//     const { searchParams } = new URL(req.url)
+//     const postId = searchParams.get
+//     if (!postId) {
+//         return NextResponse.json({ error: 'postId is required' }, { status: 400 })
+//       }
+//     const comments = await prisma.comment.findMany({
+//         where: {postId: Number(postId)},
+//         include: {User: true},
+//         orderBy: {createAt: "asc"},
+//     })
+//     return NextResponse.json(comments)
+// }
+
+
+
+// const POST = async (req: NextRequest) => {
+//     const session = await getServerSession(authOptions)
+//     if (!session?.user?.Id) {
+//         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+//       }
+//     const body = await req.json()
+//     const{postId, content} = body
+//     if (!postId || !content) {
+//         return NextResponse.json({ error: 'invalid data' }, { status: 400 })
+//       }
+//     const comment = await prisma.comment.create({
+//         data: {
+//             content,
+//             postId: Number(postId),
+//         },
+//     })
+
+//     return NextResponse.json(post, { status: 201 })
+    
+// }
+
+// export { POST }
+
+// 修正版
+
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth"
+import { auth } from "@auth"
 import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth/next"
 
 export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url)
-    const postId = searchParams.get
-    if (!postId) {
-        return NextResponse.json({ error: 'postId is required' }, { status: 400 })
-      }
-    const comments = await prisma.comment.findMany({
-        where: {postId: Number(postId)},
-        include: {User: true},
-        orderBy: {createAt: "asc"},
-    })
-    return NextResponse.json(comments)
+  const { searchParams } = new URL(req.url)
+  const postId = searchParams.get("postId")
+
+  if (!postId) {
+    return NextResponse.json({ error: "postId is required" }, { status: 400 })
+  }
+
+  const comments = await prisma.comment.findMany({
+    where: { postId: Number(postId) },
+    include: { user: true },
+    orderBy: { createdAt: "asc" },
+  })
+
+  return NextResponse.json(comments)
 }
 
+export async function POST(req: NextRequest) {
+  const session = await auth()
 
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
-const POST = async (req: NextRequest) => {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.Id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-    const body = await req.json()
-    const{postId, content} = body
-    if (!postId || !content) {
-        return NextResponse.json({ error: 'invalid data' }, { status: 400 })
-      }
-    const comment = await prisma.comment.create({
-        data: {
-            content,
-            postId: Number(postId),
-        },
-    })
+  const body = await req.json()
+  const { postId, content } = body
 
-    return NextResponse.json(post, { status: 201 })
-    
+  if (!postId || !content) {
+    return NextResponse.json({ error: "Invalid data" }, { status: 400 })
+  }
+
+  const comment = await prisma.comment.create({
+    data: {
+      content,
+      postId: Number(postId),
+      userId: session.user.id,
+    },
+  })
+
+  return NextResponse.json(comment, { status: 201 })
 }
-
-export { POST }

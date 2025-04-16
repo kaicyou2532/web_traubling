@@ -27,7 +27,12 @@ export default function Home() {
 
   const renderContent = () => {
     if (isSearching) {
-      return <SearchResults searchTerm={searchTerm} />
+      return (
+        <SearchResults
+          searchTerm={searchTerm}
+          category={searchCategory}
+        />
+      )
     }
 
     switch (searchCategory) {
@@ -77,4 +82,3 @@ export default function Home() {
     </div>
   )
 }
-

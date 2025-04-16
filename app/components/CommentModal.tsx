@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -29,36 +30,56 @@ interface CommentModalProps {
 }
 
 export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
+  const { data: session } = useSession()
   const [newComment, setNewComment] = useState("")
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 1,
-      author: "佐藤太郎",
-      content: "そうなんですね！来週ロンドン行くので参考になります",
-    },
-    {
-      id: 2,
-      author: "ライリー・ジャックソン",
-      content: "私も同じような経験をしました",
-    },
-    {
-      id: 3,
-      author: "村田花子",
-      content: "それは大変でしたね",
-    },
-  ])
+  const [comments, setComments] = useState<Comment[]>([])
 
-  const handleSubmitComment = () => {
-    if (newComment.trim()) {
-      setComments([
-        ...comments,
-        {
-          id: comments.length + 1,
-          author: "ゲストユーザー",
-          content: newComment,
-        },
-      ])
-      setNewComment("")
+  useEffect(() => {
+    const fetchComments = async () => {
+      if (!issue) return
+      try {
+        const res = await fetch(`/api/comment?postId=${issue.id}`)
+        const data = await res.json()
+        setComments(
+          data.map((comment: any) => ({
+            id: comment.id,
+            author: comment.user?.name || "匿名ユーザー",
+            content: comment.content,
+          }))
+        )
+      } catch (error) {
+        console.error("コメント取得失敗:", error)
+      }
+    }
+
+    if (isOpen) fetchComments()
+  }, [isOpen, issue])
+
+  const handleSubmitComment = async () => {
+    if (!newComment.trim() || !issue || !session) return
+    try {
+      const res = await fetch("/api/comment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: issue.id, content: newComment }),
+      })
+
+      if (res.ok) {
+        const newPosted = await res.json()
+        setComments((prev) => [
+          ...prev,
+          {
+            id: newPosted.id,
+            author: session.user.name || "あなた",
+            content: newPosted.content,
+          },
+        ])
+        setNewComment("")
+      } else {
+        console.error("投稿失敗")
+      }
+    } catch (err) {
+      console.error("コメント送信エラー:", err)
     }
   }
 
@@ -102,16 +123,20 @@ export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
 
         <div className="p-6 border-t flex-shrink-0">
           <Textarea
-            placeholder="コメントを入力してください。"
+            placeholder={
+              session ? "コメントを入力してください。" : "ログインするとコメントできます"
+            }
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             className="mb-4"
+            disabled={!session}
           />
           <Button
             onClick={handleSubmitComment}
             className="w-full bg-gray-700 hover:bg-custom-green text-white"
+            disabled={!session}
           >
-            コメントを投稿する
+            {session ? "コメントを投稿する" : "ログインしてコメントする"}
           </Button>
         </div>
       </DialogContent>

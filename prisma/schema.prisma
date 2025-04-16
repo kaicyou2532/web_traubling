@@ -124,9 +124,11 @@ model Trouble {
 }
 
 model Comment {
-  id      Int    @id @default(autoincrement())
-  content String
-  postId  Int    @map("postId")
-  post    Post   @relation(fields: [postId], references: [id])
-  user    Int    
+  id        Int      @id @default(autoincrement())
+  content   String
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id])  // ✅ 追加
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())  
 }
