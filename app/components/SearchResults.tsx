@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { MapPinIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/solid"
-import Link from "next/link"
+import { CommentModal } from "./CommentModal" // ★ modal をインポート
 
 interface Post {
   id: number
@@ -29,6 +29,10 @@ export default function SearchResults({ searchTerm, category, subCategory, count
   const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
+
+  // ★ コメントモーダルの状態
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     async function fetchPosts() {
@@ -57,6 +61,18 @@ export default function SearchResults({ searchTerm, category, subCategory, count
 
   const totalPages = Math.ceil(totalCount / POSTS_PER_PAGE)
 
+  const handlePostClick = (post: Post) => {
+    setSelectedPost({
+      id: post.id,
+      title: post.title,
+      author: post.user.name,
+      content: post.content,
+      date: "2025-04-16", // ★仮で日付追加（必要に応じてpostから取る）
+      category,
+    })
+    setIsModalOpen(true)
+  }
+
   if (isLoading) {
     return <div className="h-[450px] flex items-center justify-center">読み込み中...</div>
   }
@@ -66,11 +82,15 @@ export default function SearchResults({ searchTerm, category, subCategory, count
   }
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold mb-4">検索結果: {totalCount}件</h2>
-      {posts.map((post) => (
-        <Link href={`/reports/${post.id}`} className="block" key={post.id}>
-          <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
+    <>
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold mb-4">検索結果: {totalCount}件</h2>
+        {posts.map((post) => (
+          <div
+            key={post.id}
+            onClick={() => handlePostClick(post)}
+            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
+          >
             <div className="p-6">
               <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                 <MapPinIcon className="h-4 w-4" />
@@ -94,24 +114,31 @@ export default function SearchResults({ searchTerm, category, subCategory, count
               </div>
             </div>
           </div>
-        </Link>
-      ))}
+        ))}
 
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-6 space-x-2">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 rounded-full ${
-                currentPage === i + 1 ? "bg-custom-green text-white" : "bg-gray-200 text-gray-700"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-6 space-x-2">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`px-3 py-1 rounded-full ${
+                  currentPage === i + 1 ? "bg-custom-green text-white" : "bg-gray-200 text-gray-700"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ★ モーダルを表示 */}
+      <CommentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        issue={selectedPost}
+      />
+    </>
   )
 }
