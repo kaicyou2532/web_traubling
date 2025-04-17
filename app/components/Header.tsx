@@ -18,6 +18,7 @@ import { auth, signOut } from "@/auth"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 export default async function Header() {
 
@@ -26,9 +27,14 @@ export default async function Header() {
   return (
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-extrabold text-custom-green">
-          Traubling
-        </Link>
+      <Link href="/" className="flex items-center h-[40px]">
+        <Image
+          src="/traubling_logo.png"
+          alt="Traubling ロゴ"
+          height={40}
+          width={160}
+        />
+      </Link>
 
         <div className="flex justify-center items-center gap-3">
           {!session && <AuthModal>
