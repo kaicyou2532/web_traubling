@@ -3,6 +3,8 @@
 import { useState, useRef } from "react"
 import { ChevronRightIcon } from "@heroicons/react/24/solid"
 import { ChatBubbleLeftIcon } from "@heroicons/react/24/solid"
+import { useRouter } from "next/navigation"
+
 
 const domesticDestinations = [
   {
@@ -86,10 +88,12 @@ const DestinationList = ({
   destinations,
   title,
   description,
+  link,
 }: {
   destinations: typeof domesticDestinations
   title: string
   description: string
+  link: string
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showScrollButton, setShowScrollButton] = useState(true)
@@ -101,6 +105,13 @@ const DestinationList = ({
     }
   }
 
+  const router = useRouter()
+  const handleNavigate = () => {
+  router.push(link)
+}
+
+
+
   return (
     <div className="relative mb-12">
       <h3 className="text-2xl font-semibold mb-4 text-gray-700">{title}</h3>
@@ -110,7 +121,9 @@ const DestinationList = ({
           <div className="p-8 h-full flex flex-col">
             <h3 className="text-2xl font-bold mb-4">人気のスポット</h3>
             <p className="text-gray-200 text-sm leading-relaxed">{description}</p>
-            <button className="mt-auto bg-white/20 text-white px-6 py-2 rounded-full hover:bg-white/30 transition-colors">
+            <button 
+            onClick={handleNavigate}
+            className="mt-auto bg-white/20 text-white px-6 py-2 rounded-full hover:bg-white/30 transition-colors">
               更に表示
             </button>
           </div>
@@ -163,11 +176,13 @@ export default function DestinationScroll() {
         destinations={domesticDestinations}
         title="国内の人気都市"
         description="国内の人気観光地で起きているトラブルや困りごとをチェックして、あなたの旅行に役立てましょう。"
+        link="/cities/japan"
       />
       <DestinationList
         destinations={internationalDestinations}
         title="海外の人気都市"
         description="海外の人気都市で実際に起きたトラブルの解決方法や対策をご紹介します。"
+        link="/cities/international"
       />
     </div>
   )
