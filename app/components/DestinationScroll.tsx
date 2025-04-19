@@ -4,6 +4,8 @@ import { useState, useRef } from "react"
 import { ChevronRightIcon } from "@heroicons/react/24/solid"
 import { ChatBubbleLeftIcon } from "@heroicons/react/24/solid"
 import { useRouter } from "next/navigation"
+import type { City } from "@prisma/client"
+import Link from "next/link"
 
 
 const domesticDestinations = [
@@ -89,11 +91,13 @@ const DestinationList = ({
   title,
   description,
   link,
+  cities
 }: {
   destinations: typeof domesticDestinations
   title: string
   description: string
-  link: string
+  link: string,
+  cities: City[]
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showScrollButton, setShowScrollButton] = useState(true)
@@ -107,8 +111,8 @@ const DestinationList = ({
 
   const router = useRouter()
   const handleNavigate = () => {
-  router.push(link)
-}
+    router.push(link)
+  }
 
 
 
@@ -121,43 +125,46 @@ const DestinationList = ({
           <div className="p-8 h-full flex flex-col">
             <h3 className="text-2xl font-bold mb-4">人気のスポット</h3>
             <p className="text-gray-200 text-sm leading-relaxed">{description}</p>
-            <button 
-            onClick={handleNavigate}
-            className="mt-auto bg-white/20 text-white px-6 py-2 rounded-full hover:bg-white/30 transition-colors">
+            <button
+              onClick={handleNavigate}
+              type="button"
+              className="mt-auto bg-white/20 text-white px-6 py-2 rounded-full hover:bg-white/30 transition-colors">
               更に表示
             </button>
           </div>
         </div>
 
         {/* Destination Cards */}
-        {destinations.map((destination) => (
-          <div
-            key={destination.id}
+        {cities.map((city) => (
+          <Link
+            href={`/cities/${city.id}`}
+            key={city.id}
             className="relative flex-none w-[300px] h-[400px] rounded-xl overflow-hidden snap-start bg-white shadow-md transition-transform duration-300 ease-in-out hover:-translate-y-2"
           >
             <img
-              src={destination.image || "/placeholder.svg"}
-              alt={destination.city}
+              src={city.photoUrl || "/placeholder.svg"}
+              alt={city.jaName}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 ease-in-out hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             <div className="absolute bottom-6 left-6 text-white">
-              <h3 className="text-2xl font-bold mb-2">{destination.city}</h3>
-              <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-2xl font-bold mb-2">{city.jaName}</h3>
+              {/* <div className="flex items-center gap-2 mb-2">
                 <ChatBubbleLeftIcon className="h-5 w-5" />
-                <span className="text-sm">{destination.troubles}件のお悩み</span>
-              </div>
-              <div className="flex items-center gap-2">
+                <span className="text-sm">{city.}件のお悩み</span>
+              </div> */}
+              {/* <div className="flex items-center gap-2">
                 <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm">{destination.country}</span>
-              </div>
+              </div> */}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
       {showScrollButton && (
         <button
           onClick={handleScroll}
+          type="button"
           className="absolute right-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
           aria-label="次の目的地を表示"
         >
@@ -168,17 +175,24 @@ const DestinationList = ({
   )
 }
 
-export default function DestinationScroll() {
+type Props = {
+  japanCities: City[]
+  otherCities: City[]
+}
+
+export default function DestinationScroll({ japanCities, otherCities }: Props) {
   return (
     <div className="container mx-auto px-4 py-12">
       <h2 className="text-3xl font-bold mb-8 text-gray-800">人気の観光地のお悩みを確認する</h2>
       <DestinationList
+        cities={japanCities}
         destinations={domesticDestinations}
         title="国内の人気都市"
         description="国内の人気観光地で起きているトラブルや困りごとをチェックして、あなたの旅行に役立てましょう。"
         link="/cities/japan"
       />
       <DestinationList
+        cities={otherCities}
         destinations={internationalDestinations}
         title="海外の人気都市"
         description="海外の人気都市で実際に起きたトラブルの解決方法や対策をご紹介します。"

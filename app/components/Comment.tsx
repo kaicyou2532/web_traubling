@@ -68,7 +68,7 @@ export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden flex flex-col p-0 bg-white">
         <div className="p-6 flex-shrink-0 border-b">
-          <button onClick={onClose} className="absolute right-4 top-4">
+          <button type="button" onClick={onClose} className="absolute right-4 top-4">
             <X className="h-4 w-4" />
           </button>
           <div className="flex items-center gap-3 mb-3">

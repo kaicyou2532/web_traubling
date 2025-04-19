@@ -1,8 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	images: {
-		domains: ["images.unsplash.com"], // MicroCMSで画像を使う場合、ホストを追加します
-	}
+  images: {
+    // ドメインリストは空でも OK
+    domains: [],
+
+    // すべての https ホスト／パスを許可
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',   // ワイルドカードで全ホスト
+        port: '',         // ポート指定なし
+        pathname: '/**',  // 任意のパスを許可
+      },
+    ],
+  },
 };
 
 export default nextConfig;

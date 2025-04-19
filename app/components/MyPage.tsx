@@ -101,6 +101,7 @@ export default function MyPage() {
   if (status === "loading") {
     return (
       <div className="flex justify-center items-center min-h-screen">
+        {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#007B63]"></div>
       </div>
     )
@@ -247,19 +248,19 @@ export default function MyPage() {
                     <h3 className="font-bold text-lg mb-2">{post.title}</h3>
                     <p className="text-gray-700 mb-3">{post.content}</p>
                     <div className="flex gap-2 mb-3">
-                      {post.tags.map((tag, index) => (
-                        <Badge key={`tag-${index}`} className="bg-[#007B63]/10 text-[#007B63] hover:bg-[#007B63]/20">
+                      {post.tags.map((tag) => (
+                        <Badge key={`tag-${tag}`} className="bg-[#007B63]/10 text-[#007B63] hover:bg-[#007B63]/20">
                           {tag}
                         </Badge>
                       ))}
                     </div>
                     <div className="flex justify-between items-center mt-4">
                       <div className="flex items-center gap-4">
-                        <button className="flex items-center gap-1 text-gray-500">
+                        <button type="button" className="flex items-center gap-1 text-gray-500">
                           <Heart className="h-4 w-4" />
                           <span className="text-sm">{post.likes}</span>
                         </button>
-                        <button className="flex items-center gap-1 text-gray-500">
+                        <button type="button" className="flex items-center gap-1 text-gray-500">
                           <MessageSquare className="h-4 w-4" />
                           <span className="text-sm">{post.comments}</span>
                         </button>

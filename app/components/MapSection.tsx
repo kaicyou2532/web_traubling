@@ -71,6 +71,7 @@ export default function MapSection() {
           {/* Japan map outline would go here */}
           {regions.map((region) => (
             <button
+            type="button"
               key={region.id}
               className={`absolute ${
                 region.position

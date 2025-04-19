@@ -27,18 +27,18 @@ export default async function Header() {
   return (
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-      <Link href="/" className="flex items-center h-[40px]">
-        <Image
-          src="/traubling_logo.png"
-          alt="Traubling ロゴ"
-          height={40}
-          width={160}
-        />
-      </Link>
+        <Link href="/" className="flex items-center h-[40px]">
+          <Image
+            src="/traubling_logo.png"
+            alt="Traubling ロゴ"
+            height={40}
+            width={160}
+          />
+        </Link>
 
         <div className="flex justify-center items-center gap-3">
           {!session && <AuthModal>
-            <button className="text-gray-700 hover:text-custom-green transition-colors">
+            <button type="button" className="text-gray-700 hover:text-custom-green transition-colors">
               <UserCircleIcon className="h-8 w-8" />
             </button>
           </AuthModal>}
@@ -67,8 +67,8 @@ export default async function Header() {
 
           <Sheet>
             <SheetTrigger asChild>
-              <button>
-                <Bars3Icon className="text-gray-700 w-8 h-8"/>
+              <button type="button">
+                <Bars3Icon className="text-gray-700 w-8 h-8" />
               </button>
             </SheetTrigger>
             <SheetContent className="bg-white">

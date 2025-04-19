@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 import { signIn } from "@/auth"
 import { SiDiscord, SiGoogle } from "@icons-pack/react-simple-icons"
 

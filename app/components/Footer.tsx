@@ -54,15 +54,15 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold text-lg mb-4">フォローする</h3>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="/" className="text-gray-400 hover:text-white transition-colors">
                 <span className="sr-only">X（旧Twitter）</span>
                 <SiX />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="/" className="text-gray-400 hover:text-white transition-colors">
                 <span className="sr-only">Facebook</span>
                 <SiFacebook />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="/" className="text-gray-400 hover:text-white transition-colors">
                 <span className="sr-only">Instagram</span>
                 <SiInstagram />
               </a>
