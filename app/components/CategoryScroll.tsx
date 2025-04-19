@@ -99,7 +99,7 @@ export default function CategoryScroll() {
               <p className="text-gray-200 text-sm leading-relaxed">
                 旅行中に起こりうる様々な分野のトラブルや困りごとをチェックして、あなたの旅をより快適に。
               </p>
-              <button className="mt-auto bg-white/20 text-white px-6 py-2 rounded-full hover:bg-white/30 transition-colors">
+              <button type="button" className="mt-auto bg-white/20 text-white px-6 py-2 rounded-full hover:bg-white/30 transition-colors">
                 更に表示
               </button>
             </div>
@@ -133,6 +133,7 @@ export default function CategoryScroll() {
 
         {showScrollButton && (
           <button
+            type="button"
             onClick={handleScroll}
             className="absolute right-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
             aria-label="次のカテゴリーを表示"

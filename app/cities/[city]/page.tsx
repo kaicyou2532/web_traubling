@@ -2,35 +2,57 @@ import Image from "next/image"
 import CommonIssues from "@/app/components/CommonIssues"
 import CitySpecificTroubles from "@/app/components/CitySpecificTroubles"
 import CityPrecautions from "@/app/components/CityPrecautions"
+import { prisma } from "@lib/prisma"
 
-export default function CityPage({ params }: { params: { city: string } }) {
+export default async function CityPage({ params }: { params: { city: string } }) {
   // 注: 実際の実装では、この情報はAPIやデータベースから取得します
-  const cityData = {
-    name: "ロンドン",
-    image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=2070&auto=format&fit=crop",
-    country: "イギリス",
+
+  const { city: id } = params
+
+  const city = await prisma.city.findUnique({
+    where: {
+      id: Number(id)
+    },
+    include: {
+      country: true,
+      posts: {
+        include: {
+          user: true,
+          comments: true,
+          trouble: true
+        }
+      }
+    }
+  })
+
+  const categories = await prisma.trouble.findMany()
+
+  if (!city) {
+    return <div>このページはありません。</div>
   }
+
+  const { jaName, country, posts } = city
 
   return (
     <div>
       <div className="relative h-[50vh] w-full">
         <Image
-          src={cityData.image || "/placeholder.svg"}
-          alt={cityData.name}
+          src={city.photoUrl || "/placeholder.svg"}
+          alt={city.jaName}
           layout="fill"
           objectFit="cover"
           className="brightness-75"
         />
         <div className="absolute bottom-8 left-8 text-white">
-          <h1 className="text-5xl font-bold mb-2">{cityData.name}</h1>
-          <p className="text-2xl">{cityData.country}</p>
+          <h1 className="text-5xl font-bold mb-2">{jaName}</h1>
+          <p className="text-2xl">{country.jaName}</p>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-12">
-        <CommonIssues city={cityData.name} />
-        <CitySpecificTroubles city={cityData.name} />
-        <CityPrecautions city={cityData.name} />
+        <CommonIssues city={jaName} posts={posts} categories={categories}/>
+        {/* <CitySpecificTroubles city={jaName} />
+        <CityPrecautions city={jaName} /> */}
       </div>
     </div>
   )

@@ -2,19 +2,28 @@ import DestinationScroll from "./DestinationScroll"
 import CategoryScroll from "./CategoryScroll"
 import UsefulTroubleReports from "./UsefulTroubleReports"
 import RecentPosts from "./RecentPosts"
+import type { City } from "@prisma/client"
 
-export default function AllContent() {
+type Props = {
+  japanCities: City[],
+  otherCities: City[]
+}
+
+export default function AllContent({japanCities, otherCities}: Props) {
   return (
     <div className="space-y-12">
       <section>
-        <DestinationScroll/>
+        <DestinationScroll 
+        japanCities={japanCities}
+        otherCities={otherCities}
+        />
       </section>
-      <section>
+      {/* <section>
         <CategoryScroll />
-      </section>
-      <section>
+      </section> */}
+      {/* <section>
         <UsefulTroubleReports category="all" />
-      </section>
+      </section> */}
       <section>
         <RecentPosts category="all" />
       </section>

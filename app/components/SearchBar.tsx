@@ -55,6 +55,7 @@ export default function SearchBar({
           <div className="flex justify-between bg-white/20 backdrop-blur-sm rounded-full p-1 w-full">
             {categories.map((category) => (
               <button
+                type="button"
                 key={category.id}
                 onClick={() => {
                   setCurrentCategory(category.id)
@@ -62,9 +63,8 @@ export default function SearchBar({
                   if (category.id !== "category") setSelectedSubCategory("")
                   if (category.id !== "region") onCountryChange?.("")
                 }}
-                className={`flex items-center justify-center px-2 py-1 rounded-full gap-1 transition-colors flex-1 text-sm ${
-                  currentCategory === category.id ? "bg-white text-gray-900" : "text-white hover:bg-white/10"
-                }`}
+                className={`flex items-center justify-center px-2 py-1 rounded-full gap-1 transition-colors flex-1 text-sm ${currentCategory === category.id ? "bg-white text-gray-900" : "text-white hover:bg-white/10"
+                  }`}
               >
                 <category.icon className="h-4 w-4" />
                 <span className="font-medium md:block hidden">{category.name}</span>

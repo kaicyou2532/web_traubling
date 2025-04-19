@@ -264,6 +264,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
         </div>
 
         <div className="space-y-2 w-[50%]">
+          {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
           <Label className="text-xl md:text-2xl font-semibold text-custom-green"></Label>
           <Select
             value={formData.travelYear ? formData.travelYear.toString() : ""}
@@ -300,6 +301,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
         <Button type="submit" className="w-full bg-gray-700 hover:bg-custom-green text-white mb-8">
           投稿する
         </Button>
+        {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
         <div className="space-y-2"></div>
       </div>
       {/* Confirmation Dialog */}

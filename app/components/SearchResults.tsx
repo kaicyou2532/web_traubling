@@ -120,11 +120,12 @@ export default function SearchResults({ searchTerm, category, subCategory, count
           <div className="flex justify-center mt-6 space-x-2">
             {Array.from({ length: totalPages }, (_, i) => (
               <button
+                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                 key={i}
+                type="button"
                 onClick={() => setCurrentPage(i + 1)}
-                className={`px-3 py-1 rounded-full ${
-                  currentPage === i + 1 ? "bg-custom-green text-white" : "bg-gray-200 text-gray-700"
-                }`}
+                className={`px-3 py-1 rounded-full ${currentPage === i + 1 ? "bg-custom-green text-white" : "bg-gray-200 text-gray-700"
+                  }`}
               >
                 {i + 1}
               </button>
