@@ -1,4 +1,4 @@
-name: Deploy Next.js to Debian
+name: Deploy　traubing to Debian
 
 on:
   push:
