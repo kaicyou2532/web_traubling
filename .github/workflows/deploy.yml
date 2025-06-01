@@ -27,7 +27,7 @@ jobs:
       # `next build` の成果物を直接使用しません。
       # プロジェクトの `dev` スクリプトの動作に応じて削除または調整してください。
       - name: Build Next.js app (Optional for dev mode)
-        run: npm run build
+        run: npm run dev
         env:
           # `next dev` は NODE_ENV=development を内部で設定することが多いですが、
           # ビルドステップ自体に意味がある場合（例: 型チェックなど）は残します。
