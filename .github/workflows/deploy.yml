@@ -1,25 +1,82 @@
-name: Deploy Next.js to Debian (Self-hosted Runner)
+name: Deploy Next.js to Debian
 
 on:
   push:
     branches:
-      - main
+      - main # mainブランチにプッシュされたときに実行
 
 jobs:
-  deploy:
-    runs-on: self-hosted  # Self-hosted Runner を指定
+  build-and-deploy:
+    runs-on: ubuntu-latest # GitHub Actions の実行環境
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Docker
-        run: |
-          sudo apt update
-          sudo apt install -y docker.io docker-compose
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # プロジェクトで使用しているNode.jsのバージョンを指定
+          cache: 'npm' # または 'yarn'
 
-      - name: Build and Deploy Next.js
+      - name: Install dependencies
+        run: npm ci # または yarn install --frozen-lockfile
+
+      - name: Run linters and tests # 必要に応じて追加
+        # run: |
+        #   npm run lint
+        #   npm run test
+
+      - name: Build Next.js app
+        run: npm run build
+        env:
+          # ビルド時に必要な環境変数をここに設定
+          # 例: NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NODE_ENV: production
+
+      - name: Prepare SSH key and known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          cd ~/next-app  # Next.js アプリのディレクトリ
-          docker-compose down
-          docker-compose build
-          docker-compose up -d
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy to Debian server
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          echo "🚀 Deploying to server..."
+          # ビルドされたファイル群をサーバーに転送
+          # .next, public, package.json, package-lock.json (または yarn.lock) などを転送
+          # node_modules はサーバー側で npm install --production を実行する方が良い場合もある
+          rsync -avz --delete \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            .next \
+            public \
+            package.json \
+            package-lock.json \ # yarnの場合はyarn.lock
+            next.config.js \ # その他必要な設定ファイル
+            ${{ env.SSH_USER }}@${{ env.SSH_HOST }}:${{ env.DEPLOY_PATH }}/
+
+          echo "📦 Installing production dependencies and restarting app on server..."
+          ssh ${{ env.SSH_USER }}@${{ env.SSH_HOST }} "cd ${{ env.DEPLOY_PATH }} && \
+            npm install --production && \
+            # アプリケーション名が 'my-nextjs-app' の場合
+            # PM2で起動するコマンド (例: pm2 start npm --name "my-nextjs-app" -- run start)
+            # もしくは、既に起動している場合は pm2 restart
+            pm2 restart my-nextjs-app || pm2 start npm --name \"my-nextjs-app\" -- run start"
+            # (注意) PM2の起動コマンドはプロジェクトのpackage.jsonのscriptsや運用に合わせて調整してください。
+            # 初回デプロイ時は pm2 start、以降は pm2 restart になります。
+            # `pm2 restart my-nextjs-app || pm2 start ...` のようにすることで、
+            # 存在しない場合はstart、存在する場合はrestartするようにできます。
+
+      - name: Clean up SSH key
+        if: always() # 成功・失敗に関わらず実行
+        run: |
+          rm -f ~/.ssh/id_rsa
