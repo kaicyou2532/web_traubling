@@ -19,16 +19,16 @@ interface Post {
   id: number
   title: string
   content: string
-  date: string
+  date: string // 例: "2025年4月15日"
   likes: number
   comments: number
-  tags: string[]
+  tags: string[] // 例: ["ホテル", "予約"]
 }
 
 // プロフィールの型定義
 interface Profile {
   name: string
-  username: string
+  username: string // 現在はemailで代用
   location: string
   website: string
   bio: string
@@ -42,45 +42,85 @@ export default function MyPage() {
 
   // プロフィール情報の状態
   const [profile, setProfile] = useState<Profile>({
-    name: "Traubling",
-    username: "@Traveler6381500413",
-    location: "日本",
+    name: "",
+    username: "",
+    location: "",
     website: "",
     bio: "",
     image: "",
   })
 
-  // セッション情報からプロフィール情報を更新
-  useEffect(() => {
-    if (session?.user) {
-      setProfile((prev) => ({
-        ...prev,
-        name: session.user.name || prev.name,
-        username: session.user.email || prev.username,
-        image: session.user.image || prev.image,
-      }))
-    }
-  }, [session])
-
-  // サンプルデータ
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      id: 1,
-      title: "ホテルの予約トラブル",
-      content: "予約したはずのホテルが満室と言われ、チェックインできませんでした。対応策と解決方法を共有します。",
-      date: "2025年4月15日",
-      likes: 12,
-      comments: 5,
-      tags: ["ホテル", "予約"],
-    },
-  ])
-
+  // 投稿のサンプルデータ（初期は空）
+  const [posts, setPosts] = useState<Post[]>([])
   const [currentPost, setCurrentPost] = useState<Post | null>(null)
 
+  // プロフィール情報の取得
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (status === "authenticated") {
+        try {
+          const response = await fetch("/api/user/profile")
+          if (!response.ok) {
+            throw new Error("プロフィールの取得に失敗しました。")
+          }
+          const data: Profile = await response.json()
+          setProfile(data)
+        } catch (error) {
+          console.error("プロフィールフェッチエラー:", error)
+          // エラー処理（例: ユーザーにメッセージを表示）
+        }
+      }
+    }
+
+    fetchProfile()
+  }, [status])
+
+  // 投稿の取得
+  useEffect(() => {
+    const fetchPosts = async () => {
+      // プロフィール情報がロードされ、ユーザーが認証されていれば投稿を取得
+      if (status === "authenticated" && profile.username) {
+        try {
+          const response = await fetch("/api/user/posts")
+          if (!response.ok) {
+            throw new Error("投稿の取得に失敗しました。")
+          }
+          const data: Post[] = await response.json()
+          setPosts(data)
+        } catch (error) {
+          console.error("投稿フェッチエラー:", error)
+          // エラー処理
+        }
+      }
+    }
+
+    fetchPosts()
+  }, [status, profile.username]) // profile.usernameに依存させることで、プロフィールロード後に投稿を取得
+
   // プロフィール更新処理
-  const handleProfileUpdate = () => {
-    // ここでAPIリクエストを送信するなどの処理を追加できます
-    setIsProfileDialogOpen(false)
+  const handleProfileUpdate = async () => {
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(profile),
+      })
+
+      if (!response.ok) {
+        throw new Error("プロフィールの更新に失敗しました。")
+      }
+
+      const updatedProfile: Profile = await response.json()
+      setProfile(updatedProfile)
+      setIsProfileDialogOpen(false)
+      // 成功メッセージ表示などの追加処理
+      alert("プロフィールが更新されました！")
+    } catch (error) {
+      console.error("プロフィール更新エラー:", error)
+      alert("プロフィールの更新に失敗しました。")
+    }
   }
 
   // 投稿編集処理
@@ -90,11 +130,31 @@ export default function MyPage() {
   }
 
   // 投稿保存処理
-  const handleSavePost = () => {
+  const handleSavePost = async () => {
     if (!currentPost) return
 
-    setPosts(posts.map((post) => (post.id === currentPost.id ? currentPost : post)))
-    setIsEditPostDialogOpen(false)
+    try {
+      const response = await fetch(`/api/post/${currentPost.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(currentPost),
+      })
+
+      if (!response.ok) {
+        throw new Error("投稿の更新に失敗しました。")
+      }
+
+      const updatedPost: Post = await response.json()
+      setPosts(posts.map((post) => (post.id === updatedPost.id ? updatedPost : post)))
+      setIsEditPostDialogOpen(false)
+      // 成功メッセージ表示などの追加処理
+      alert("投稿が更新されました！")
+    } catch (error) {
+      console.error("投稿保存エラー:", error)
+      alert("投稿の更新に失敗しました。")
+    }
   }
 
   // ローディング中の表示
@@ -103,6 +163,23 @@ export default function MyPage() {
       <div className="flex justify-center items-center min-h-screen">
         {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#007B63]"></div>
+      </div>
+    )
+  }
+
+  // 認証されていない場合の表示
+  if (status === "unauthenticated") {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen p-4 text-center">
+        <Lock className="h-24 w-24 text-gray-400 mb-6" />
+        <h2 className="text-2xl font-bold mb-3">ログインが必要です</h2>
+        <p className="text-gray-600 mb-6">このページを表示するにはログインしてください。</p>
+        <Button
+          onClick={() => (window.location.href = "/api/auth/signin")} // NextAuthのサインインページへリダイレクト
+          className="bg-[#007B63] hover:bg-[#006854] text-white"
+        >
+          ログイン
+        </Button>
       </div>
     )
   }
@@ -136,9 +213,10 @@ export default function MyPage() {
             <div className="flex-1">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-xl font-bold">{profile.name}</h2>
+                  <h2 className="text-xl font-bold">{profile.name || "名前未設定"}</h2>
+                  <p className="text-gray-600 text-sm">{profile.username}</p> {/* username (email) を表示 */}
                   <p className="text-gray-600 text-sm flex items-center gap-1 mt-1">
-                    <MapPin className="h-3 w-3" /> {profile.location}
+                    <MapPin className="h-3 w-3" /> {profile.location || "場所未設定"}
                   </p>
                   {profile.website && (
                     <p className="text-gray-600 text-sm flex items-center gap-1 mt-1">
@@ -169,11 +247,11 @@ export default function MyPage() {
                   <p className="text-sm text-gray-600">投稿</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-bold">0</p>
+                  <p className="font-bold">0</p> {/* バックエンドから取得する場合は変更 */}
                   <p className="text-sm text-gray-600">フォロワー</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-bold">0</p>
+                  <p className="font-bold">0</p> {/* バックエンドから取得する場合は変更 */}
                   <p className="text-sm text-gray-600">フォロー中</p>
                 </div>
               </div>
@@ -338,7 +416,8 @@ export default function MyPage() {
                   <Edit className="h-4 w-4" />
                   <span className="sr-only">編集</span>
                 </Button>
-                <div className="absolute inset-0 flex items-center justify-center text-white font-bold">
+                {/* 画像変更機能は未実装。ここにInput type="file"などを追加 */}
+                <div className="absolute inset-0 flex items-center justify-center text-white font-bold pointer-events-none">
                   <span className="bg-black bg-opacity-50 px-2 py-1 rounded text-xs">プロフィール写真を変更</span>
                 </div>
               </div>
@@ -353,13 +432,10 @@ export default function MyPage() {
               />
             </div>
 
+            {/* ユーザー名 (email) は変更不可とするか、別途変更機能を実装 */}
             <div className="grid gap-2">
-              <Label htmlFor="username">ユーザー名</Label>
-              <Input
-                id="username"
-                value={profile.username}
-                onChange={(e) => setProfile({ ...profile, username: e.target.value })}
-              />
+              <Label htmlFor="username">ユーザー名 (メールアドレス)</Label>
+              <Input id="username" value={profile.username} disabled className="bg-gray-100" />
             </div>
 
             <div className="grid gap-2">
