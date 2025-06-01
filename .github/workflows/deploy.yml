@@ -20,18 +20,15 @@ jobs:
           cache: 'npm' # yarnの場合は 'yarn'
 
       - name: Install dependencies
-        run: npm install --force # ここが変更点です
+        run: npm install --force
 
-      # 注意: `npm run dev` を使用する場合、このビルドステップは不要な場合があります。
-      # `next dev` は通常、独自のオンデマンドコンパイルを行うため、
-      # `next build` の成果物を直接使用しません。
-      # プロジェクトの `dev` スクリプトの動作に応じて削除または調整してください。
+      # 注意: `npm run dev` を最終的にサーバーで実行する場合、このビルドステップは
+      # `next dev` が独自のオンデマンドコンパイルを行うため、必須ではない可能性があります。
+      # プロジェクトの要件（例: ビルド時に型チェックやlintを実行したいなど）に応じてこのステップを残すか判断してください。
       - name: Build Next.js app (Optional for dev mode)
         run: npm run dev
         env:
-          # `next dev` は NODE_ENV=development を内部で設定することが多いですが、
-          # ビルドステップ自体に意味がある場合（例: 型チェックなど）は残します。
-          NODE_ENV: production
+          NODE_ENV: production # `npm run build` のための環境変数
 
       - name: Prepare SSH key and known_hosts
         env:
@@ -53,8 +50,6 @@ jobs:
           PM2_APP_NAME: my-nextjs-dev-app # PM2でのアプリケーション名を指定 (例: my-nextjs-dev-app)
         run: |
           echo "🚀 Deploying to server..."
-          # .nextフォルダは `next dev` では直接使われない可能性が高いですが、
-          # `build`ステップを残す場合は転送対象に含めています。
           # node_modules内のキャッシュは転送から除外します。
           rsync -avz -e "ssh -p ${{ env.SSH_PORT }}" --delete \
             --exclude '.git' \
