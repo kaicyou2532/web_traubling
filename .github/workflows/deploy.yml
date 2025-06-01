@@ -1,9 +1,9 @@
-name: Deploy　traubing to Debian
+name: Deploy Next.js to Debian (Dev Mode)
 
 on:
   push:
     branches:
-      - main
+      - main # mainブランチにプッシュされたときに実行 (適宜変更してください)
 
 jobs:
   build-and-deploy:
@@ -16,53 +16,57 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '20' # プロジェクトで使用しているNode.jsのバージョンを指定
+          cache: 'npm' # yarnの場合は 'yarn'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci # yarnの場合は yarn install --frozen-lockfile
 
-      - name: Build Next.js app
+      # 注意: `npm run dev` を使用する場合、このビルドステップは不要な場合があります。
+      # `next dev` は通常、独自のオンデマンドコンパイルを行うため、
+      # `next build` の成果物を直接使用しません。
+      # プロジェクトの `dev` スクリプトの動作に応じて削除または調整してください。
+      - name: Build Next.js app (Optional for dev mode)
         run: npm run build
         env:
+          # `next dev` は NODE_ENV=development を内部で設定することが多いですが、
+          # ビルドステップ自体に意味がある場合（例: 型チェックなど）は残します。
           NODE_ENV: production
 
       - name: Prepare SSH key and known_hosts
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }} # ポートを環境変数として追加
+          SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          # ssh-keyscan でポートを指定
           ssh-keyscan -p $SSH_PORT -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      - name: Deploy to Debian server
+      - name: Deploy to Debian server and run in dev mode
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PORT: ${{ secrets.SSH_PORT }} # ポートを環境変数として追加
+          SSH_PORT: ${{ secrets.SSH_PORT }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          PM2_APP_NAME: my-nextjs-dev-app # PM2でのアプリケーション名を指定 (例: my-nextjs-dev-app)
         run: |
           echo "🚀 Deploying to server..."
-          # rsync でSSHポートを指定 (-e オプションを使用)
+          # .nextフォルダは `next dev` では直接使われない可能性が高いですが、
+          # `build`ステップを残す場合は転送対象に含めています。
           rsync -avz -e "ssh -p ${{ env.SSH_PORT }}" --delete \
             --exclude '.git' \
-            --exclude 'node_modules' \
-            .next \
-            public \
-            package.json \
-            package-lock.json \
-            next.config.js \
+            --exclude 'node_modules/.cache' \ # node_modules内のキャッシュを除外
+            . \ # プロジェクトの全ファイルを転送 (node_modulesはサーバーでインストール)
             ${{ env.SSH_USER }}@${{ env.SSH_HOST }}:${{ env.DEPLOY_PATH }}/
 
-          echo "📦 Installing production dependencies and restarting app on server..."
-          # ssh コマンドでポートを指定
+          echo "📦 Installing dependencies and restarting app in dev mode on server..."
           ssh -p ${{ env.SSH_PORT }} ${{ env.SSH_USER }}@${{ env.SSH_HOST }} "cd ${{ env.DEPLOY_PATH }} && \
-            npm install --production && \
-            pm2 restart my-nextjs-app || pm2 start npm --name \"my-nextjs-app\" -- run start"
+            npm install && \ # devDependenciesも必要になるため --production を削除
+            pm2 restart ${{ env.PM2_APP_NAME }} || pm2 start npm --name \"${{ env.PM2_APP_NAME }}\" -- run dev"
+            # (注意) package.jsonに `dev` スクリプトが定義されていることを確認してください。
+            # 例: "dev": "next dev" や "dev": "next dev -p 3001" など
 
       - name: Clean up SSH key
         if: always()
