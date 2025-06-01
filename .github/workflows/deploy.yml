@@ -20,7 +20,7 @@ jobs:
           cache: 'npm' # yarnの場合は 'yarn'
 
       - name: Install dependencies
-        run: npm ci # yarnの場合は yarn install --frozen-lockfile
+        run: npm install --force # ここが変更点です
 
       # 注意: `npm run dev` を使用する場合、このビルドステップは不要な場合があります。
       # `next dev` は通常、独自のオンデマンドコンパイルを行うため、
@@ -55,15 +55,16 @@ jobs:
           echo "🚀 Deploying to server..."
           # .nextフォルダは `next dev` では直接使われない可能性が高いですが、
           # `build`ステップを残す場合は転送対象に含めています。
+          # node_modules内のキャッシュは転送から除外します。
           rsync -avz -e "ssh -p ${{ env.SSH_PORT }}" --delete \
             --exclude '.git' \
-            --exclude 'node_modules/.cache' \ # node_modules内のキャッシュを除外
+            --exclude 'node_modules/.cache' \
             . \ # プロジェクトの全ファイルを転送 (node_modulesはサーバーでインストール)
             ${{ env.SSH_USER }}@${{ env.SSH_HOST }}:${{ env.DEPLOY_PATH }}/
 
           echo "📦 Installing dependencies and restarting app in dev mode on server..."
           ssh -p ${{ env.SSH_PORT }} ${{ env.SSH_USER }}@${{ env.SSH_HOST }} "cd ${{ env.DEPLOY_PATH }} && \
-            npm install && \ # devDependenciesも必要になるため --production を削除
+            npm install && \ # devDependenciesも必要になるため --production は付けません
             pm2 restart ${{ env.PM2_APP_NAME }} || pm2 start npm --name \"${{ env.PM2_APP_NAME }}\" -- run dev"
             # (注意) package.jsonに `dev` スクリプトが定義されていることを確認してください。
             # 例: "dev": "next dev" や "dev": "next dev -p 3001" など
