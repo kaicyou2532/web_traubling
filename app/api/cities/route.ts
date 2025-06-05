@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type City, type Country } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -28,7 +28,7 @@ export async function GET() {
     });
 
 
-    const groupedData = cities.reduce((acc: GroupedData, city) => {
+    const groupedData = cities.reduce((acc: GroupedData, city: City & { country: Country }) => {
       const countryId = city.countryId;
       if (!acc[countryId]) {
         acc[countryId] = {

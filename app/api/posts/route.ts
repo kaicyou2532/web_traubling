@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { PrismaClient } from "@prisma/client"
+
+interface PostWithRelations {
+  id: number
+  title: string
+  content: string
+  createdAt: Date
+  likeCount: number
+  comments: { id: number }[]
+  trouble: { jaName: string }
+}
 import { authOptions } from "@/app/api/auth/[...nextauth]/route" // authOptionsのパスを適宜修正してください
 
 const prisma = new PrismaClient()
@@ -50,7 +60,7 @@ export async function GET() {
     })
 
     // `mypage.tsx` の Post 型に合わせてデータを整形します。
-    const formattedPosts = posts.map((post) => ({
+    const formattedPosts = posts.map((post: PostWithRelations) => ({
       id: post.id,
       title: post.title,
       content: post.content,
