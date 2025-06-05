@@ -41,10 +41,10 @@ export default function InternationalCitiesPage() {
   }, [])
 
   const filteredCountries = countries
-    .map((country) => ({
+    .map((country: Country) => ({
       ...country,
       cities: country.cities.filter(
-        (city) =>
+        (city: City) =>
           city.jaName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           country.jaName.toLowerCase().includes(searchTerm.toLowerCase()),
       ),
@@ -72,7 +72,7 @@ export default function InternationalCitiesPage() {
             type="text"
             placeholder="国名または都市名で検索..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-custom-green pl-12"
           />
           <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" />
@@ -81,11 +81,11 @@ export default function InternationalCitiesPage() {
         {filteredCountries.length === 0 ? (
           <p className="text-center text-gray-500">データがありません</p>
         ) : (
-          filteredCountries.map((country) => (
+          filteredCountries.map((country: Country) => (
             <div key={country.id} className="mb-12">
               <h2 className="text-3xl font-bold mb-6 text-gray-800">{country.jaName}</h2>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {country.cities.map((city) => (
+                  {country.cities.map((city: City) => (
                   <Link href={`/cities/${city.id}`} key={city.id}>
                     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer">
                       <div className="relative h-48">
@@ -93,9 +93,9 @@ export default function InternationalCitiesPage() {
                           src={city.Photourl}
                           alt={city.jaName}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = HEADER_IMAGE_URL // ✅ エラー時にヘッダー画像を代替として表示
-                          }}
+                            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                              (e.target as HTMLImageElement).src = HEADER_IMAGE_URL // ✅ エラー時にヘッダー画像を代替として表示
+                            }}
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-40" />
                         <div className="absolute bottom-4 left-4 text-white">

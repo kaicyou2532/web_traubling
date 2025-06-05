@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
+interface SearchPost {
+  id: number
+  title: string
+  content: string
+  country: { id: number; jaName: string; enName: string } | null
+  user: { name: string } | null
+  comments: { id: number }[]
+  trouble: { jaName: string | null; enName: string | null } | null
+}
+
 const prisma = new PrismaClient();
 const PAGE_SIZE = 10;
 
@@ -62,7 +72,7 @@ export async function GET(req: NextRequest) {
       prisma.post.count({ where }),
     ]);
 
-    const formattedPosts = posts.map((post) => ({
+    const formattedPosts = posts.map((post: SearchPost) => ({
       id: post.id,
       title: post.title,
       content: post.content,
