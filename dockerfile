@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3000
 
 # 6. デフォルト起動コマンド（docker-compose.yml と合わせて yarn dev）
-CMD ["npm", "dev", "dev"]
+CMD ["npm", "run", "dev"]
