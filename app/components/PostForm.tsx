@@ -15,11 +15,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import Link from "next/link"
 import dynamic from "next/dynamic"
 
-// Props の定義
+type City = {
+  id: number
+  jaName: string
+  countryId: number
+}
+
 type Props = {
   troubleType: Trouble[]
   countries: Country[]
-  cities: Country[]
+  cities: City[]
 }
 
 // フォームで管理したいデータの型
@@ -88,7 +93,13 @@ function PostForm({ troubleType, countries, cities }: Props) {
   )
 
   // 検索ワードに合致する都市
-  const filteredCities = cities.filter((city) => city.jaName.toLowerCase().includes(searchCityTerm.toLowerCase()))
+  // 選択された国に紐づく都市 ＋ 都市検索ワードで絞り込み
+const filteredCities = cities.filter(
+  (city) =>
+    city.countryId === formData.countryId &&
+    city.jaName.toLowerCase().includes(searchCityTerm.toLowerCase())
+)
+
 
   // フォーム送信時
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -170,15 +181,20 @@ function PostForm({ troubleType, countries, cities }: Props) {
                   className="w-full"
                 />
               </div>
-              {filteredCountries.map((country) => (
-                <SelectItem
-                  key={country.id}
-                  value={country.id.toString()}
-                  className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
-                >
-                  {country.jaName}
-                </SelectItem>
-              ))}
+
+              {filteredCountries.length === 0 && searchTerm !== "" ? (
+                <div className="p-4 text-gray-500 text-sm">国が見つかりません</div>
+              ) : (
+                filteredCountries.map((country) => (
+                  <SelectItem
+                    key={country.id}
+                    value={country.id.toString()}
+                    className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
+                  >
+                    {country.jaName}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -197,24 +213,30 @@ function PostForm({ troubleType, countries, cities }: Props) {
             </SelectTrigger>
 
             <SelectContent className="bg-white">
-              <div className="sticky top-0 z-10 p-2 bg-white">
-                <Input
-                  placeholder="Search cities..."
-                  value={searchCityTerm}
-                  onChange={(e) => setSearchCityTerm(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              {filteredCities.map((city) => (
-                <SelectItem
-                  key={city.id}
-                  value={city.id.toString()}
-                  className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
-                >
-                  {city.jaName}
-                </SelectItem>
-              ))}
-            </SelectContent>
+                <div className="sticky top-0 z-10 p-2 bg-white">
+                  <Input
+                    placeholder="Search cities..."
+                    value={searchCityTerm}
+                    onChange={(e) => setSearchCityTerm(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+
+                {filteredCities.length === 0 && searchCityTerm !== "" ? (
+                  <div className="p-4 text-gray-500 text-sm">都市が見つかりません</div>
+                ) : (
+                  filteredCities.map((city) => (
+                    <SelectItem
+                      key={city.id}
+                      value={city.id.toString()}
+                      className="data-[highlighted]:bg-gray-200 data-[state=checked]:bg-gray-300 cursor-pointer"
+                    >
+                      {city.jaName}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+
           </Select>
         </div>
       </div>
