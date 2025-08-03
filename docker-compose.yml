@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # データベース（PostgreSQL）
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER:     appuser
+      POSTGRES_PASSWORD: secretpass
+      POSTGRES_DB:       appdb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  # Go バックエンド
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    # ローカル開発用にバイナリを直接実行
+    command: ["./server"]
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
+
+  # Next.js フロントエンド
+  frontend:
+    build:
+      context: /
+      dockerfile: Dockerfile
+    restart: always
+    command: npm run dev
+    # volumes:
+    #   - ./frontend:/app
+    #   - /app/node_modules
+    # environment:
+    #   NEXT_PUBLIC_API_URL: http://backend:8080
+    # ports:
+    #   - '3000:3000'
+    # depends_on:
+    #   - backend
+
+volumes:
+  db_data:
