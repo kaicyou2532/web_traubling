@@ -34,10 +34,15 @@ services:
   # Next.js フロントエンド
   frontend:
     build:
-      context: ./
-      dockerfile: Dockerfile
+      context: .             # プロジェクトルートをコンテキストに
+      dockerfile: Dockerfile # ルート直下の Dockerfile を指定
     restart: always
-    command: npm run dev
+    command: npm run dev     # npm に置き換え
+    volumes:
+      - ./:/app
+      - /app/node_modules   # ホスト側 node_modules 上書きを防止
+    ports:
+      - '3000:3000'
     # volumes:
     #   - ./frontend:/app
     #   - /app/node_modules
