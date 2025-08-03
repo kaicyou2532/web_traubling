@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { ChevronRightIcon } from "@heroicons/react/24/solid"
+import { ChevronLeftIcon } from "@heroicons/react/24/solid"
 import { ChatBubbleLeftIcon } from "@heroicons/react/24/solid"
 import { useRouter } from "next/navigation"
 import type { City } from "@prisma/client"
@@ -100,21 +101,56 @@ const DestinationList = ({
   cities: City[]
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [showScrollButton, setShowScrollButton] = useState(true)
+  const [showLeftButton, setShowLeftButton] = useState(false);
+  const [showRightButton, setShowRightButton] = useState(false);
 
-  const handleScroll = () => {
+  /*const handleScroll = () => {
     if (scrollRef.current) {
       const scrollAmount = scrollRef.current.offsetWidth
       scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" })
     }
-  }
+  };*/
 
   const router = useRouter()
   const handleNavigate = () => {
     router.push(link)
-  }
+  };
 
+  const checkScrollButtons = useCallback(() => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
+      setShowLeftButton(scrollLeft > 0)
+      setShowRightButton(Math.ceil(scrollLeft) < scrollWidth - clientWidth)
+    }
+  }, []);
 
+  useEffect(() => {
+    const scrollContainer = scrollRef.current
+    if (scrollContainer) {
+      checkScrollButtons()
+      scrollContainer.addEventListener("scroll", checkScrollButtons)
+      window.addEventListener("resize", checkScrollButtons)
+    }
+  
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("scroll", checkScrollButtons)
+        window.removeEventListener("resize", checkScrollButtons)
+      }
+    }
+  }, [checkScrollButtons]) 
+  
+  // スクロールハンドラ
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      // カード一枚分 + マージン分スクロール
+      const scrollAmount = 300 + 16;
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   return (
     <div className="relative mb-12">
@@ -161,11 +197,24 @@ const DestinationList = ({
         ))}
       </div>
 
-      {showScrollButton && (
+       {/* Left Scroll Button */}
+       {showLeftButton && (
         <button
-          onClick={handleScroll}
+          onClick={() => handleScroll('left')}
           type="button"
-          className="absolute right-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-all z-10"
+          aria-label="前の目的地を表示"
+        >
+          <ChevronLeftIcon className="h-6 w-6 text-gray-600" />
+        </button>
+      )}
+
+      {/* Right Scroll Button */}
+      {showRightButton && (
+        <button
+          onClick={() => handleScroll('right')}
+          type="button"
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-all z-10"
           aria-label="次の目的地を表示"
         >
           <ChevronRightIcon className="h-6 w-6 text-gray-600" />
