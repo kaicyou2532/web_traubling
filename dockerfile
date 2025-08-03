@@ -1,45 +1,20 @@
-FROM node:latest
+# frontend/Dockerfile
 
+# 1. ベースイメージ（Node.js LTS版）
+FROM node:lts-alpine
+
+# 2. 作業ディレクトリを作成＆移動
 WORKDIR /app
 
-COPY package*.json ./
+# 3. 依存パッケージを先にインストール（レイヤーキャッシュ効かせる）
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 
-RUN npm install --legacy-peer-deps --verbose
-
+# 4. ソースコードをコピー
 COPY . .
 
-RUN npx prisma generate
-
-RUN npm run build
-
+# 5. Next.js のホットリロード開発サーバー用ポートを開放
 EXPOSE 3000
 
-CMD ["npm", "start"]
-FROM node:18-alpine AS builder
-WORKDIR /app
-
-# 依存関係をインストール
-COPY package.json package-lock.json ./
-RUN npm install
-
-# アプリをビルド
-COPY . .
-RUN npm run build
-
-# ランタイムステージ
-FROM node:18-alpine
-WORKDIR /app
-
-# ビルド済みファイルをコピー
-COPY --from=builder /app/package.json /app/package-lock.json ./
-COPY --from=builder /app/.next /app/.next
-COPY --from=builder /app/public /app/public
-COPY --from=builder /app/node_modules /app/node_modules
-
-# 環境変数を読み込む
-ENV NODE_ENV=production
-EXPOSE 3000
-
-# Next.js のサーバーを起動
-CMD ["npm", "start"]
-
+# 6. デフォルト起動コマンド（docker-compose.yml と合わせて yarn dev）
+CMD ["npm", "dev", "dev"]
