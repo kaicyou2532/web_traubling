@@ -1,44 +1,51 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import { useSession } from "next-auth/react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { MapPin, Edit, Lock, Heart, MessageSquare, Globe } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { MapPin, Edit, Lock, Heart, MessageSquare, Globe } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from "next/link";
 
 // 投稿の型定義
 interface Post {
-  id: number
-  title: string
-  content: string
-  date: string // 例: "2025年4月15日"
-  likes: number
-  comments: number
-  tags: string[] // 例: ["ホテル", "予約"]
+  id: number;
+  title: string;
+  content: string;
+  date: string; // 例: "2025年4月15日"
+  likes: number;
+  comments: number;
+  tags: string[]; // 例: ["ホテル", "予約"]
 }
 
 // プロフィールの型定義
 interface Profile {
-  name: string
-  username: string // 現在はemailで代用
-  location: string
-  website: string
-  bio: string
-  image?: string
+  name: string;
+  username: string; // 現在はemailで代用
+  location: string;
+  website: string;
+  bio: string;
+  image?: string;
 }
 
 export default function MyPage() {
-  const { data: session, status } = useSession()
-  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false)
-  const [isEditPostDialogOpen, setIsEditPostDialogOpen] = useState(false)
+  const { data: session, status } = useSession();
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+  const [isEditPostDialogOpen, setIsEditPostDialogOpen] = useState(false);
 
   // プロフィール情報の状態
   const [profile, setProfile] = useState<Profile>({
@@ -48,32 +55,58 @@ export default function MyPage() {
     website: "",
     bio: "",
     image: "",
-  })
+  });
 
   // 投稿のサンプルデータ（初期は空）
-  const [posts, setPosts] = useState<Post[]>([])
-  const [currentPost, setCurrentPost] = useState<Post | null>(null)
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [currentPost, setCurrentPost] = useState<Post | null>(null);
 
   // プロフィール情報の取得
   useEffect(() => {
     const fetchProfile = async () => {
-      if (status === "authenticated") {
+      // セッション情報があり、認証済みの場合
+      if (status === "authenticated" && session?.user) {
         try {
-          const response = await fetch("/api/user/profile")
-          if (!response.ok) {
-            throw new Error("プロフィールの取得に失敗しました。")
-          }
-          const data: Profile = await response.json()
-          setProfile(data)
+          // まずAPIから永続化されたプロフィール情報を取得
+          const response = await fetch("/api/user/profile");
+
+          // APIから取得したプロフィールデータ（なければ空のオブジェクト）
+          const dbProfile: Partial<Profile> = response.ok
+            ? await response.json()
+            : {};
+
+          // セッション情報とDBの情報をマージして最終的なプロフィールを作成
+          // DBに値があればそれを優先し、なければセッション情報でフォールバックする
+          const mergedProfile: Profile = {
+            name: dbProfile.name || session.user.name || "名前未設定",
+            // usernameは通常emailで、変更不可なのでセッションのものを正とする
+            username: session.user.email || "",
+            location: dbProfile.location || "",
+            website: dbProfile.website || "",
+            bio: dbProfile.bio || "",
+            image: dbProfile.image || session.user.image || "",
+          };
+
+          setProfile(mergedProfile);
         } catch (error) {
-          console.error("プロフィールフェッチエラー:", error)
-          // エラー処理（例: ユーザーにメッセージを表示）
+          console.error("プロフィールフェッチエラー:", error);
+          // エラーが発生した場合でも、セッション情報から基本的なプロフィールを設定
+          if (session.user) {
+            setProfile({
+              name: session.user.name || "名前未設定",
+              username: session.user.email || "",
+              location: "",
+              website: "",
+              bio: "",
+              image: session.user.image || "",
+            });
+          }
         }
       }
-    }
+    };
 
-    fetchProfile()
-  }, [status])
+    fetchProfile();
+  }, [status, session]);
 
   // 投稿の取得
   useEffect(() => {
@@ -81,21 +114,21 @@ export default function MyPage() {
       // プロフィール情報がロードされ、ユーザーが認証されていれば投稿を取得
       if (status === "authenticated" && profile.username) {
         try {
-          const response = await fetch("/api/user/posts")
+          const response = await fetch("/api/user/posts");
           if (!response.ok) {
-            throw new Error("投稿の取得に失敗しました。")
+            throw new Error("投稿の取得に失敗しました。");
           }
-          const data: Post[] = await response.json()
-          setPosts(data)
+          const data: Post[] = await response.json();
+          setPosts(data);
         } catch (error) {
-          console.error("投稿フェッチエラー:", error)
+          console.error("投稿フェッチエラー:", error);
           // エラー処理
         }
       }
-    }
+    };
 
-    fetchPosts()
-  }, [status, profile.username]) // profile.usernameに依存させることで、プロフィールロード後に投稿を取得
+    fetchPosts();
+  }, [status, profile.username]); // profile.usernameに依存させることで、プロフィールロード後に投稿を取得
 
   // プロフィール更新処理
   const handleProfileUpdate = async () => {
@@ -106,32 +139,32 @@ export default function MyPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(profile),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("プロフィールの更新に失敗しました。")
+        throw new Error("プロフィールの更新に失敗しました。");
       }
 
-      const updatedProfile: Profile = await response.json()
-      setProfile(updatedProfile)
-      setIsProfileDialogOpen(false)
+      const updatedProfile: Profile = await response.json();
+      setProfile(updatedProfile);
+      setIsProfileDialogOpen(false);
       // 成功メッセージ表示などの追加処理
-      alert("プロフィールが更新されました！")
+      alert("プロフィールが更新されました！");
     } catch (error) {
-      console.error("プロフィール更新エラー:", error)
-      alert("プロフィールの更新に失敗しました。")
+      console.error("プロフィール更新エラー:", error);
+      alert("プロフィールの更新に失敗しました。");
     }
-  }
+  };
 
   // 投稿編集処理
   const handleEditPost = (post: Post) => {
-    setCurrentPost(post)
-    setIsEditPostDialogOpen(true)
-  }
+    setCurrentPost(post);
+    setIsEditPostDialogOpen(true);
+  };
 
   // 投稿保存処理
   const handleSavePost = async () => {
-    if (!currentPost) return
+    if (!currentPost) return;
 
     try {
       const response = await fetch(`/api/post/${currentPost.id}`, {
@@ -140,22 +173,24 @@ export default function MyPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(currentPost),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("投稿の更新に失敗しました。")
+        throw new Error("投稿の更新に失敗しました。");
       }
 
-      const updatedPost: Post = await response.json()
-      setPosts(posts.map((post) => (post.id === updatedPost.id ? updatedPost : post)))
-      setIsEditPostDialogOpen(false)
+      const updatedPost: Post = await response.json();
+      setPosts(
+        posts.map((post) => (post.id === updatedPost.id ? updatedPost : post))
+      );
+      setIsEditPostDialogOpen(false);
       // 成功メッセージ表示などの追加処理
-      alert("投稿が更新されました！")
+      alert("投稿が更新されました！");
     } catch (error) {
-      console.error("投稿保存エラー:", error)
-      alert("投稿の更新に失敗しました。")
+      console.error("投稿保存エラー:", error);
+      alert("投稿の更新に失敗しました。");
     }
-  }
+  };
 
   // ローディング中の表示
   if (status === "loading") {
@@ -164,7 +199,7 @@ export default function MyPage() {
         {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#007B63]"></div>
       </div>
-    )
+    );
   }
 
   // 認証されていない場合の表示
@@ -173,15 +208,18 @@ export default function MyPage() {
       <div className="flex flex-col justify-center items-center min-h-screen p-4 text-center">
         <Lock className="h-24 w-24 text-gray-400 mb-6" />
         <h2 className="text-2xl font-bold mb-3">ログインが必要です</h2>
-        <p className="text-gray-600 mb-6">このページを表示するにはログインしてください。</p>
+        <p className="text-gray-600 mb-6">
+          このページを表示するにはログインしてください。
+        </p>
         <Button
+          // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
           onClick={() => (window.location.href = "/api/auth/signin")} // NextAuthのサインインページへリダイレクト
           className="bg-[#007B63] hover:bg-[#006854] text-white"
         >
           ログイン
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -195,7 +233,10 @@ export default function MyPage() {
             <div className="relative">
               {profile.image ? (
                 <Avatar className="w-24 h-24 border-4 border-white shadow-md">
-                  <AvatarImage src={profile.image || "/placeholder.svg"} alt={profile.name} />
+                  <AvatarImage
+                    src={profile.image || "/placeholder.svg"}
+                    alt={profile.name}
+                  />
                   <AvatarFallback className="text-2xl bg-[#007B63] text-white">
                     {profile.name?.charAt(0)}
                   </AvatarFallback>
@@ -213,16 +254,24 @@ export default function MyPage() {
             <div className="flex-1">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-xl font-bold">{profile.name || "名前未設定"}</h2>
-                  <p className="text-gray-600 text-sm">{profile.username}</p> {/* username (email) を表示 */}
+                  <h2 className="text-xl font-bold">
+                    {profile.name || "名前未設定"}
+                  </h2>
+                  <p className="text-gray-600 text-sm">{profile.username}</p>{" "}
+                  {/* username (email) を表示 */}
                   <p className="text-gray-600 text-sm flex items-center gap-1 mt-1">
-                    <MapPin className="h-3 w-3" /> {profile.location || "場所未設定"}
+                    <MapPin className="h-3 w-3" />{" "}
+                    {profile.location || "場所未設定"}
                   </p>
                   {profile.website && (
                     <p className="text-gray-600 text-sm flex items-center gap-1 mt-1">
                       <Globe className="h-3 w-3" />
                       <a
-                        href={profile.website.startsWith("http") ? profile.website : `https://${profile.website}`}
+                        href={
+                          profile.website.startsWith("http")
+                            ? profile.website
+                            : `https://${profile.website}`
+                        }
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[#007B63]"
@@ -247,16 +296,20 @@ export default function MyPage() {
                   <p className="text-sm text-gray-600">投稿</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-bold">0</p> {/* バックエンドから取得する場合は変更 */}
+                  <p className="font-bold">0</p>{" "}
+                  {/* バックエンドから取得する場合は変更 */}
                   <p className="text-sm text-gray-600">フォロワー</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-bold">0</p> {/* バックエンドから取得する場合は変更 */}
+                  <p className="font-bold">0</p>{" "}
+                  {/* バックエンドから取得する場合は変更 */}
                   <p className="text-sm text-gray-600">フォロー中</p>
                 </div>
               </div>
 
-              {profile.bio && <p className="mt-4 text-sm text-gray-700">{profile.bio}</p>}
+              {profile.bio && (
+                <p className="mt-4 text-sm text-gray-700">{profile.bio}</p>
+              )}
             </div>
           </div>
         </div>
@@ -290,22 +343,37 @@ export default function MyPage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-lg">まだ投稿がありません</h3>
-                    <p className="text-gray-600 mt-2">旅行中に経験したトラブルを共有しましょう</p>
+                    <p className="text-gray-600 mt-2">
+                      旅行中に経験したトラブルを共有しましょう
+                    </p>
                   </div>
-                  <Button type="button" className="bg-[#007B63] hover:bg-[#006854] text-white mt-2">
-                    トラブルを投稿する
-                  </Button>
+                  <Link href="/post">
+                    <Button
+                      type="button"
+                      className="bg-[#007B63] hover:bg-[#006854] text-white mt-2"
+                    >
+                      トラブルを投稿する
+                    </Button>
+                  </Link>
                 </div>
               </Card>
             ) : (
               posts.map((post) => (
-                <Card key={`post-${post.id}`} className="bg-white overflow-hidden">
+                <Card
+                  key={`post-${post.id}`}
+                  className="bg-white overflow-hidden"
+                >
                   <div className="p-4 border-b">
                     <div className="flex items-center gap-3">
                       {profile.image ? (
                         <Avatar className="w-10 h-10">
-                          <AvatarImage src={profile.image || "/placeholder.svg"} alt={profile.name} />
-                          <AvatarFallback className="bg-[#007B63] text-white">{profile.name?.charAt(0)}</AvatarFallback>
+                          <AvatarImage
+                            src={profile.image || "/placeholder.svg"}
+                            alt={profile.name}
+                          />
+                          <AvatarFallback className="bg-[#007B63] text-white">
+                            {profile.name?.charAt(0)}
+                          </AvatarFallback>
                         </Avatar>
                       ) : (
                         <Image
@@ -327,18 +395,27 @@ export default function MyPage() {
                     <p className="text-gray-700 mb-3">{post.content}</p>
                     <div className="flex gap-2 mb-3">
                       {post.tags.map((tag) => (
-                        <Badge key={`tag-${tag}`} className="bg-[#007B63]/10 text-[#007B63] hover:bg-[#007B63]/20">
+                        <Badge
+                          key={`tag-${tag}`}
+                          className="bg-[#007B63]/10 text-[#007B63] hover:bg-[#007B63]/20"
+                        >
                           {tag}
                         </Badge>
                       ))}
                     </div>
                     <div className="flex justify-between items-center mt-4">
                       <div className="flex items-center gap-4">
-                        <button type="button" className="flex items-center gap-1 text-gray-500">
+                        <button
+                          type="button"
+                          className="flex items-center gap-1 text-gray-500"
+                        >
                           <Heart className="h-4 w-4" />
                           <span className="text-sm">{post.likes}</span>
                         </button>
-                        <button type="button" className="flex items-center gap-1 text-gray-500">
+                        <button
+                          type="button"
+                          className="flex items-center gap-1 text-gray-500"
+                        >
                           <MessageSquare className="h-4 w-4" />
                           <span className="text-sm">{post.comments}</span>
                         </button>
@@ -370,12 +447,21 @@ export default function MyPage() {
                   <Heart className="h-10 w-10 text-gray-400" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">まだいいねした投稿がありません</h3>
-                  <p className="text-gray-600 mt-2">他のユーザーの投稿をチェックしていいねしましょう</p>
+                  <h3 className="font-bold text-lg">
+                    まだいいねした投稿がありません
+                  </h3>
+                  <p className="text-gray-600 mt-2">
+                    他のユーザーの投稿をチェックしていいねしましょう
+                  </p>
                 </div>
-                <Button type="button" className="bg-[#007B63] hover:bg-[#006854] text-white mt-2">
-                  投稿を探す
-                </Button>
+                <Link href="/">
+                  <Button
+                    type="button"
+                    className="bg-[#007B63] hover:bg-[#006854] text-white mt-2"
+                  >
+                    投稿を探す
+                  </Button>
+                </Link>
               </div>
             </Card>
           </div>
@@ -386,14 +472,19 @@ export default function MyPage() {
       <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
         <DialogContent className=" bg-white sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">プロフィールを編集</DialogTitle>
+            <DialogTitle className="text-xl font-bold">
+              プロフィールを編集
+            </DialogTitle>
           </DialogHeader>
           <div className="grid gap-6 py-4">
             <div className="flex items-center justify-center">
               <div className="relative">
                 {profile.image ? (
                   <Avatar className="w-24 h-24 border-4 border-white shadow-md">
-                    <AvatarImage src={profile.image || "/placeholder.svg"} alt={profile.name} />
+                    <AvatarImage
+                      src={profile.image || "/placeholder.svg"}
+                      alt={profile.name}
+                    />
                     <AvatarFallback className="text-2xl bg-[#007B63] text-white">
                       {profile.name?.charAt(0)}
                     </AvatarFallback>
@@ -418,7 +509,9 @@ export default function MyPage() {
                 </Button>
                 {/* 画像変更機能は未実装。ここにInput type="file"などを追加 */}
                 <div className="absolute inset-0 flex items-center justify-center text-white font-bold pointer-events-none">
-                  <span className="bg-black bg-opacity-50 px-2 py-1 rounded text-xs">プロフィール写真を変更</span>
+                  <span className="bg-black bg-opacity-50 px-2 py-1 rounded text-xs">
+                    プロフィール写真を変更
+                  </span>
                 </div>
               </div>
             </div>
@@ -428,14 +521,21 @@ export default function MyPage() {
               <Input
                 id="name"
                 value={profile.name}
-                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                onChange={(e) =>
+                  setProfile({ ...profile, name: e.target.value })
+                }
               />
             </div>
 
             {/* ユーザー名 (email) は変更不可とするか、別途変更機能を実装 */}
             <div className="grid gap-2">
               <Label htmlFor="username">ユーザー名 (メールアドレス)</Label>
-              <Input id="username" value={profile.username} disabled className="bg-gray-100" />
+              <Input
+                id="username"
+                value={profile.username}
+                disabled
+                className="bg-gray-100"
+              />
             </div>
 
             <div className="grid gap-2">
@@ -445,7 +545,9 @@ export default function MyPage() {
                 <Input
                   id="location"
                   value={profile.location}
-                  onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                  onChange={(e) =>
+                    setProfile({ ...profile, location: e.target.value })
+                  }
                   className="pl-10"
                 />
               </div>
@@ -459,7 +561,9 @@ export default function MyPage() {
                   id="website"
                   placeholder="ウェブサイトを追加"
                   value={profile.website}
-                  onChange={(e) => setProfile({ ...profile, website: e.target.value })}
+                  onChange={(e) =>
+                    setProfile({ ...profile, website: e.target.value })
+                  }
                   className="pl-10"
                 />
               </div>
@@ -473,9 +577,13 @@ export default function MyPage() {
                 className="resize-none"
                 rows={4}
                 value={profile.bio}
-                onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                onChange={(e) =>
+                  setProfile({ ...profile, bio: e.target.value })
+                }
               />
-              <div className="text-right text-sm text-gray-500">{profile.bio.length}/160文字</div>
+              <div className="text-right text-sm text-gray-500">
+                {profile.bio.length}/160文字
+              </div>
             </div>
 
             <div className="text-sm text-gray-500">
@@ -487,10 +595,18 @@ export default function MyPage() {
             </div>
           </div>
           <DialogFooter className="flex sm:justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setIsProfileDialogOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsProfileDialogOpen(false)}
+            >
               キャンセル
             </Button>
-            <Button type="button" className="bg-[#007B63] hover:bg-[#006854]" onClick={handleProfileUpdate}>
+            <Button
+              type="button"
+              className="bg-[#007B63] hover:bg-[#006854]"
+              onClick={handleProfileUpdate}
+            >
               保存
             </Button>
           </DialogFooter>
@@ -499,10 +615,15 @@ export default function MyPage() {
 
       {/* 投稿編集ダイアログ */}
       {currentPost && (
-        <Dialog open={isEditPostDialogOpen} onOpenChange={setIsEditPostDialogOpen}>
+        <Dialog
+          open={isEditPostDialogOpen}
+          onOpenChange={setIsEditPostDialogOpen}
+        >
           <DialogContent className="bg-white sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold">投稿を編集</DialogTitle>
+              <DialogTitle className="text-xl font-bold">
+                投稿を編集
+              </DialogTitle>
             </DialogHeader>
             <div className="grid gap-6 py-4">
               <div className="grid gap-2">
@@ -510,7 +631,9 @@ export default function MyPage() {
                 <Input
                   id="post-title"
                   value={currentPost.title}
-                  onChange={(e) => setCurrentPost({ ...currentPost, title: e.target.value })}
+                  onChange={(e) =>
+                    setCurrentPost({ ...currentPost, title: e.target.value })
+                  }
                 />
               </div>
 
@@ -520,7 +643,9 @@ export default function MyPage() {
                   id="post-content"
                   rows={6}
                   value={currentPost.content}
-                  onChange={(e) => setCurrentPost({ ...currentPost, content: e.target.value })}
+                  onChange={(e) =>
+                    setCurrentPost({ ...currentPost, content: e.target.value })
+                  }
                 />
               </div>
 
@@ -530,16 +655,27 @@ export default function MyPage() {
                   id="post-tags"
                   value={currentPost.tags.join(", ")}
                   onChange={(e) =>
-                    setCurrentPost({ ...currentPost, tags: e.target.value.split(",").map((tag) => tag.trim()) })
+                    setCurrentPost({
+                      ...currentPost,
+                      tags: e.target.value.split(",").map((tag) => tag.trim()),
+                    })
                   }
                 />
               </div>
             </div>
             <DialogFooter className="flex sm:justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsEditPostDialogOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditPostDialogOpen(false)}
+              >
                 キャンセル
               </Button>
-              <Button type="button" className="bg-[#007B63] hover:bg-[#006854]" onClick={handleSavePost}>
+              <Button
+                type="button"
+                className="bg-[#007B63] hover:bg-[#006854]"
+                onClick={handleSavePost}
+              >
                 保存
               </Button>
             </DialogFooter>
@@ -547,5 +683,5 @@ export default function MyPage() {
         </Dialog>
       )}
     </div>
-  )
+  );
 }
