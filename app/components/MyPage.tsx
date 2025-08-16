@@ -167,7 +167,7 @@ export default function MyPage() {
     if (!currentPost) return;
 
     try {
-      const response = await fetch(`/api/post/${currentPost.id}`, {
+      const response = await fetch(`/api/user/posts/${currentPost.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
