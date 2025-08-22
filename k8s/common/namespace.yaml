@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: traubling
+  labels:
+    name: traubling
+    app.kubernetes.io/name: traubling
+    app.kubernetes.io/component: namespace

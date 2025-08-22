@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # 共通リソース
+  - common/namespace.yaml
+  - common/configmap.yaml
+  - common/secrets.yaml
+  
+  # データベース
+  - database/postgres-pvc.yaml
+  - database/postgres-deployment.yaml
+  - database/postgres-service.yaml
+  
+  # バックエンド
+  - backend/backend-deployment.yaml
+  - backend/backend-service.yaml
+  
+  # フロントエンド
+  - frontend/frontend-deployment.yaml
+  - frontend/frontend-service.yaml
+  - frontend/frontend-ingress.yaml
+
+namespace: traubling
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/name: traubling
+      app.kubernetes.io/managed-by: argocd
+
+images:
+  - name: your-registry/traubling-frontend
+    newTag: latest
+  - name: your-registry/traubling-backend
+    newTag: latest

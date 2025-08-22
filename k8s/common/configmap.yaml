@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: traubling
+data:
+  # Next.js フロントエンド設定
+  NEXT_PUBLIC_API_URL: "http://backend-service:8080"
+  NODE_ENV: "production"
+  
+  # Go バックエンド設定
+  DATABASE_URL: "postgresql://appuser:secretpass@postgres-service:5432/appdb"
+  JWT_SECRET: "your-jwt-secret-here"
+  PORT: "8080"
