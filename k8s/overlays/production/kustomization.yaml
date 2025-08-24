@@ -1,0 +1,41 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: traubling-prod
+
+namePrefix: prod-
+
+resources:
+  - ../../
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 5
+    target:
+      kind: Deployment
+      name: frontend-deployment
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      name: backend-deployment
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "512Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "1Gi"
+    target:
+      kind: Deployment
+      name: frontend-deployment
+
+images:
+  - name: your-registry/traubling-frontend
+    newTag: v1.0.0
+  - name: your-registry/traubling-backend
+    newTag: v1.0.0

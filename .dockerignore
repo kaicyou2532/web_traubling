@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Node modules
+node_modules
+npm-debug.log*
+
+# Next.js
+.next
+out
+
+# 環境変数
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ログ
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# テスト
+coverage
+
+# キャッシュ
+.eslintcache
+
+# Prisma
+prisma/migrations
+
+# その他
+README.md
+*.md

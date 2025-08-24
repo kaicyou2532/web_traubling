@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: traubling-dev
+
+namePrefix: dev-
+
+resources:
+  - ../../
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+      name: frontend-deployment
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+      name: backend-deployment
+
+images:
+  - name: your-registry/traubling-frontend
+    newTag: dev
+  - name: your-registry/traubling-backend
+    newTag: dev
+
+configMapGenerator:
+  - name: app-config-dev
+    literals:
+    - NODE_ENV=development
+    - NEXT_PUBLIC_API_URL=http://backend-service:8080

@@ -1,0 +1,51 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+.vscode
+
+# ビルド成果物
+tmp/
+server
+main
+
+# 環境変数
+.env
+.env.local
+
+# ログ
+*.log
+build-errors.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea
+*.swp
+*.swo
+
+# テスト
+coverage.out
+coverage.html
+
+# Air設定（除外しない）
+# .air.toml
+
+# その他
+README.md
+*.md

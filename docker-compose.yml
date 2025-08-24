@@ -1,57 +1,170 @@
-# version: '3.8'
+version: '3.8'
 
 services:
-  # データベース（PostgreSQL）
-  # db:
-  #   image: postgres:15-alpine
-  #   restart: always
-  #   environment:
-  #     POSTGRES_USER:     appuser
-  #     POSTGRES_PASSWORD: secretpass
-  #     POSTGRES_DB:       appdb
-  #   volumes:
-  #     - db_data:/var/lib/postgresql/data
-  #   ports:
-  #     - '5432:5432'
+  # PostgreSQL データベース
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: secretpass
+      POSTGRES_DB: appdb
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    ports:
+      - '5432:5432'
+    networks:
+      - traubling-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Go バックエンド
-  # backend:
-  #   build:
-  #     context: ./backend
-  #     dockerfile: Dockerfile
-  #   restart: always
-  #   # ローカル開発用にバイナリを直接実行
-  #   command: ["./server"]
-  #   volumes:
-  #     - ./backend:/app
-  #   env_file:
-  #     - ./backend/.env
-  #   ports:
-  #     - '8080:8080'
-  #   depends_on:
-  #     - db
+  # Redis (セッション管理、キャッシュ用)
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - traubling-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Next.js フロントエンド
+  # Go バックエンド (本番用)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://appuser:secretpass@db:5432/appdb?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-jwt-secret-key
+      - PORT=8080
+      - GO_ENV=production
+    ports:
+      - '8080:8080'
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - traubling-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Go バックエンド (開発用)
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://appuser:secretpass@db:5432/appdb?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-jwt-secret-key
+      - PORT=8080
+      - GO_ENV=development
+    ports:
+      - '8081:8080'
+    volumes:
+      - ./backend:/app
+      - /app/tmp
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - traubling-network
+    profiles:
+      - dev
+
+  # Next.js フロントエンド (本番用)
   frontend:
     build:
-      context: .             # プロジェクトルートをコンテキストに
-      dockerfile: Dockerfile # ルート直下の Dockerfile を指定
-    restart: always
-    command: npm run dev     # npm に置き換え
-    volumes:
-      - ./:/app
-      - /app/node_modules   # ホスト側 node_modules 上書きを防止
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://backend:8080
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=your-nextauth-secret
     ports:
       - '3000:3000'
-    # volumes:
-    #   - ./frontend:/app
-    #   - /app/node_modules
-    # environment:
-    #   NEXT_PUBLIC_API_URL: http://backend:8080
-    # ports:
-    #   - '3000:3000'
-    # depends_on:
-    #   - backend
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - traubling-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Next.js フロントエンド (開発用)
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8081
+      - NEXTAUTH_URL=http://localhost:3001
+      - NEXTAUTH_SECRET=your-nextauth-secret
+    ports:
+      - '3001:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend-dev
+    networks:
+      - traubling-network
+    profiles:
+      - dev
+
+  # Nginx リバースプロキシ (本番用)
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - traubling-network
+    profiles:
+      - prod
 
 volumes:
-  db_data:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  traubling-network:
+    driver: bridge
