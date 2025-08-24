@@ -13,7 +13,7 @@ help: ## このヘルプメッセージを表示
 # 開発環境用コマンド
 dev: ## 開発環境を起動
 	@echo "開発環境を起動しています..."
-	docker-compose -f $(COMPOSE_FILE_DEV) up -d
+	docker-compose -f $(COMPOSE_FILE_DEV) up 
 
 dev-build: ## 開発環境をビルドして起動
 	@echo "開発環境をビルドして起動しています..."
@@ -96,7 +96,16 @@ db-shell: ## データベースに接続
 	docker-compose -f $(COMPOSE_FILE_DEV) exec db psql -U appuser -d appdb
 
 db-migrate: ## データベースマイグレーション実行（開発環境）
-	docker-compose -f $(COMPOSE_FILE_DEV) exec backend go run cmd/migrate/main.go
+	docker-compose -f $(COMPOSE_FILE_DEV) exec frontend npx prisma migrate dev
+
+prisma-generate: ## Prismaクライアントを生成
+	docker-compose -f $(COMPOSE_FILE_DEV) exec frontend npx prisma generate
+
+prisma-migrate: ## Prismaマイグレーションを実行
+	docker-compose -f $(COMPOSE_FILE_DEV) exec frontend npx prisma migrate dev
+
+prisma-studio: ## Prisma Studioを起動
+	docker-compose -f $(COMPOSE_FILE_DEV) exec frontend npx prisma studio --port 5555
 
 # 開発用ツール
 adminer: ## Adminer（DB管理ツール）を開く

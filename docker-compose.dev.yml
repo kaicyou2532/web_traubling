@@ -63,6 +63,7 @@ services:
       - NEXTAUTH_URL=http://localhost:3000
       - NEXTAUTH_SECRET=dev-nextauth-secret
       - WATCHPACK_POLLING=true
+      - DATABASE_URL=postgresql://appuser:secretpass@db:5432/appdb?sslmode=disable
     ports:
       - '3000:3000'
     volumes:

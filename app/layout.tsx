@@ -3,7 +3,7 @@ import "./globals.css"
 import type { Metadata } from "next"
 import { Noto_Sans_JP, Roboto } from "next/font/google"
 import { SessionProvider } from "next-auth/react"
-import { auth } from "@/auth"
+// import { auth } from "@/auth"
 import ConditionalLayout from "./components/ConditionalLayout" // 作成したコンポーネントをインポート
 import Footer from "./components/Footer"
 
@@ -20,7 +20,9 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
+  // 一時的に認証を無効化
+  // const session = await auth()
+  const session = null
 
   return (
     <html lang="ja">

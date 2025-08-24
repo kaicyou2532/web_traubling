@@ -8,11 +8,22 @@ import type { NextAuthConfig } from "next-auth"
 
 export const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
-  providers: [Google, Discord],
+  providers: [
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+    }),
+    Discord({
+      clientId: process.env.DISCORD_CLIENT_ID!,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+    }),
+  ],
   session: { strategy: "database" },
   callbacks: {
     session: ({ session, user }) => {
-      session.user.id = user.id
+      if (session?.user && user) {
+        session.user.id = user.id
+      }
       return session
     },
   },
