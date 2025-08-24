@@ -8,13 +8,13 @@ WORKDIR /app
 # 依存関係のインストール用ステージ
 FROM base AS deps
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --only=production --legacy-peer-deps && npm cache clean --force
 
 # ビルド用ステージ
 FROM base AS builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 

@@ -23,6 +23,7 @@ func main() {
 	// r.Use(middleware.Logger)
 
 	// ヘルスチェック
+	r.Get("/health", handlers.HealthHandler)
 	r.Get("/healthz", handlers.HealthHandler)
 
 	addr := cfg.Host + ":" + cfg.Port
