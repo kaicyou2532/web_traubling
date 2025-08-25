@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  # PostgreSQL データベース
+  # PostgreSQL データベース (最低限の設定)
   db:
     image: postgres:15-alpine
     restart: unless-stopped
@@ -9,37 +7,14 @@ services:
       POSTGRES_USER: appuser
       POSTGRES_PASSWORD: secretpass
       POSTGRES_DB: appdb
-      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/migrations:/docker-entrypoint-initdb.d
     ports:
       - '5432:5432'
     networks:
       - traubling-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
-  # Redis (セッション管理、キャッシュ用)
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    ports:
-      - '6379:6379'
-    volumes:
-      - redis_data:/data
-    networks:
-      - traubling-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Go バックエンド (本番用)
+  # Go バックエンド
   backend:
     build:
       context: ./backend
@@ -47,122 +22,36 @@ services:
     restart: unless-stopped
     environment:
       - DATABASE_URL=postgresql://appuser:secretpass@db:5432/appdb?sslmode=disable
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=your-jwt-secret-key
       - PORT=8080
-      - GO_ENV=production
     ports:
       - '8080:8080'
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - db
     networks:
       - traubling-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
-  # Go バックエンド (開発用)
-  backend-dev:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
-    restart: unless-stopped
-    environment:
-      - DATABASE_URL=postgresql://appuser:secretpass@db:5432/appdb?sslmode=disable
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=your-jwt-secret-key
-      - PORT=8080
-      - GO_ENV=development
-    ports:
-      - '8081:8080'
-    volumes:
-      - ./backend:/app
-      - /app/tmp
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - traubling-network
-    profiles:
-      - dev
-
-  # Next.js フロントエンド (本番用)
+  # Next.js フロントエンド
   frontend:
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=http://backend:8080
-      - NEXTAUTH_URL=http://localhost:3000
-      - NEXTAUTH_SECRET=your-nextauth-secret
+      - DATABASE_URL=postgresql://appuser:secretpass@db:5432/appdb?sslmode=disable
     ports:
       - '3000:3000'
     depends_on:
-      backend:
-        condition: service_healthy
-    networks:
-      - traubling-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Next.js フロントエンド (開発用)
-  frontend-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:8081
-      - NEXTAUTH_URL=http://localhost:3001
-      - NEXTAUTH_SECRET=your-nextauth-secret
-    ports:
-      - '3001:3000'
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
-    depends_on:
-      - backend-dev
-    networks:
-      - traubling-network
-    profiles:
-      - dev
-
-  # Nginx リバースプロキシ (本番用)
-  nginx:
-    image: nginx:alpine
-    restart: unless-stopped
-    ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - frontend
+      - db
       - backend
     networks:
       - traubling-network
-    profiles:
-      - prod
 
 volumes:
   postgres_data:
-    driver: local
-  redis_data:
     driver: local
 
 networks:

@@ -20,7 +20,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
+  let session = null
+  
+  try {
+    session = await auth()
+  } catch (error) {
+    console.error("Auth error:", error)
+    // セッション取得に失敗した場合はnullのまま進行
+  }
 
   return (
     <html lang="ja">

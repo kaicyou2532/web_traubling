@@ -1,14 +1,20 @@
-# 開発用Dockerfile - ホットリロード対応
+# 開発用Dockerfile - Next.js + Prisma
 FROM node:18-alpine
 
 # 必要なパッケージをインストール
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 
 WORKDIR /app
 
 # 依存関係をインストール
 COPY package.json package-lock.json* ./
 RUN npm ci
+
+# Prisma設定をコピー
+COPY prisma ./prisma
+
+# Prisma クライアントを生成
+RUN npx prisma generate
 
 # ソースコードをコピー
 COPY . .

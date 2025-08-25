@@ -2,13 +2,13 @@
 FROM node:18-alpine AS base
 
 # 必要なパッケージをインストール
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # 依存関係のインストール用ステージ
 FROM base AS deps
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci
 
 # ビルド用ステージ
 FROM base AS builder
@@ -17,6 +17,9 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 COPY . .
+
+# Prisma クライアントを生成
+RUN npx prisma generate
 
 # Next.jsアプリケーションをビルド
 RUN npm run build
@@ -31,11 +34,12 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# 本番用の依存関係をコピー
+# 必要なファイルをコピー
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/prisma ./prisma
 
 # 適切な権限を設定
 RUN chown -R nextjs:nodejs /app
@@ -46,9 +50,5 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-
-# ヘルスチェック
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
 
 CMD ["npm", "start"]
