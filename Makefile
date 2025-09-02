@@ -1,7 +1,7 @@
 # Traubling Docker Management Makefile
 # Next.js + Prisma + Go の最低限構成
 
-# 変数
+
 COMPOSE_FILE_DEV = docker-compose.dev.yml
 COMPOSE_FILE_BASE = docker-compose.yml
 
