@@ -1,11 +1,8 @@
-# 開発用Dockerfile - ホットリロード対応
-FROM golang:1.22-alpine
+# 開発用Dockerfile - Go
+FROM golang:1.21-alpine
 
 # 必要なパッケージをインストール
-RUN apk add --no-cache git ca-certificates tzdata
-
-# Air（ホットリロードツール）をインストール
-RUN go install github.com/cosmtrek/air@v1.49.0
+RUN apk add --no-cache git ca-certificates
 
 # 作業ディレクトリを設定
 WORKDIR /app
@@ -22,5 +19,5 @@ COPY . .
 # ポート8080を公開
 EXPOSE 8080
 
-# 開発用サーバーを実行（ホットリロード）
-CMD ["air", "-c", ".air.toml"]
+# 開発用サーバーを実行
+CMD ["go", "run", "./cmd/server"]
