@@ -14,7 +14,11 @@ RUN npm ci
 FROM base AS builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
+
+# Prismaスキーマをコピーしてクライアントを生成
+COPY prisma ./prisma/
+RUN npx prisma generate
 
 COPY . .
 

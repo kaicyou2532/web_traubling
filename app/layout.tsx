@@ -3,7 +3,7 @@ import "./globals.css"
 import type { Metadata } from "next"
 import { Noto_Sans_JP, Roboto } from "next/font/google"
 import { SessionProvider } from "next-auth/react"
-import { auth } from "@/auth"
+// import { auth } from "@/auth"
 import ConditionalLayout from "./components/ConditionalLayout" // 作成したコンポーネントをインポート
 import Footer from "./components/Footer"
 

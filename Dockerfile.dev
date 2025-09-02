@@ -8,7 +8,11 @@ WORKDIR /app
 
 # 依存関係をインストール
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
+
+# Prismaスキーマをコピーしてクライアントを生成
+COPY prisma ./prisma/
+RUN npx prisma generate
 
 # Prisma設定をコピー
 COPY prisma ./prisma

@@ -41,8 +41,8 @@ coverage
 # キャッシュ
 .eslintcache
 
-# Prisma
-prisma/migrations
+# Prisma（除外しない）
+# prisma/
 
 # その他
 README.md
