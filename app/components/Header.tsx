@@ -10,6 +10,7 @@ import {
   MapIcon,
   PencilSquareIcon,
   UserCircleIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/solid";
 import { AuthModal } from "@/app/components/login";
 import { signOutAction } from "@/app/auth";
@@ -36,7 +37,7 @@ export default function Header({
 }: HeaderProps) {
   return (
     <header
-      className={`bg-white shadow-md sticky top-0 z-30 h-16 flex items-center
+      className={`bg-white shadow-md sticky top-0 z-50 h-16 flex items-center
         transition-transform duration-300 ease-in-out
         ${isVisible ? "translate-y-0" : "-translate-y-full"}`} // isVisibleに応じてクラスを適用
     >
@@ -88,6 +89,15 @@ export default function Header({
                 <MapIcon className="h-6 w-6" />
                 <span className="hidden xl:inline ml-1.5">
                   国内で気をつけること
+                </span>
+              </Link>
+              <Link
+                href="/map"
+                className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
+              >
+                <MapPinIcon className="h-6 w-6" />
+                <span className="hidden xl:inline ml-1.5">
+                  地図から探す
                 </span>
               </Link>
               {session && (
