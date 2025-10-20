@@ -66,9 +66,11 @@ model User {
   image         String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  profile       String?
   accounts      Account[]
   Authenticator Authenticator[]
   posts         Post[]
+  Profile       Profile?
   sessions      Session[]
 }
 
@@ -85,6 +87,8 @@ model Post {
   travelYear  Int       @map("travelYear")
   cityId      Int       @default(100) @map("cityId")
   likeCount   Int       @default(0) @map("likeCount")
+  latitude  Float?
+  longitude Float?
   comments    Comment[]
   city        City      @relation(fields: [cityId], references: [id])
   country     Country   @relation(fields: [countryId], references: [id])
@@ -123,4 +127,14 @@ model Comment {
   postId  Int
   userId  Int
   post    Post   @relation(fields: [postId], references: [id])
+}
+
+model Profile {
+  id        String    @id @default(dbgenerated("gen_random_uuid()"))
+  userId    String    @unique
+  bio       String?
+  avatarUrl String?
+  createdAt DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @db.Timestamp(6)
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }

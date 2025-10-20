@@ -8,6 +8,7 @@ import {
   PencilSquareIcon,
   GlobeAsiaAustraliaIcon,
   UserCircleIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/solid";
 import type { Session } from "next-auth";
 import { UserCircle } from "lucide-react";
@@ -59,6 +60,13 @@ export default function Sidebar({
         >
           <MapIcon className="h-7 w-7" />
           {!compact && <span>国内で気をつけること</span>}
+        </Link>
+        <Link
+          href="/map"
+          className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
+        >
+          <MapPinIcon className="h-6 w-6" />
+          <span className="hidden xl:inline ml-1.5">地図から探す</span>
         </Link>
         {session && (
           <Link
