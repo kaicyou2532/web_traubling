@@ -442,8 +442,15 @@ function PostForm({ troubleType, countries, cities }: Props) {
             {/* ▼ Leaflet Map ▼ */}
             <div className="h-80 w-full relative z-0">
               <MapContainer
-                center={{ lat: 35.6812, lng: 139.7671 }} // 東京駅あたりを初期表示
-                zoom={6}
+                center={{ lat: 35.6812, lng: 139.7671 }}
+                zoom={4}
+                minZoom={3}
+                maxBounds={[
+                  [-90, -180],
+                  [90, 180],
+                ]}
+                worldCopyJump={false}
+                maxBoundsViscosity={1.0}
                 style={{ height: "100%", width: "100%" }}
                 ref={mapRef as any}
               >
