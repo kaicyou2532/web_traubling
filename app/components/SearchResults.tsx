@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { MapPinIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/solid"
-import { CommentModal } from "./CommentModal" // ★ modal をインポート
+import { MapPinIcon, ChatBubbleLeftIcon, HeartIcon } from "@heroicons/react/24/solid"
+import { HeartIcon as HeartOutlineIcon } from "@heroicons/react/24/outline"
+import { CommentModal } from "./CommentModal"
 
 interface Post {
   id: number
@@ -13,6 +14,8 @@ interface Post {
   user: { name: string }
   tags: string[]
   isJapan: boolean
+  likeCount: number
+  isLiked: boolean // ★ いいね状態を追加
 }
 
 interface SearchResultsProps {
@@ -30,8 +33,7 @@ export default function SearchResults({ searchTerm, category, subCategory, count
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
 
-  // ★ コメントモーダルの状態
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null)
+  const [selectedPost, setSelectedPost] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
@@ -59,6 +61,41 @@ export default function SearchResults({ searchTerm, category, subCategory, count
     fetchPosts()
   }, [searchTerm, category, subCategory, countryFilter, currentPage])
 
+  // ★ いいねボタンのハンドラーを追加
+  const handleLikeClick = async (e: React.MouseEvent, postId: number) => {
+    e.stopPropagation() // 投稿クリックイベントを防ぐ
+
+    try {
+      const res = await fetch(`/api/posts/${postId}/like`, {
+        method: 'POST',
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        
+        // 投稿リストを更新
+        setPosts(prevPosts => 
+          prevPosts.map(post => 
+            post.id === postId 
+              ? { ...post, isLiked: data.liked, likeCount: data.likeCount }
+              : post
+          )
+        )
+      } else {
+        console.error('Failed to toggle like')
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error)
+    }
+  }
+
+  // ★ HTMLタグを除去する関数を追加
+  const stripHtmlTags = (html: string): string => {
+    const div = document.createElement('div')
+    div.innerHTML = html
+    return div.textContent || div.innerText || ''
+  }
+
   const totalPages = Math.ceil(totalCount / POSTS_PER_PAGE)
 
   const handlePostClick = (post: Post) => {
@@ -66,8 +103,8 @@ export default function SearchResults({ searchTerm, category, subCategory, count
       id: post.id,
       title: post.title,
       author: post.user.name,
-      content: post.content,
-      date: "2025-04-16", // ★仮で日付追加（必要に応じてpostから取る）
+      content: stripHtmlTags(post.content), // ★ HTMLタグを除去
+      date: "2025-04-16",
       category,
     })
     setIsModalOpen(true)
@@ -106,9 +143,24 @@ export default function SearchResults({ searchTerm, category, subCategory, count
                 ))}
               </div>
               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <div className="flex items-center text-gray-500">
-                  <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
-                  <span>{post.comments.length}</span>
+                <div className="flex items-center gap-4 text-gray-500">
+                  {/* ★ いいねボタン（クリック可能、色変化対応） */}
+                  <button
+                    onClick={(e) => handleLikeClick(e, post.id)}
+                    className="flex items-center hover:scale-110 transition-transform"
+                  >
+                    {post.isLiked ? (
+                      <HeartIcon className="h-5 w-5 mr-1 text-red-500" />
+                    ) : (
+                      <HeartOutlineIcon className="h-5 w-5 mr-1 text-gray-400 hover:text-red-500" />
+                    )}
+                    <span className={post.isLiked ? "text-red-500" : ""}>{post.likeCount || 0}</span>
+                  </button>
+                  {/* 既存のコメント数 */}
+                  <div className="flex items-center">
+                    <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
+                    <span>{post.comments.length}</span>
+                  </div>
                 </div>
                 <span className="text-sm text-[#007B63]">{post.user.name}</span>
               </div>
@@ -120,7 +172,6 @@ export default function SearchResults({ searchTerm, category, subCategory, count
           <div className="flex justify-center mt-6 space-x-2">
             {Array.from({ length: totalPages }, (_, i) => (
               <button
-                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                 key={i}
                 type="button"
                 onClick={() => setCurrentPage(i + 1)}
@@ -134,7 +185,6 @@ export default function SearchResults({ searchTerm, category, subCategory, count
         )}
       </div>
 
-      {/* ★ モーダルを表示 */}
       <CommentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
