@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { auth } from "@/auth"
 
 interface SearchPost {
   id: number
@@ -22,6 +23,20 @@ export async function GET(req: NextRequest) {
     const subCategory = searchParams.get("subCategory");
     const countryFilter = searchParams.get("country")?.toLowerCase() || "";
     const page = parseInt(searchParams.get("page") || "1", 10);
+
+    // ★ セッション情報を安全に取得
+    let currentUserId = null;
+    try {
+      const session = await auth();
+      if (session?.user?.email) {
+        const user = await prisma.user.findUnique({
+          where: { email: session.user.email }
+        });
+        currentUserId = user?.id;
+      }
+    } catch (authError) {
+      console.log("Auth not available, continuing without user context");
+    }
 
     const terms = term.split(/\s+/).filter(Boolean);
 
@@ -72,6 +87,46 @@ export async function GET(req: NextRequest) {
       prisma.post.count({ where }),
     ]);
 
+    // ★ いいね情報を安全に取得
+    const postIds = posts.map(post => post.id);
+    let likeCounts: { [key: number]: number } = {};
+    let userLikes: { [key: number]: boolean } = {};
+
+    if (postIds.length > 0) {
+      try {
+        // いいね数を取得
+        const likeCountResults = await prisma.like.groupBy({
+          by: ['postId'],
+          where: { postId: { in: postIds } },
+          _count: { id: true }
+        });
+
+        likeCounts = likeCountResults.reduce((acc, item) => {
+          acc[item.postId] = item._count.id;
+          return acc;
+        }, {} as { [key: number]: number });
+
+        // ユーザーのいいね状態を取得
+        if (currentUserId) {
+          const userLikeResults = await prisma.like.findMany({
+            where: { 
+              postId: { in: postIds },
+              userId: currentUserId 
+            },
+            select: { postId: true }
+          });
+
+          userLikes = userLikeResults.reduce((acc, item) => {
+            acc[item.postId] = true;
+            return acc;
+          }, {} as { [key: number]: boolean });
+        }
+      } catch (likeError) {
+        console.log("Like data not available, using defaults");
+        // いいね機能が使えない場合はデフォルト値を使用
+      }
+    }
+
     const formattedPosts = posts.map((post: SearchPost) => ({
       id: post.id,
       title: post.title,
@@ -83,6 +138,9 @@ export async function GET(req: NextRequest) {
       user: post.user ? { name: post.user.name } : { name: "匿名" },
       tags: [post.trouble?.jaName || post.trouble?.enName || "不明"],
       isJapan: post.country?.id === 1,
+      // ★ いいね情報を安全に追加
+      likeCount: likeCounts[post.id] || 0,
+      isLiked: userLikes[post.id] || false,
     }));
 
     return NextResponse.json({
