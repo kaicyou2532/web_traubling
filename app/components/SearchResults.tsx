@@ -10,6 +10,7 @@ import { HeartIcon as HeartOutlineIcon } from "@heroicons/react/24/outline";
 import { CommentModal } from "./CommentModal";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import "leaflet/dist/leaflet.css";
 
 // Leafletを動的にインポート（SSRエラー回避）
 const MapContainer = dynamic(
@@ -111,26 +112,61 @@ export default function SearchResults({
 
         const res = await fetch(`/api/search?${params.toString()}`);
         const data = await res.json();
-        setPosts(data.posts || []);
+
+      // ★★★ データのクリーンアップと数値変換を強化 ★★★
+      const processedPosts = (data.posts || []).map(
+        (post: Post) => {
+          let lat: number | undefined = post.latitude;
+          let lng: number | undefined = post.longitude;
+
+          // 1. 値が存在し、かつ数値でない（=文字列の）場合に parseFloat を試行
+          if (typeof lat !== 'number' && lat) {
+              // 文字列の "35.56..." を数値に変換
+              lat = parseFloat(String(lat));
+          }
+          if (typeof lng !== 'number' && lng) {
+              // 文字列の "139.39..." を数値に変換
+              lng = parseFloat(String(lng));
+          }
+
+          // 2. 変換後に NaN (例: parseFloat("NULL")) や 無限大になった値を undefined に戻す
+          if (typeof lat !== 'number' || !isFinite(lat)) {
+              lat = undefined;
+          }
+          if (typeof lng !== 'number' || !isFinite(lng)) {
+              lng = undefined;
+          }
+
+          return {
+              ...post,
+              latitude: lat,
+              longitude: lng,
+          };
+        }
+      );
+      
+        setPosts(processedPosts);
         setTotalCount(data.totalCount || 0);
 
         // ★★★ デバッグログを追加 ★★★
         console.log("--- 投稿データデバッグ ---");
         console.log("全投稿数:", data.posts.length);
-        const debugLocationPosts = (data.posts || []).filter((post: { latitude: any; longitude: any; }) => {
-          const lat = post.latitude;
-          const lng = post.longitude;
-          return (
-            typeof lat === "number" &&
-            isFinite(lat) &&
-            lat >= -90 &&
-            lat <= 90 &&
-            typeof lng === "number" &&
-            isFinite(lng) &&
-            lng >= -180 &&
-            lng <= 180
-          );
-        });
+        const debugLocationPosts = (data.posts || []).filter(
+          (post: { latitude: number; longitude: number }) => {
+            const lat = post.latitude;
+            const lng = post.longitude;
+            return (
+              typeof lat === "number" &&
+              isFinite(lat) &&
+              lat >= -90 &&
+              lat <= 90 &&
+              typeof lng === "number" &&
+              isFinite(lng) &&
+              lng >= -180 &&
+              lng <= 180
+            );
+          }
+        );
         console.log(
           "フィルタリング後の位置情報付き投稿数:",
           debugLocationPosts.length
