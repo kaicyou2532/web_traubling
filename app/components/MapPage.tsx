@@ -421,14 +421,14 @@ export default function MapPage() {
           <AlertTriangle className="h-4 w-4 mr-2" />
           トラブル種別
         </Button>
-        <Button
+        {/* <Button
           variant="outline"
           size="sm"
           className="bg-white/95 backdrop-blur-sm border-gray-200/50"
         >
           <Globe className="h-4 w-4 mr-2" />
           国・地域
-        </Button>
+        </Button> */}
       </div>
 
       {/* 検索バー - 右上（大きくしました） */}
