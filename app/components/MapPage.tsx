@@ -4,20 +4,37 @@ import { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { Search, X, MapPin, MessageCircle, User, Globe, AlertTriangle, Calendar, ExternalLink } from "lucide-react";
+import {
+  Search,
+  X,
+  MapPin,
+  MessageCircle,
+  User,
+  Globe,
+  AlertTriangle,
+  Calendar,
+  ExternalLink,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 // Leafletアイコン設定
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
   iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
 });
@@ -29,9 +46,9 @@ type PostData = {
   latitude: number;
   longitude: number;
   country: { jaName: string; enName: string } | null;
-  city: { 
+  city: {
     id: number;
-    jaName: string; 
+    jaName: string;
     enName: string;
     photoUrl?: string;
   } | null;
@@ -52,7 +69,13 @@ type SearchResult = {
 };
 
 // 地図の中心を動的に変更するコンポーネント
-function ChangeView({ coords, zoom }: { coords: [number, number]; zoom: number }) {
+function ChangeView({
+  coords,
+  zoom,
+}: {
+  coords: [number, number];
+  zoom: number;
+}) {
   const map = useMap();
   useEffect(() => {
     map.setView(coords, zoom, { animate: true, duration: 1 });
@@ -61,7 +84,13 @@ function ChangeView({ coords, zoom }: { coords: [number, number]; zoom: number }
 }
 
 // 投稿詳細ダイアログ
-function PostDetailDialog({ post, trigger }: { post: PostData; trigger: React.ReactNode }) {
+function PostDetailDialog({
+  post,
+  trigger,
+}: {
+  post: PostData;
+  trigger: React.ReactNode;
+}) {
   const router = useRouter();
 
   const handleCityClick = () => {
@@ -72,14 +101,12 @@ function PostDetailDialog({ post, trigger }: { post: PostData; trigger: React.Re
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">{post.title}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           {/* ヘッダー画像 */}
           {post.city?.photoUrl && (
@@ -96,9 +123,7 @@ function PostDetailDialog({ post, trigger }: { post: PostData; trigger: React.Re
           {/* バッジ */}
           <div className="flex flex-wrap gap-2">
             {post.trouble && (
-              <Badge variant="destructive">
-                {post.trouble.jaName}
-              </Badge>
+              <Badge variant="destructive">{post.trouble.jaName}</Badge>
             )}
             {post.country && (
               <Badge variant="outline">
@@ -107,8 +132,8 @@ function PostDetailDialog({ post, trigger }: { post: PostData; trigger: React.Re
               </Badge>
             )}
             {post.city && (
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className="cursor-pointer hover:bg-blue-50"
                 onClick={handleCityClick}
               >
@@ -121,9 +146,7 @@ function PostDetailDialog({ post, trigger }: { post: PostData; trigger: React.Re
 
           {/* 内容 */}
           <div className="prose max-w-none">
-            <p className="text-gray-700 leading-relaxed">
-              {post.content}
-            </p>
+            <p className="text-gray-700 leading-relaxed">{post.content}</p>
           </div>
 
           {/* メタ情報 */}
@@ -139,7 +162,7 @@ function PostDetailDialog({ post, trigger }: { post: PostData; trigger: React.Re
               </span>
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                {new Date(post.createdAt).toLocaleDateString('ja-JP')}
+                {new Date(post.createdAt).toLocaleDateString("ja-JP")}
               </span>
             </div>
           </div>
@@ -185,7 +208,10 @@ function MapSearchComponent({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -213,7 +239,9 @@ function MapSearchComponent({
         .map((post) => ({
           id: `post-${post.id}`,
           name: post.title,
-          address: `${post.country?.jaName || ""} ${post.city?.jaName || ""}`.trim(),
+          address: `${post.country?.jaName || ""} ${
+            post.city?.jaName || ""
+          }`.trim(),
           type: "post" as const,
           lat: post.latitude,
           lng: post.longitude,
@@ -311,9 +339,13 @@ function MapSearchComponent({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate text-base">{result.name}</div>
+                  <div className="font-medium text-gray-900 truncate text-base">
+                    {result.name}
+                  </div>
                   {result.address && (
-                    <div className="text-sm text-gray-500 truncate">{result.address}</div>
+                    <div className="text-sm text-gray-500 truncate">
+                      {result.address}
+                    </div>
                   )}
                   {result.type === "post" && result.post && (
                     <div className="flex items-center gap-2 mt-2">
@@ -381,11 +413,19 @@ export default function MapPage() {
     <div className="relative h-screen w-full bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
       {/* フィルターボタン - 左上 */}
       <div className="absolute top-4 left-4 z-[1000] flex gap-2">
-        <Button variant="outline" size="sm" className="bg-white/95 backdrop-blur-sm border-gray-200/50">
+        <Button
+          variant="outline"
+          size="sm"
+          className="bg-white/95 backdrop-blur-sm border-gray-200/50"
+        >
           <AlertTriangle className="h-4 w-4 mr-2" />
           トラブル種別
         </Button>
-        <Button variant="outline" size="sm" className="bg-white/95 backdrop-blur-sm border-gray-200/50">
+        <Button
+          variant="outline"
+          size="sm"
+          className="bg-white/95 backdrop-blur-sm border-gray-200/50"
+        >
           <Globe className="h-4 w-4 mr-2" />
           国・地域
         </Button>
@@ -412,17 +452,20 @@ export default function MapPage() {
         <MapContainer
           center={center}
           zoom={zoom}
-          minZoom={2}
+          minZoom={3}
           maxBounds={[
-            [-90, -180],
-            [90, 180],
+            [-85.0511, -180],
+            [85.0511, 180],
           ]}
+          worldCopyJump={false}
+          maxBoundsViscosity={1.0}
           style={{ height: "100%", width: "100%" }}
           className="z-0"
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            noWrap={true}
           />
 
           <ChangeView coords={center} zoom={zoom} />
@@ -449,13 +492,13 @@ export default function MapPage() {
                           onError={(e) => {
                             // 画像が読み込めない場合の処理
                             const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
+                            target.style.display = "none";
                           }}
                         />
                       </div>
                     </CardHeader>
                   )}
-                  
+
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       <div>
@@ -480,8 +523,8 @@ export default function MapPage() {
                           </Badge>
                         )}
                         {post.city && (
-                          <Badge 
-                            variant="outline" 
+                          <Badge
+                            variant="outline"
                             className="text-xs cursor-pointer hover:bg-blue-50"
                             onClick={() => handleCityClick(post.city!.id)}
                           >
@@ -503,7 +546,7 @@ export default function MapPage() {
                             {post.user?.name || "匿名"}
                           </span>
                         </div>
-                        <PostDetailDialog 
+                        <PostDetailDialog
                           post={post}
                           trigger={
                             <Button size="sm" variant="outline">
@@ -537,13 +580,13 @@ export default function MapPage() {
                     onError={(e) => {
                       // 画像が読み込めない場合の処理
                       const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
+                      target.style.display = "none";
                     }}
                   />
                 </div>
               </CardHeader>
             )}
-            
+
             <CardContent className="p-4 md:p-6 overflow-y-auto max-h-[45vh] md:max-h-[55vh]">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1 min-w-0">
@@ -563,8 +606,8 @@ export default function MapPage() {
                       </Badge>
                     )}
                     {selectedPost.city && (
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className="text-xs cursor-pointer hover:bg-blue-50"
                         onClick={() => handleCityClick(selectedPost.city!.id)}
                       >
@@ -603,13 +646,9 @@ export default function MapPage() {
                   <Button variant="outline" size="sm">
                     共有
                   </Button>
-                  <PostDetailDialog 
+                  <PostDetailDialog
                     post={selectedPost}
-                    trigger={
-                      <Button size="sm">
-                        詳細を見る
-                      </Button>
-                    }
+                    trigger={<Button size="sm">詳細を見る</Button>}
                   />
                 </div>
               </div>
@@ -623,7 +662,9 @@ export default function MapPage() {
         <Card className="bg-white/95 backdrop-blur-sm border-gray-200/50">
           <CardContent className="p-3">
             <div className="text-center">
-              <div className="text-xl md:text-2xl font-bold text-gray-900">{posts.length}</div>
+              <div className="text-xl md:text-2xl font-bold text-gray-900">
+                {posts.length}
+              </div>
               <div className="text-xs md:text-sm text-gray-500">件の投稿</div>
             </div>
           </CardContent>
