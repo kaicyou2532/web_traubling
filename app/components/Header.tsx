@@ -38,10 +38,18 @@ export default function Header({
   return (
     <header
       className={`bg-white shadow-md sticky top-0 z-50 h-16 flex items-center
-        transition-transform duration-300 ease-in-out
-        ${isVisible ? "translate-y-0" : "-translate-y-full"}`} // isVisibleに応じてクラスを適用
+  transition-transform duration-300 ease-in-out
+  ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
     >
-      <div className="container mx-auto px-4 w-full flex justify-between items-center">
+      <div
+        className={`w-full flex justify-between items-center transition-all duration-300
+    ${
+      isHomePage
+        ? "px-4 sm:px-4 lg:px-4" // ランディングページ（SideMapあり）は少し広め
+        : "px-6 sm:px-8 lg:px-12" // その他ページは余白多め
+    }`}
+      >
+        {/* 左側：ロゴやナビ */}
         <div className="flex items-center gap-4">
           {isHomePage && (
             <button
@@ -54,31 +62,37 @@ export default function Header({
             </button>
           )}
 
-          <Link href="/" className="flex items-center flex-shrink-0">
+          <Link
+            href="/"
+            className={`flex items-center flex-shrink-0 ${
+              isHomePage ? "" : "-ml-2"
+            }`}
+          >
             <Image
               src="/traubling_logo.png"
               alt="Traubling ロゴ"
               height={40}
               width={160}
               priority
+              className="mr-6"
             />
           </Link>
 
           {!isHomePage && (
-            <nav className="flex items-center gap-4">
+            <nav className="flex items-center gap-6">
               <Link
                 href="/"
                 className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
               >
                 <MagnifyingGlassIcon className="h-6 w-6" />
-                <span className="hidden xl:inline ml-1.5">探す</span>
+                <span className="hidden xl:inline ml-1">探す</span>
               </Link>
               <Link
                 href="/cities/international"
                 className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
               >
                 <GlobeAsiaAustraliaIcon className="h-6 w-6" />
-                <span className="hidden xl:inline ml-1.5">
+                <span className="hidden xl:inline ml-1">
                   海外で気をつけること
                 </span>
               </Link>
@@ -87,7 +101,7 @@ export default function Header({
                 className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
               >
                 <MapIcon className="h-6 w-6" />
-                <span className="hidden xl:inline ml-1.5">
+                <span className="hidden xl:inline ml-1">
                   国内で気をつけること
                 </span>
               </Link>
@@ -96,36 +110,34 @@ export default function Header({
                 className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
               >
                 <MapPinIcon className="h-6 w-6" />
-                <span className="hidden xl:inline ml-1.5">
-                  地図から探す
-                </span>
+                <span className="hidden xl:inline ml-1">地図から探す</span>
               </Link>
               {session && (
-                <Link
-                  href="/post"
-                  className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
-                >
-                  <PencilSquareIcon className="h-6 w-6" />
-                  <span className="hidden xl:inline ml-1.5">
-                    トラブルを共有する
-                  </span>
-                </Link>
-              )}
-              {session && (
-                <Link
-                  href="/mypage"
-                  className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
-                >
-                  <UserCircleIcon className="h-6 w-6" />
-                  <span className="hidden xl:inline ml-1.5">マイページ</span>
-                </Link>
+                <>
+                  <Link
+                    href="/post"
+                    className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
+                  >
+                    <PencilSquareIcon className="h-6 w-6" />
+                    <span className="hidden xl:inline ml-1">
+                      トラブルを共有する
+                    </span>
+                  </Link>
+                  <Link
+                    href="/mypage"
+                    className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
+                  >
+                    <UserCircleIcon className="h-6 w-6" />
+                    <span className="hidden xl:inline ml-1">マイページ</span>
+                  </Link>
+                </>
               )}
             </nav>
           )}
         </div>
 
-        {/* 右側のユーザーエリア */}
-        <div className="flex items-center justify-end gap-3">
+        {/* 右側：ログイン関連 */}
+        <div className="flex items-center justify-end gap-3 pr-2 sm:pr-4 lg:pr-8">
           {!session && (
             <AuthModal>
               <button

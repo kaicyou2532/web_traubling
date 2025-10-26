@@ -65,8 +65,8 @@ export default function Sidebar({
           href="/map"
           className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
         >
-          <MapPinIcon className="h-6 w-6" />
-          <span className="hidden xl:inline ml-1.5">地図から探す</span>
+          <MapPinIcon className="h-7 w-7" />
+          {!compact && <span>地図から探す</span>}
         </Link>
         {session && (
           <Link
