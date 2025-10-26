@@ -69,34 +69,22 @@ export default function SearchResults({
   const [hoveredPostId, setHoveredPostId] = useState<number | null>(null);
   const router = useRouter();
 
+  // 有効な座標を持つ投稿をフィルタリング（デバッグ用）
   const postsWithLocation = posts.filter((post) => {
     const lat = post.latitude;
     const lng = post.longitude;
 
     return (
-      // 緯度が有効な数値であること (null, undefined, NaNなどを排除)
       typeof lat === "number" &&
       isFinite(lat) &&
       lat >= -90 &&
       lat <= 90 &&
-      // 経度が有効な数値であること
       typeof lng === "number" &&
       isFinite(lng) &&
-      lng >= -180 && // 経度の有効範囲チェック (無効な 275.57... のような値を排除)
+      lng >= -180 &&
       lng <= 180
     );
   });
-
-  // 地図の中心座標を計算（投稿の平均座標）
-  const mapCenter =
-    postsWithLocation.length > 0
-      ? ([
-          postsWithLocation.reduce((sum, post) => sum + post.latitude!, 0) /
-            postsWithLocation.length,
-          postsWithLocation.reduce((sum, post) => sum + post.longitude!, 0) /
-            postsWithLocation.length,
-        ] as [number, number])
-      : ([35.6762, 139.6503] as [number, number]); // デフォルトは東京
 
   useEffect(() => {
     async function fetchPosts() {
@@ -188,8 +176,18 @@ export default function SearchResults({
     e.stopPropagation();
 
     try {
+      // 現在のいいね状態を取得
+      const currentPost = posts.find(p => p.id === postId);
+      if (!currentPost) return;
+
       const res = await fetch(`/api/posts/${postId}/like`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          isLiked: currentPost.isLiked
+        }),
       });
 
       if (res.ok) {
@@ -272,9 +270,9 @@ export default function SearchResults({
 
   return (
     <>
-      <div className="flex gap-6">
-        {/* 左側：検索結果リスト */}
-        <div className="flex-1 space-y-6">
+      <div className="w-full">
+        {/* 検索結果リスト */}
+        <div className="space-y-6">
           <h2 className="text-2xl font-bold mb-4">検索結果: {totalCount}件</h2>
           {posts.map((post) => (
             <div
@@ -286,58 +284,125 @@ export default function SearchResults({
                 hoveredPostId === post.id ? "ring-2 ring-blue-300" : ""
               }`}
             >
-              <div className="p-6">
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                  <MapPinIcon className="h-4 w-4" />
-                  <span>{post.country?.jaName || "不明"}</span>
-                  {post.city && <span>・{post.city.jaName}</span>}
-                  {post.latitude && post.longitude && (
-                    <span className="ml-auto text-blue-500 text-xs">
-                      📍 地図で表示
-                    </span>
-                  )}
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-gray-800">
-                  {post.title}
-                </h3>
-                <div
-                  className="text-gray-600 mb-4 line-clamp-3"
-                  dangerouslySetInnerHTML={{ __html: post.content }}
-                />
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {post.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <div className="flex items-center gap-4 text-gray-500">
-                    <button
-                      onClick={(e) => handleLikeClick(e, post.id)}
-                      className="flex items-center hover:scale-110 transition-transform"
-                    >
-                      {post.isLiked ? (
-                        <HeartIcon className="h-5 w-5 mr-1 text-red-500" />
-                      ) : (
-                        <HeartOutlineIcon className="h-5 w-5 mr-1 text-gray-400 hover:text-red-500" />
-                      )}
-                      <span className={post.isLiked ? "text-red-500" : ""}>
-                        {post.likeCount || 0}
+              <div className="flex h-auto">
+                {/* 左側：投稿コンテンツ */}
+                <div className="flex-1 p-6 flex flex-col">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                    <MapPinIcon className="h-4 w-4" />
+                    <span>{post.country?.jaName || "不明"}</span>
+                    {post.city && <span>・{post.city.jaName}</span>}
+                    {post.latitude && post.longitude && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkerClick(post);
+                        }}
+                        className="ml-auto text-blue-600 hover:text-blue-800 text-xs underline"
+                      >
+                        地図で確認する
+                      </button>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3 text-gray-800">
+                    {post.title}
+                  </h3>
+                  <div
+                    className="text-gray-600 mb-4 line-clamp-3 flex-1"
+                    dangerouslySetInnerHTML={{ __html: post.content }}
+                  />
+                  <div className="mt-auto">
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {post.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <div className="flex items-center gap-4 text-gray-500">
+                        <button
+                          onClick={(e) => handleLikeClick(e, post.id)}
+                          className="flex items-center hover:scale-110 transition-transform"
+                        >
+                          {post.isLiked ? (
+                            <HeartIcon className="h-5 w-5 mr-1 text-red-500" />
+                          ) : (
+                            <HeartOutlineIcon className="h-5 w-5 mr-1 text-gray-400 hover:text-red-500" />
+                          )}
+                          <span className={post.isLiked ? "text-red-500" : ""}>
+                            {post.likeCount || 0}
+                          </span>
+                        </button>
+                        <div className="flex items-center">
+                          <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
+                          <span>{post.comments.length}</span>
+                        </div>
+                      </div>
+                      <span className="text-sm text-[#007B63]">
+                        {post.user.name}
                       </span>
-                    </button>
-                    <div className="flex items-center">
-                      <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
-                      <span>{post.comments.length}</span>
                     </div>
                   </div>
-                  <span className="text-sm text-[#007B63]">
-                    {post.user.name}
-                  </span>
                 </div>
+
+                {/* 右側：地図 */}
+                {post.latitude && post.longitude && (
+                  <div className="w-80 border-l border-gray-200">
+                    <div className="p-4 bg-gray-50 border-b">
+                      <h4 className="text-sm font-semibold text-gray-800 flex items-center">
+                        <MapPinIcon className="h-4 w-4 mr-2" />
+                        投稿位置
+                      </h4>
+                      <p className="text-xs text-gray-600">
+                        {post.country?.jaName}{post.city && ` - ${post.city.jaName}`}
+                      </p>
+                    </div>
+                    <div 
+                      className="h-64 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMarkerClick(post);
+                      }}
+                    >
+                      {typeof window !== "undefined" && (
+                        <MapContainer
+                          center={[post.latitude, post.longitude]}
+                          zoom={12}
+                          style={{ height: "100%", width: "100%" }}
+                          scrollWheelZoom={false}
+                          doubleClickZoom={false}
+                          dragging={false}
+                          zoomControl={false}
+                          attributionControl={false}
+                        >
+                          <TileLayer
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          />
+                          <Marker position={[post.latitude, post.longitude]}>
+                            <Popup>
+                              <div className="p-2 max-w-xs">
+                                <h4 className="font-semibold text-sm mb-1">
+                                  {post.title}
+                                </h4>
+                                <p className="text-xs text-gray-600">
+                                  {post.country?.jaName}
+                                  {post.city && ` - ${post.city.jaName}`}
+                                </p>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        </MapContainer>
+                      )}
+                      {/* 地図クリック促進オーバーレイ */}
+                      <div className="absolute top-2 right-2 bg-white bg-opacity-90 rounded-md px-3 py-1 text-xs text-gray-700 pointer-events-none shadow-md">
+                        クリックで詳細地図へ
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -361,84 +426,6 @@ export default function SearchResults({
             </div>
           )}
         </div>
-
-        {/* 右側：地図 */}
-        {postsWithLocation.length > 0 && (
-          <div className="w-96 h-[600px] sticky top-4">
-            <div className="bg-white rounded-xl shadow-md overflow-hidden h-full">
-              <div className="p-4 bg-gray-50 border-b">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  投稿位置
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {postsWithLocation.length}件の投稿
-                </p>
-                <button
-                  onClick={handleMapClick}
-                  className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
-                >
-                  フルスクリーン地図で見る →
-                </button>
-              </div>
-              <div
-                className="h-full cursor-pointer relative"
-                onClick={handleMapClick}
-              >
-                {typeof window !== "undefined" && (
-                  <MapContainer
-                    center={mapCenter}
-                    zoom={postsWithLocation.length === 1 ? 12 : 6}
-                    style={{ height: "100%", width: "100%" }}
-                    scrollWheelZoom={false}
-                    doubleClickZoom={false}
-                    dragging={false}
-                    zoomControl={false}
-                  >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    />
-                    {postsWithLocation.map((post) => (
-                      <Marker
-                        key={post.id}
-                        position={[post.latitude!, post.longitude!]}
-                        eventHandlers={{
-                          click: (e) => {
-                            e.originalEvent.stopPropagation();
-                            handleMarkerClick(post);
-                          },
-                        }}
-                      >
-                        <Popup>
-                          <div className="p-2 max-w-xs">
-                            <h4 className="font-semibold text-sm mb-1">
-                              {post.title}
-                            </h4>
-                            <p className="text-xs text-gray-600 mb-2">
-                              {post.country?.jaName}
-                              {post.city && ` - ${post.city.jaName}`}
-                            </p>
-                            <p className="text-xs text-gray-500 line-clamp-2">
-                              {stripHtmlTags(post.content)}
-                            </p>
-                            <button
-                              onClick={() => handleMarkerClick(post)}
-                              className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
-                            >
-                              詳細地図で見る →
-                            </button>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    ))}
-                  </MapContainer>
-                )}
-                {/* クリック可能であることを示すオーバーレイ */}
-                <div className="absolute inset-0 bg-transparent hover:bg-blue-50 hover:bg-opacity-20 transition-colors duration-200 pointer-events-none" />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       <CommentModal

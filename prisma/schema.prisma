@@ -72,6 +72,7 @@ model User {
   posts         Post[]
   Profile       Profile?
   sessions      Session[]
+  likes         Like[]
 }
 
 model Post {
@@ -90,6 +91,7 @@ model Post {
   latitude  Float?
   longitude Float?
   comments    Comment[]
+  likes       Like[]
   city        City      @relation(fields: [cityId], references: [id])
   country     Country   @relation(fields: [countryId], references: [id])
   trouble     Trouble   @relation(fields: [troubleId], references: [id])
@@ -137,4 +139,15 @@ model Profile {
   createdAt DateTime? @default(now()) @db.Timestamp(6)
   updatedAt DateTime? @default(now()) @db.Timestamp(6)
   User      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  postId    Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
 }

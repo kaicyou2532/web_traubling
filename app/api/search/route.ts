@@ -64,8 +64,16 @@ export async function GET(req: NextRequest) {
     const [posts, totalCount] = await Promise.all([
       prisma.post.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          latitude: true,  // 緯度を追加
+          longitude: true, // 経度を追加
+          likeCount: true, // いいね数を追加
+          createdAt: true,
           country: { select: { id: true, jaName: true, enName: true } },
+          city: { select: { id: true, jaName: true, enName: true } },    // 都市を追加
           user: { select: { name: true } },
           comments: { select: { id: true } },
           trouble: { select: { jaName: true, enName: true } },
@@ -77,22 +85,28 @@ export async function GET(req: NextRequest) {
       prisma.post.count({ where }),
     ]);
 
-    // いいね機能は一時的に無効化
+    // いいね情報を取得（Likeモデルが利用可能になるまで一時的に無効化）
+    let userLikes: Record<number, boolean> = {};
 
     const formattedPosts = posts.map((post) => ({
       id: post.id,
       title: post.title,
       content: post.content,
+      latitude: post.latitude,   // 緯度を追加
+      longitude: post.longitude, // 経度を追加
       country: post.country
         ? { id: post.country.id, jaName: post.country.jaName, enName: post.country.enName }
         : null,
+      city: post.city
+        ? { id: post.city.id, jaName: post.city.jaName, enName: post.city.enName }
+        : null,                  // 都市を追加
       comments: post.comments || [],
       user: post.user ? { name: post.user.name } : { name: "匿名" },
       tags: [post.trouble?.jaName || post.trouble?.enName || "不明"],
       isJapan: post.country?.id === 1,
-      // いいね機能は一時的に無効化
-      likeCount: 0,
-      isLiked: false,
+      // いいね情報を追加
+      likeCount: post.likeCount || 0,
+      isLiked: userLikes[post.id] || false,
     }));
 
     return NextResponse.json({
