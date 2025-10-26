@@ -68,10 +68,23 @@ export default function SearchResults({
   const [hoveredPostId, setHoveredPostId] = useState<number | null>(null);
   const router = useRouter();
 
-  // 座標データがある投稿のみフィルタ
-  const postsWithLocation = posts.filter(
-    (post) => post.latitude && post.longitude
-  );
+  const postsWithLocation = posts.filter((post) => {
+    const lat = post.latitude;
+    const lng = post.longitude;
+
+    return (
+      // 緯度が有効な数値であること (null, undefined, NaNなどを排除)
+      typeof lat === "number" &&
+      isFinite(lat) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      // 経度が有効な数値であること
+      typeof lng === "number" &&
+      isFinite(lng) &&
+      lng >= -180 && // 経度の有効範囲チェック (無効な 275.57... のような値を排除)
+      lng <= 180
+    );
+  });
 
   // 地図の中心座標を計算（投稿の平均座標）
   const mapCenter =
@@ -100,6 +113,32 @@ export default function SearchResults({
         const data = await res.json();
         setPosts(data.posts || []);
         setTotalCount(data.totalCount || 0);
+
+        // ★★★ デバッグログを追加 ★★★
+        console.log("--- 投稿データデバッグ ---");
+        console.log("全投稿数:", data.posts.length);
+        const debugLocationPosts = (data.posts || []).filter((post: { latitude: any; longitude: any; }) => {
+          const lat = post.latitude;
+          const lng = post.longitude;
+          return (
+            typeof lat === "number" &&
+            isFinite(lat) &&
+            lat >= -90 &&
+            lat <= 90 &&
+            typeof lng === "number" &&
+            isFinite(lng) &&
+            lng >= -180 &&
+            lng <= 180
+          );
+        });
+        console.log(
+          "フィルタリング後の位置情報付き投稿数:",
+          debugLocationPosts.length
+        );
+        if (debugLocationPosts.length === 0) {
+          console.error("有効な位置情報を持つ投稿がゼロです。");
+        }
+        // ★★★ デバッグログ終了 ★★★
       } catch (error) {
         console.error("Error fetching posts:", error);
       } finally {
