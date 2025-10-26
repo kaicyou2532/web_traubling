@@ -101,38 +101,36 @@ export default function SearchResults({
         const res = await fetch(`/api/search?${params.toString()}`);
         const data = await res.json();
 
-      // ★★★ データのクリーンアップと数値変換を強化 ★★★
-      const processedPosts = (data.posts || []).map(
-        (post: Post) => {
+        // ★★★ データのクリーンアップと数値変換を強化 ★★★
+        const processedPosts = (data.posts || []).map((post: Post) => {
           let lat: number | undefined = post.latitude;
           let lng: number | undefined = post.longitude;
 
           // 1. 値が存在し、かつ数値でない（=文字列の）場合に parseFloat を試行
-          if (typeof lat !== 'number' && lat) {
-              // 文字列の "35.56..." を数値に変換
-              lat = parseFloat(String(lat));
+          if (typeof lat !== "number" && lat) {
+            // 文字列の "35.56..." を数値に変換
+            lat = parseFloat(String(lat));
           }
-          if (typeof lng !== 'number' && lng) {
-              // 文字列の "139.39..." を数値に変換
-              lng = parseFloat(String(lng));
+          if (typeof lng !== "number" && lng) {
+            // 文字列の "139.39..." を数値に変換
+            lng = parseFloat(String(lng));
           }
 
           // 2. 変換後に NaN (例: parseFloat("NULL")) や 無限大になった値を undefined に戻す
-          if (typeof lat !== 'number' || !isFinite(lat)) {
-              lat = undefined;
+          if (typeof lat !== "number" || !isFinite(lat)) {
+            lat = undefined;
           }
-          if (typeof lng !== 'number' || !isFinite(lng)) {
-              lng = undefined;
+          if (typeof lng !== "number" || !isFinite(lng)) {
+            lng = undefined;
           }
 
           return {
-              ...post,
-              latitude: lat,
-              longitude: lng,
+            ...post,
+            latitude: lat,
+            longitude: lng,
           };
-        }
-      );
-      
+        });
+
         setPosts(processedPosts);
         setTotalCount(data.totalCount || 0);
 
@@ -177,7 +175,7 @@ export default function SearchResults({
 
     try {
       // 現在のいいね状態を取得
-      const currentPost = posts.find(p => p.id === postId);
+      const currentPost = posts.find((p) => p.id === postId);
       if (!currentPost) return;
 
       const res = await fetch(`/api/posts/${postId}/like`, {
@@ -186,7 +184,7 @@ export default function SearchResults({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          isLiked: currentPost.isLiked
+          isLiked: currentPost.isLiked,
         }),
       });
 
@@ -350,17 +348,18 @@ export default function SearchResults({
 
                 {/* 右側：地図 */}
                 {post.latitude && post.longitude && (
-                  <div className="w-80 border-l border-gray-200">
+                  <div className="w-80 border-l border-gray-200 relative z-0">
                     <div className="p-4 bg-gray-50 border-b">
                       <h4 className="text-sm font-semibold text-gray-800 flex items-center">
                         <MapPinIcon className="h-4 w-4 mr-2" />
                         投稿位置
                       </h4>
                       <p className="text-xs text-gray-600">
-                        {post.country?.jaName}{post.city && ` - ${post.city.jaName}`}
+                        {post.country?.jaName}
+                        {post.city && ` - ${post.city.jaName}`}
                       </p>
                     </div>
-                    <div 
+                    <div
                       className="h-64 cursor-pointer hover:bg-gray-50 transition-colors relative"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -378,9 +377,7 @@ export default function SearchResults({
                           zoomControl={false}
                           attributionControl={false}
                         >
-                          <TileLayer
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                          />
+                          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                           <Marker position={[post.latitude, post.longitude]}>
                             <Popup>
                               <div className="p-2 max-w-xs">
