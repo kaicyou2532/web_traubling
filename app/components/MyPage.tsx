@@ -20,6 +20,8 @@ import { Label } from "@/components/ui/label";
 import { MapPin, Edit, Lock, Heart, MessageSquare, Globe } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 // 投稿の型定義
 interface Post {
@@ -764,15 +766,14 @@ export default function MyPage() {
                 />
               </div>
 
-              <div className="grid gap-2">
+              <div className="grid gap-2 mb-10">
                 <Label htmlFor="post-content">内容</Label>
-                <Textarea
-                  id="post-content"
-                  rows={6}
+                <ReactQuill
+                  theme="snow" // ツールバー付きの "snow" テーマを指定
                   value={currentPost.content}
-                  onChange={(e) =>
-                    setCurrentPost({ ...currentPost, content: e.target.value })
-                  }
+                  onChange={(
+                    content: string // 'e.target.value' ではなく、HTML文字列 'content' が直接渡される
+                  ) => setCurrentPost({ ...currentPost, content: content })}
                 />
               </div>
 
@@ -800,9 +801,8 @@ export default function MyPage() {
               </Button>
               <Button
                 type="button"
-                className="bg-[#007B63] hover:bg-[#006854]"
+                className="bg-[#007B63] hover:bg-[#006854] text-white"
                 onClick={handleSavePost}
-                
               >
                 保存
               </Button>
