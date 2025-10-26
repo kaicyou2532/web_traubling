@@ -1,5 +1,5 @@
-import Link from "next/link"
-import { SiFacebook, SiInstagram, SiX } from "@icons-pack/react-simple-icons"
+import Link from "next/link";
+import { SiFacebook, SiInstagram, SiX } from "@icons-pack/react-simple-icons";
 
 export default function Footer() {
   return (
@@ -15,22 +15,41 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/" className="hover:text-white transition-colors">
+                <Link
+                  href="/map"
+                  className="hover:text-white transition-colors"
+                >
+                  地図から探す
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/post"
+                  className="hover:text-white transition-colors"
+                >
                   トラブルを共有する
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">旅行の注意点</h3>
+            <h3 className="text-white font-semibold text-lg mb-4">
+              旅行の注意点
+            </h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="hover:text-white transition-colors">
+                <Link
+                  href="/cities/international"
+                  className="hover:text-white transition-colors"
+                >
                   海外で気をつけること
                 </Link>
               </li>
               <li>
-                <Link href="/" className="hover:text-white transition-colors">
+                <Link
+                  href="/cities/japan"
+                  className="hover:text-white transition-colors"
+                >
                   国内で気をつけること
                 </Link>
               </li>
@@ -52,17 +71,28 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">フォローする</h3>
+            <h3 className="text-white font-semibold text-lg mb-4">
+              フォローする
+            </h3>
             <div className="flex space-x-4">
-              <a href="/" className="text-gray-400 hover:text-white transition-colors">
+              <a
+                href="/"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <span className="sr-only">X（旧Twitter）</span>
                 <SiX />
               </a>
-              <a href="/" className="text-gray-400 hover:text-white transition-colors">
+              <a
+                href="/"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <span className="sr-only">Facebook</span>
                 <SiFacebook />
               </a>
-              <a href="/" className="text-gray-400 hover:text-white transition-colors">
+              <a
+                href="/"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <span className="sr-only">Instagram</span>
                 <SiInstagram />
               </a>
@@ -74,12 +104,18 @@ export default function Footer() {
           <nav className="mt-4 md:mt-0">
             <ul className="flex space-x-4 text-sm">
               <li>
-                <Link href="/privacy" className="hover:text-white transition-colors">
+                <Link
+                  href="/privacy"
+                  className="hover:text-white transition-colors"
+                >
                   プライバシーポリシー
                 </Link>
               </li>
               <li>
-                <Link href="/cookies" className="hover:text-white transition-colors">
+                <Link
+                  href="/cookies"
+                  className="hover:text-white transition-colors"
+                >
                   クッキーポリシー
                 </Link>
               </li>
@@ -88,5 +124,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
