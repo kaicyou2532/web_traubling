@@ -435,7 +435,10 @@ export default function MyPage() {
                   </div>
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-2">{post.title}</h3>
-                    <p className="text-gray-700 mb-3">{post.content}</p>
+                    <div
+                      className="text-gray-700 leading-relaxed rich-text-content"
+                      dangerouslySetInnerHTML={{ __html: post.content }}
+                    />
                     <div className="flex gap-2 mb-3">
                       {post.tags.map((tag) => (
                         <Badge
@@ -541,13 +544,16 @@ export default function MyPage() {
                       </div>
                       <div className="ml-auto flex items-center gap-1 text-xs text-gray-500">
                         <MapPin className="h-3 w-3" />
-                        <span>{post.country}{post.city && ` - ${post.city}`}</span>
+                        <span>
+                          {post.country}
+                          {post.city && ` - ${post.city}`}
+                        </span>
                       </div>
                     </div>
                   </div>
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-2">{post.title}</h3>
-                    <div 
+                    <div
                       className="text-gray-700 mb-3 line-clamp-3"
                       dangerouslySetInnerHTML={{ __html: post.content }}
                     />
@@ -796,6 +802,7 @@ export default function MyPage() {
                 type="button"
                 className="bg-[#007B63] hover:bg-[#006854]"
                 onClick={handleSavePost}
+                
               >
                 保存
               </Button>
