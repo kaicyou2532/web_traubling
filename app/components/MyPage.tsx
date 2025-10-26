@@ -32,6 +32,27 @@ interface Post {
   tags: string[]; // 例: ["ホテル", "予約"]
 }
 
+// いいねした投稿の型定義
+interface LikedPost {
+  id: number;
+  title: string;
+  content: string;
+  date: string;
+  likes: number;
+  comments: number;
+  tags: string[];
+  user: {
+    id: number;
+    name: string;
+    image: string | null;
+  };
+  country: string;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  isLiked: boolean;
+}
+
 // プロフィールの型定義
 interface Profile {
   name: string;
@@ -59,6 +80,7 @@ export default function MyPage() {
 
   // 投稿のサンプルデータ（初期は空）
   const [posts, setPosts] = useState<Post[]>([]);
+  const [likedPosts, setLikedPosts] = useState<LikedPost[]>([]);
   const [currentPost, setCurrentPost] = useState<Post | null>(null);
 
   // プロフィール情報の取得
@@ -129,6 +151,27 @@ export default function MyPage() {
 
     fetchPosts();
   }, [status, profile.username]); // profile.usernameに依存させることで、プロフィールロード後に投稿を取得
+
+  // いいねした投稿の取得
+  useEffect(() => {
+    const fetchLikedPosts = async () => {
+      if (status === "authenticated" && profile.username) {
+        try {
+          const response = await fetch("/api/user/liked-posts");
+          if (!response.ok) {
+            throw new Error("いいねした投稿の取得に失敗しました。");
+          }
+          const data: LikedPost[] = await response.json();
+          setLikedPosts(data);
+        } catch (error) {
+          console.error("いいねした投稿フェッチエラー:", error);
+          // エラー処理
+        }
+      }
+    };
+
+    fetchLikedPosts();
+  }, [status, profile.username]);
 
   // プロフィール更新処理
   const handleProfileUpdate = async () => {
@@ -441,29 +484,107 @@ export default function MyPage() {
         {/* いいねしたトラブル */}
         <TabsContent value="liked">
           <div className="grid gap-4">
-            <Card className="bg-white p-6 text-center">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Heart className="h-10 w-10 text-gray-400" />
+            {likedPosts.length === 0 ? (
+              <Card className="bg-white p-6 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center">
+                    <Heart className="h-10 w-10 text-gray-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg">
+                      まだいいねした投稿がありません
+                    </h3>
+                    <p className="text-gray-600 mt-2">
+                      他のユーザーの投稿をチェックしていいねしましょう
+                    </p>
+                  </div>
+                  <Link href="/">
+                    <Button
+                      type="button"
+                      className="bg-[#007B63] hover:bg-[#006854] text-white mt-2"
+                    >
+                      投稿を探す
+                    </Button>
+                  </Link>
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg">
-                    まだいいねした投稿がありません
-                  </h3>
-                  <p className="text-gray-600 mt-2">
-                    他のユーザーの投稿をチェックしていいねしましょう
-                  </p>
-                </div>
-                <Link href="/">
-                  <Button
-                    type="button"
-                    className="bg-[#007B63] hover:bg-[#006854] text-white mt-2"
-                  >
-                    投稿を探す
-                  </Button>
-                </Link>
-              </div>
-            </Card>
+              </Card>
+            ) : (
+              likedPosts.map((post) => (
+                <Card
+                  key={`liked-${post.id}`}
+                  className="bg-white overflow-hidden"
+                >
+                  <div className="p-4 border-b">
+                    <div className="flex items-center gap-3">
+                      {post.user.image ? (
+                        <Avatar className="w-10 h-10">
+                          <AvatarImage
+                            src={post.user.image || "/placeholder.svg"}
+                            alt={post.user.name}
+                          />
+                          <AvatarFallback className="bg-[#007B63] text-white">
+                            {post.user.name?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <Image
+                          src="/placeholder.svg?height=40&width=40"
+                          alt="ユーザーアイコン"
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      )}
+                      <div>
+                        <p className="font-semibold">{post.user.name}</p>
+                        <p className="text-xs text-gray-500">{post.date}</p>
+                      </div>
+                      <div className="ml-auto flex items-center gap-1 text-xs text-gray-500">
+                        <MapPin className="h-3 w-3" />
+                        <span>{post.country}{post.city && ` - ${post.city}`}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-lg mb-2">{post.title}</h3>
+                    <div 
+                      className="text-gray-700 mb-3 line-clamp-3"
+                      dangerouslySetInnerHTML={{ __html: post.content }}
+                    />
+                    <div className="flex gap-2 mb-3">
+                      {post.tags.map((tag, index) => (
+                        <Badge
+                          key={`liked-tag-${post.id}-${index}`}
+                          className="bg-[#007B63]/10 text-[#007B63] hover:bg-[#007B63]/20"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1 text-red-500">
+                          <Heart className="h-4 w-4 fill-current" />
+                          <span className="text-sm">{post.likes}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="flex items-center gap-1 text-gray-500"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          <span className="text-sm">{post.comments}</span>
+                        </button>
+                      </div>
+                      {post.latitude && post.longitude && (
+                        <div className="text-xs text-gray-500">
+                          位置情報あり
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
       </Tabs>
