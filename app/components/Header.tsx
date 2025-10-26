@@ -62,21 +62,40 @@ export default function Header({
             </button>
           )}
 
-          <Link
-            href="/"
-            className={`flex items-center flex-shrink-0 ${
-              isHomePage ? "" : "-ml-2"
-            }`}
-          >
-            <Image
-              src="/traubling_logo.png"
-              alt="Traubling ロゴ"
-              height={40}
-              width={160}
-              priority
-              className="mr-6"
-            />
-          </Link>
+          {isHomePage ? (
+            <button
+              onClick={() => {
+                // ホームページの場合、検索状態をクリアする関数を呼び出す
+                if (typeof window !== 'undefined' && (window as any).handleClearSearch) {
+                  (window as any).handleClearSearch();
+                }
+              }}
+              className={`flex items-center flex-shrink-0 hover:opacity-80 transition-opacity`}
+            >
+              <Image
+                src="/traubling_logo.png"
+                alt="Traubling ロゴ"
+                height={40}
+                width={160}
+                priority
+                className="mr-6"
+              />
+            </button>
+          ) : (
+            <Link
+              href="/"
+              className={`flex items-center flex-shrink-0 -ml-2`}
+            >
+              <Image
+                src="/traubling_logo.png"
+                alt="Traubling ロゴ"
+                height={40}
+                width={160}
+                priority
+                className="mr-6"
+              />
+            </Link>
+          )}
 
           {!isHomePage && (
             <nav className="flex items-center gap-6">

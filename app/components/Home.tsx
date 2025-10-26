@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SearchResults from "./SearchResults";
 import AllContent from "./AllContent";
 import DomesticContent from "./DomesticContent";
@@ -31,10 +31,31 @@ export default function Home({ japanCities, otherCities }: Props) {
     setSearchTerm("");
   };
 
+  const handleClearSearch = () => {
+    setIsSearching(false);
+    setSearchTerm("");
+    setSearchCategory("all");
+  };
+
+  // ヘッダーのロゴクリック用にグローバルに関数を公開
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).handleClearSearch = handleClearSearch;
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).handleClearSearch;
+      }
+    };
+  }, []);
+
   const renderContent = () => {
     if (isSearching) {
       return (
-        <SearchResults searchTerm={searchTerm} category={searchCategory} />
+        <SearchResults 
+          searchTerm={searchTerm} 
+          category={searchCategory} 
+        />
       );
     }
 
