@@ -1,35 +1,35 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { X } from "lucide-react"
-import {UserCircleIcon} from "@heroicons/react/24/solid"
+import { useState } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { X } from "lucide-react";
+import { UserCircleIcon } from "@heroicons/react/24/solid";
 
 interface Comment {
-  id: number
-  author: string
-  content: string
+  id: number;
+  author: string;
+  content: string;
 }
 
 interface Issue {
-  id: number
-  title: string
-  author: string
-  date: string
-  content: string
-  category: string
+  id: number;
+  title: string;
+  author: string;
+  date: string;
+  content: string;
+  category: string;
 }
 
 interface CommentModalProps {
-  isOpen: boolean
-  onClose: () => void
-  issue: Issue | null
+  isOpen: boolean;
+  onClose: () => void;
+  issue: Issue | null;
 }
 
 export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
-  const [newComment, setNewComment] = useState("")
+  const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<Comment[]>([
     {
       id: 1,
@@ -46,7 +46,7 @@ export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
       author: "村田花子",
       content: "それは大変でしたね",
     },
-  ])
+  ]);
 
   const handleSubmitComment = () => {
     if (newComment.trim()) {
@@ -57,22 +57,26 @@ export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
           author: "ゲストユーザー",
           content: newComment,
         },
-      ])
-      setNewComment("")
+      ]);
+      setNewComment("");
     }
-  }
+  };
 
-  if (!issue) return null
+  if (!issue) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden flex flex-col p-0 bg-white">
         <div className="p-6 flex-shrink-0 border-b">
-          <button type="button" onClick={onClose} className="absolute right-4 top-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-4 top-4"
+          >
             <X className="h-4 w-4" />
           </button>
           <div className="flex items-center gap-3 mb-3">
-          <UserCircleIcon className="h-8 w-8" />
+            <UserCircleIcon className="h-8 w-8" />
             <span className="font-medium">{issue.author}</span>
           </div>
           <h2 className="text-xl font-bold mb-1　">{issue.title}</h2>
@@ -81,7 +85,10 @@ export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
 
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 border-b">
-            <p className="text-gray-700">{issue.content}</p>
+            <div
+              className="text-gray-700 leading-relaxed rich-text-content"
+              dangerouslySetInnerHTML={{ __html: issue.content }}
+            />
           </div>
 
           <div className="p-6">
@@ -107,11 +114,14 @@ export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
             onChange={(e) => setNewComment(e.target.value)}
             className="mb-4"
           />
-          <Button onClick={handleSubmitComment} className="w-full bg-gray-700 hover:bg-custom-green text-white">
+          <Button
+            onClick={handleSubmitComment}
+            className="w-full bg-gray-700 hover:bg-custom-green text-white"
+          >
             コメントを投稿する
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
