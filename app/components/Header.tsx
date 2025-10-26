@@ -164,14 +164,31 @@ export default function Header({
                 </button>
               </PopoverTrigger>
               <PopoverContent className="bg-white w-[200px]" align="end">
-                <form action={signOutAction}>
-                  <button
-                    type="submit"
-                    className="w-full text-left p-2 hover:bg-gray-100 rounded"
+                <div className="py-1">
+                  <Link
+                    href="/mypage"
+                    className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 rounded transition-colors"
                   >
-                    ログアウト
-                  </button>
-                </form>
+                    <UserCircleIcon className="h-4 w-4" />
+                    マイページ
+                  </Link>
+                  <Link
+                    href="/post"
+                    className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 rounded transition-colors"
+                  >
+                    <PencilSquareIcon className="h-4 w-4" />
+                    投稿する
+                  </Link>
+                  <hr className="my-1 border-gray-200" />
+                  <form action={signOutAction}>
+                    <button
+                      type="submit"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded transition-colors text-red-600 hover:text-red-700"
+                    >
+                      ログアウト
+                    </button>
+                  </form>
+                </div>
               </PopoverContent>
             </Popover>
           )}
