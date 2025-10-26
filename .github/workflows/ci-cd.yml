@@ -10,7 +10,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE: ghcr.io/kaicyou2532/REPO_NAME
+  IMAGE: ghcr.io/kaicyou2532/web_traubling
 
 jobs:
   build-and-deploy:
