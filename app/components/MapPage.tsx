@@ -410,9 +410,9 @@ export default function MapPage() {
   };
 
   return (
-    <div className="relative h-screen w-full bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
+    <div className="relative h-screen w-full bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden ">
       {/* フィルターボタン - 左上 */}
-      <div className="absolute top-4 left-4 z-[1000] flex gap-2">
+      <div className="fixed top-20 left-20 z-[1000] flex gap-2">
         <Button
           variant="outline"
           size="sm"
@@ -432,7 +432,7 @@ export default function MapPage() {
       </div>
 
       {/* 検索バー - 右上（大きくしました） */}
-      <div className="absolute top-4 right-4 z-[1000]">
+      <div className="fixed top-20 right-4 z-[1000]">
         <MapSearchComponent
           posts={posts}
           onLocationSelect={handleLocationSelect}
