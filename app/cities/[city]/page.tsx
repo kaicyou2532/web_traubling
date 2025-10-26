@@ -33,6 +33,13 @@ export default async function CityPage({ params }: { params: { city: string } })
 
   const { jaName, country, posts } = city
 
+  // PostWithAllData型に合うようにデータを変換
+  const postsWithAllData = posts.map(post => ({
+    ...post,
+    isLiked: false,
+    likeCount: 0
+  }))
+
   return (
     <div>
       <div className="relative h-[50vh] w-full">
@@ -50,7 +57,7 @@ export default async function CityPage({ params }: { params: { city: string } })
       </div>
 
       <div className="container mx-auto px-4 py-12">
-        <CommonIssues city={jaName} posts={posts} categories={categories}/>
+        <CommonIssues city={jaName} posts={postsWithAllData} categories={categories}/>
         {/* <CitySpecificTroubles city={jaName} />
         <CityPrecautions city={jaName} /> */}
       </div>

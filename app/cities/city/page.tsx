@@ -28,7 +28,7 @@ export default function CityPage({ params }: { params: { city: string } }) {
       </div>
 
       <div className="container mx-auto px-4 py-12">
-        <CommonIssues city={cityData.name} />
+        <CommonIssues city={cityData.name} posts={[]} categories={[]} />
         <CitySpecificTroubles city={cityData.name} />
         <CityPrecautions city={cityData.name} />
       </div>

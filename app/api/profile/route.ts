@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
+import { auth } from "@/auth"
 import { PrismaClient } from "@prisma/client"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route" // authOptionsのパスを適宜修正してください
 
 const prisma = new PrismaClient()
 
@@ -11,7 +10,7 @@ const prisma = new PrismaClient()
  * @returns {Response} プロフィール情報、またはエラーメッセージ
  */
 export async function GET() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session || !session.user?.email) {
     return NextResponse.json({ message: "認証されていません。" }, { status: 401 })
@@ -61,7 +60,7 @@ export async function GET() {
  * @returns {Response} 更新されたプロフィール情報、またはエラーメッセージ
  */
 export async function PUT(request: Request) {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session || !session.user?.email) {
     return NextResponse.json({ message: "認証されていません。" }, { status: 401 })

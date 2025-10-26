@@ -209,15 +209,16 @@ export default function MapView() {
   const [selectedPost, setSelectedPost] = useState<MapPost | null>(null);
   const [mapCenter, setMapCenter] = useState({ lat: 35.6762, lng: 139.6503 });
 
-  // 検索結果更新時の処理
-  const handleSearchResults = (results: MapPost[]) => {
-    setMapPosts(results);
+  // 検索処理（文字列クエリ用）
+  const handleSearch = (query: string, result?: SearchResult) => {
+    // ここで検索APIを呼び出してMapPostsを取得
+    // 今回は一時的に空の配列をセット
+    setMapPosts([]);
   };
 
   // 検索結果選択時の処理
-  const handleResultSelect = (result: MapPost) => {
-    setSelectedPost(result);
-    setMapCenter({ lat: result.latitude, lng: result.longitude });
+  const handleResultSelect = (lat: number, lng: number) => {
+    setMapCenter({ lat, lng });
   };
 
   // 地図の中心を移動する処理
@@ -230,9 +231,8 @@ export default function MapView() {
       {/* 検索バー */}
       <div className="absolute top-6 left-6 z-20">
         <MapSearch
-          onSearch={handleSearchResults}
+          onSearch={handleSearch}
           onLocationSelect={handleResultSelect}
-          onLocationMove={handleLocationMove}
         />
       </div>
 
@@ -344,131 +344,4 @@ export default function MapView() {
   );
 }
 
-import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
-
-export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const query = searchParams.get("q") || "";
-    const bounds = searchParams.get("bounds"); // 地図の表示範囲
-
-    // 検索条件を構築
-    const searchTerms = query.split(/\s+/).filter(Boolean);
-
-    const whereCondition = {
-      AND: [
-        // テキスト検索
-        ...searchTerms.map((term) => ({
-          OR: [
-            { title: { contains: term, mode: "insensitive" } },
-            { content: { contains: term, mode: "insensitive" } },
-            { country: { jaName: { contains: term, mode: "insensitive" } } },
-            { country: { enName: { contains: term, mode: "insensitive" } } },
-            { trouble: { jaName: { contains: term, mode: "insensitive" } } },
-            { trouble: { enName: { contains: term, mode: "insensitive" } } },
-            { city: { jaName: { contains: term, mode: "insensitive" } } },
-            { city: { enName: { contains: term, mode: "insensitive" } } },
-          ],
-        })),
-      ],
-    };
-
-    const posts = await prisma.post.findMany({
-      where: whereCondition,
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        createdAt: true,
-        country: {
-          select: {
-            id: true,
-            jaName: true,
-            enName: true,
-          },
-        },
-        city: {
-          select: {
-            id: true,
-            jaName: true,
-            enName: true,
-          },
-        },
-        trouble: {
-          select: {
-            jaName: true,
-            enName: true,
-          },
-        },
-        user: {
-          select: {
-            name: true,
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    });
-
-    // 座標付きデータに変換（国名から推定）
-    const postsWithCoordinates = posts.map((post) => ({
-      id: post.id,
-      title: post.title,
-      content: post.content.substring(0, 100) + "...", // プレビュー用に短縮
-      latitude: getCoordinatesByCountry(post.country?.jaName).lat,
-      longitude: getCoordinatesByCountry(post.country?.jaName).lng,
-      country: post.country,
-      city: post.city,
-      trouble: post.trouble,
-      user: post.user,
-      commentCount: post._count.comments,
-      createdAt: post.createdAt,
-    }));
-
-    return NextResponse.json({
-      posts: postsWithCoordinates,
-      total: posts.length,
-    });
-  } catch (error) {
-    console.error("地図検索エラー:", error);
-    return NextResponse.json(
-      { error: "検索に失敗しました" },
-      { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
-  }
-}
-
-// 国名から座標を取得する関数
-function getCoordinatesByCountry(
-  countryName: string | null | undefined
-) {
-  const coordinates: { [key: string]: { lat: number; lng: number } } = {
-    日本: { lat: 35.6762, lng: 139.6503 },
-    アメリカ: { lat: 39.8283, lng: -98.5795 },
-    イギリス: { lat: 51.5074, lng: -0.1278 },
-    フランス: { lat: 48.8566, lng: 2.3522 },
-    ドイツ: { lat: 52.52, lng: 13.405 },
-    オーストラリア: { lat: -33.8688, lng: 151.2093 },
-    カナダ: { lat: 45.4215, lng: -75.6972 },
-    韓国: { lat: 37.5665, lng: 126.978 },
-    中国: { lat: 39.9042, lng: 116.4074 },
-    タイ: { lat: 13.7563, lng: 100.5018 },
-    インド: { lat: 20.5937, lng: 78.9629 },
-    ブラジル: { lat: -14.235, lng: -51.9253 },
-    メキシコ: { lat: 23.6345, lng: -102.5528 },
-    スペイン: { lat: 40.4637, lng: -3.7492 },
-    イタリア: { lat: 41.8719, lng: 12.5674 },
-  };
-
-  return coordinates[countryName || ""] || { lat: 35.6762, lng: 139.6503 }; // デフォルトは東京
-}

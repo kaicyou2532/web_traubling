@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
 
   const comments = await prisma.comment.findMany({
     where: { postId: Number(postId) },
-    orderBy: { createdAt: "asc" },
+    orderBy: { id: "asc" },
   })
 
   return NextResponse.json(comments)
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     data: {
       content,
       postId: Number(postId),
-      userId: session.user.id,
+      userId: Number(session.user.id),
     },
   })
 
