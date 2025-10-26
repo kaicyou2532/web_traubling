@@ -69,10 +69,11 @@ model User {
   profile       String?
   accounts      Account[]
   Authenticator Authenticator[]
+  comments      Comment[]
+  likes         Like[]
   posts         Post[]
   Profile       Profile?
   sessions      Session[]
-  likes         Like[]
 }
 
 model Post {
@@ -88,8 +89,8 @@ model Post {
   travelYear  Int       @map("travelYear")
   cityId      Int       @default(100) @map("cityId")
   likeCount   Int       @default(0) @map("likeCount")
-  latitude  Float?
-  longitude Float?
+  latitude    Float?
+  longitude   Float?
   comments    Comment[]
   likes       Like[]
   city        City      @relation(fields: [cityId], references: [id])
@@ -124,11 +125,13 @@ model Trouble {
 }
 
 model Comment {
-  id      Int    @id @default(autoincrement())
-  content String
-  postId  Int
-  userId  Int
-  post    Post   @relation(fields: [postId], references: [id])
+  id        Int      @id @default(autoincrement())
+  content   String
+  postId    Int
+  userId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Profile {
@@ -146,8 +149,8 @@ model Like {
   userId    String
   postId    Int
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
 }

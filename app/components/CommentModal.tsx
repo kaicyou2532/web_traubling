@@ -33,6 +33,11 @@ export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
   const { data: session } = useSession();
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -52,11 +57,22 @@ export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
       }
     };
 
-    if (isOpen) fetchComments();
+    if (isOpen) {
+      fetchComments();
+    } else {
+      // モーダルが閉じられたときに状態をリセット
+      setNewComment("");
+      setSubmitStatus({ type: null, message: '' });
+      setIsSubmitting(false);
+    }
   }, [isOpen, issue]);
 
   const handleSubmitComment = async () => {
     if (!newComment.trim() || !issue || !session) return;
+    
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
+
     try {
       const res = await fetch("/api/comment", {
         method: "POST",
@@ -64,22 +80,41 @@ export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
         body: JSON.stringify({ postId: issue.id, content: newComment }),
       });
 
-      if (res.ok) {
-        const newPosted = await res.json();
+      const data = await res.json();
+
+      if (res.ok && data.success) {
         setComments((prev) => [
           ...prev,
           {
-            id: newPosted.id,
+            id: data.id,
             author: session.user?.name || "あなた",
-            content: newPosted.content,
+            content: data.content,
           },
         ]);
         setNewComment("");
+        setSubmitStatus({
+          type: 'success',
+          message: data.message || 'コメントを投稿しました！'
+        });
+        
+        // 3秒後に成功メッセージを消す
+        setTimeout(() => {
+          setSubmitStatus({ type: null, message: '' });
+        }, 3000);
       } else {
-        console.error("投稿失敗");
+        setSubmitStatus({
+          type: 'error',
+          message: data.message || 'コメントの投稿に失敗しました'
+        });
       }
     } catch (err) {
       console.error("コメント送信エラー:", err);
+      setSubmitStatus({
+        type: 'error',
+        message: 'ネットワークエラーが発生しました'
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -125,6 +160,17 @@ export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
         </div>
 
         <div className="p-6 border-t flex-shrink-0">
+          {/* ステータス表示 */}
+          {submitStatus.type && (
+            <div className={`mb-4 p-3 rounded-md text-sm ${
+              submitStatus.type === 'success' 
+                ? 'bg-green-50 text-green-700 border border-green-200' 
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              {submitStatus.message}
+            </div>
+          )}
+          
           <Textarea
             placeholder={
               session
@@ -134,14 +180,19 @@ export function CommentModal({ isOpen, onClose, issue }: CommentModalProps) {
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             className="mb-4"
-            disabled={!session}
+            disabled={!session || isSubmitting}
           />
           <Button
             onClick={handleSubmitComment}
             className="w-full bg-gray-700 hover:bg-custom-green text-white"
-            disabled={!session}
+            disabled={!session || isSubmitting || !newComment.trim()}
           >
-            {session ? "コメントを投稿する" : "ログインしてコメントする"}
+            {isSubmitting 
+              ? "投稿中..." 
+              : session 
+                ? "コメントを投稿する" 
+                : "ログインしてコメントする"
+            }
           </Button>
         </div>
       </DialogContent>
