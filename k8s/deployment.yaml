@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: app
-          # Actions で set image するので初期値は latest でも可
+         
           image: ghcr.io/kaicyou2532/web_traubling:latest
           ports:
             - containerPort: 3000
