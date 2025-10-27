@@ -1,16 +1,22 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMap,
-  ZoomControl,
-} from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+import dynamic from "next/dynamic";
+
+// クライアントサイドでのみLeafletをインポート
+let MapContainer: any, TileLayer: any, Marker: any, Popup: any, useMap: any, ZoomControl: any, L: any;
+
+if (typeof window !== "undefined") {
+  const leaflet = require("react-leaflet");
+  MapContainer = leaflet.MapContainer;
+  TileLayer = leaflet.TileLayer;
+  Marker = leaflet.Marker;
+  Popup = leaflet.Popup;
+  useMap = leaflet.useMap;
+  ZoomControl = leaflet.ZoomControl;
+  L = require("leaflet");
+  require("leaflet/dist/leaflet.css");
+}
 import {
   Search,
   X,

@@ -7,6 +7,9 @@ import { auth } from "@/auth"
 import ConditionalLayout from "./components/ConditionalLayout" // 作成したコンポーネントをインポート
 import Footer from "./components/Footer"
 
+// 動的レンダリングを強制（認証の状態チェックのため）
+export const dynamic = 'force-dynamic';
+
 const notoSansJP = Noto_Sans_JP({ subsets: ["latin"], weight: ["400", "500", "700"] })
 const roboto = Roboto({ subsets: ["latin"], weight: ["400", "500", "700"] })
 

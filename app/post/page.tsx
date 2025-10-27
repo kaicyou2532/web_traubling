@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   description: '投稿ページ',
 }
 
+// 動的レンダリングを強制（認証が必要なため）
+export const dynamic = 'force-dynamic';
+
 export default async function PostPage() {
 
   const session = await auth()

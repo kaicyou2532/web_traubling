@@ -24,9 +24,22 @@ import {
 } from "@/components/ui/dialog";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+
+// Leafletコンポーネントを動的にインポート
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
 
 // ReactQuillとleafletを動的にインポートしてSSRを無効化
 const ReactQuill = dynamic(() => import("react-quill"), { 
@@ -36,15 +49,40 @@ const ReactQuill = dynamic(() => import("react-quill"), {
 
 // react-quillのスタイルは必要に応じて動的にインポート
 
+// LocationMarkerコンポーネントを動的に作成
+const LocationMarker = dynamic(() => 
+  import("react-leaflet").then((mod) => {
+    const { useMapEvents } = mod;
+    return function LocationMarkerComponent({
+      pinPosition,
+      setPinPosition,
+    }: {
+      pinPosition: { lat: number; lng: number } | null;
+      setPinPosition: (pos: { lat: number; lng: number } | null) => void;
+    }) {
+      const map = useMapEvents({
+        click(e: any) {
+          setPinPosition(e.latlng);
+          map.flyTo(e.latlng, map.getZoom());
+        },
+      });
+      return pinPosition ? <Marker position={pinPosition} /> : null;
+    };
+  }),
+  { ssr: false }
+);
+
 // Leaflet Markerアイコンが表示されない問題を修正
-// @ts-ignore
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-});
+if (typeof window !== "undefined") {
+  // @ts-ignore
+  delete L.Icon.Default.prototype._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl:
+      "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+  });
+}
 
 type City = {
   id: number;
@@ -513,21 +551,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
     </form>
   );
 
-  function LocationMarker({
-    pinPosition,
-    setPinPosition,
-  }: {
-    pinPosition: { lat: number; lng: number } | null;
-    setPinPosition: (pos: { lat: number; lng: number } | null) => void;
-  }) {
-    const map = useMapEvents({
-      click(e) {
-        setPinPosition(e.latlng);
-        map.flyTo(e.latlng, map.getZoom());
-      },
-    });
-    return pinPosition ? <Marker position={pinPosition} /> : null;
-  }
+
 }
 
 export default PostForm;
