@@ -21,9 +21,7 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
-      # プライベート GHCR を使う場合のみ必要
-      # imagePullSecrets:
-      #   - name: ghcr-pull
+
 envFrom:
   - secretRef:
       name: app-env
