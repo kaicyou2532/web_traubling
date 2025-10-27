@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { auth } from "@/auth"
 
+// 動的レンダリングを強制
+export const dynamic = 'force-dynamic';
+
 const PAGE_SIZE = 10;
 
 export async function GET(req: NextRequest) {

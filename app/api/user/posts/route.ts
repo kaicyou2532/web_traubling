@@ -4,6 +4,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth"; // ★★★ getServerSessionの代わりにこれをインポートします
 import { PrismaClient } from "@prisma/client";
 
+// 動的レンダリングを強制
+export const dynamic = 'force-dynamic';
+
 // PostWithRelations 型定義は元のままでOK
 interface PostWithRelations {
   id: number;

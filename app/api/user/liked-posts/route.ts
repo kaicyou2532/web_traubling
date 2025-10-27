@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 
+// 動的レンダリングを強制
+export const dynamic = 'force-dynamic';
+
 interface LikedPostWithRelations {
   id: number;
   title: string;

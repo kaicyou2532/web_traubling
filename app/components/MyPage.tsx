@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,8 +20,15 @@ import { Label } from "@/components/ui/label";
 import { MapPin, Edit, Lock, Heart, MessageSquare, Globe } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import dynamic from "next/dynamic";
+
+// ReactQuillを動的にインポートしてSSRを無効化
+const ReactQuill = dynamic(() => import("react-quill"), {
+  ssr: false,
+  loading: () => <div className="border rounded p-4 min-h-[200px]">エディターを読み込み中...</div>,
+});
+
+// react-quillのスタイルは動的にロードされる
 
 // 投稿の型定義
 interface Post {

@@ -14,8 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Country, Trouble } from "@prisma/client";
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-import "react-quill/dist/quill.snow.css";
 // Dialogコンポーネントのインポートを更新
 import {
   Dialog,
@@ -29,6 +27,14 @@ import dynamic from "next/dynamic";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+
+// ReactQuillとleafletを動的にインポートしてSSRを無効化
+const ReactQuill = dynamic(() => import("react-quill"), { 
+  ssr: false,
+  loading: () => <div className="border rounded p-4 min-h-[200px]">エディターを読み込み中...</div>
+});
+
+// react-quillのスタイルは必要に応じて動的にインポート
 
 // Leaflet Markerアイコンが表示されない問題を修正
 // @ts-ignore

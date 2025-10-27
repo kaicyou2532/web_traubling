@@ -1,6 +1,8 @@
 import { prisma } from "@lib/prisma";
 import Home from "./components/Home";
 
+// 動的レンダリングを強制（認証の状態チェックのため）
+export const dynamic = 'force-dynamic';
 
 export default async function Page() {
 
