@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+  ZoomControl,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import {
@@ -367,6 +374,25 @@ function MapSearchComponent({
   );
 }
 
+function MapClickHandler({ onMapClick }: { onMapClick: () => void }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const handleClick = () => {
+      onMapClick();
+    };
+
+    map.on("click", handleClick);
+
+    // クリーンアップ
+    return () => {
+      map.off("click", handleClick);
+    };
+  }, [map, onMapClick]);
+
+  return null; // 何もレンダリングしない
+}
+
 export default function MapPage() {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -410,7 +436,7 @@ export default function MapPage() {
   };
 
   return (
-    <div className="relative h-screen w-full bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden ">
+    <div className="relative h-[calc(100vh-4rem)] w-full bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden ">
       {/* フィルターボタン - 左上 */}
       <div className="fixed top-20 left-20 z-[1000] flex gap-2">
         <Button
@@ -461,6 +487,7 @@ export default function MapPage() {
           maxBoundsViscosity={1.0}
           style={{ height: "100%", width: "100%" }}
           className="z-0"
+          zoomControl={false}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -469,16 +496,83 @@ export default function MapPage() {
           />
 
           <ChangeView coords={center} zoom={zoom} />
+          <MapClickHandler onMapClick={() => setSelectedPost(null)} />
+          <ZoomControl position="bottomright" />
 
           {posts.map((post) => (
             <Marker
               key={post.id}
               position={[post.latitude, post.longitude]}
               eventHandlers={{
-                click: () => handleMarkerClick(post),
+                click: (e) => {
+                  handleMarkerClick(post);
+                  // 👇 クリック中は popup を維持
+                  e.target._keepPopupOpen = true;
+                  e.target.openPopup();
+
+                  // 数秒後（または別のクリックで）解除する
+                  setTimeout(() => {
+                    e.target._keepPopupOpen = false;
+                  }, 3000); // ← 3秒後に自動解除（任意で変更可）
+                },
+                mouseover: (e) => {
+                  e.target.openPopup();
+                },
+                mouseout: (e) => {
+                  const markerEl = e.originalEvent
+                    ?.relatedTarget as HTMLElement | null;
+
+                  // Popup内にマウスが入った場合は閉じない
+                  if (
+                    markerEl &&
+                    markerEl.closest(".leaflet-popup") // popupに移動中なら閉じない
+                  ) {
+                    return;
+                  }
+
+                  // 少し遅延して閉じる（誤動作防止）
+                  setTimeout(() => {
+                    // まだpopup内にマウスがいるか確認
+                    const activePopup = document.querySelector(
+                      ".leaflet-popup:hover"
+                    );
+                    if (!activePopup) {
+                      e.target.closePopup();
+                    }
+                  }, 150);
+                },
               }}
             >
-              <Popup>
+              <Popup
+                className="custom-popup"
+                autoClose={false}
+                closeOnClick={false}
+                closeButton={false}
+                eventHandlers={{
+                  add: (e) => {
+                    const popupEl = e.target.getElement();
+                    const map = e.target._map; // map 参照を安全に取得
+
+                    if (!popupEl || !map) return;
+
+                    popupEl.addEventListener("mouseenter", () => {
+                      (map as any)._popupStayOpen = true;
+                    });
+
+                    popupEl.addEventListener("mouseleave", () => {
+                      (map as any)._popupStayOpen = false;
+                      setTimeout(() => {
+                        const markerHovered = document.querySelector(
+                          ".leaflet-marker-icon:hover"
+                        );
+                        if (!markerHovered && !(map as any)._popupStayOpen) {
+                          map.closePopup();
+                        }
+                      }, 100);
+                    });
+                  },
+                }}
+              >
                 <Card className="w-80 border-0 shadow-none">
                   {/* ヘッダー画像 */}
                   {post.city?.photoUrl && (
@@ -505,9 +599,9 @@ export default function MapPage() {
                         <h3 className="font-semibold text-lg text-gray-900 mb-2">
                           {post.title}
                         </h3>
-                        <p className="text-sm text-gray-600 line-clamp-3">
+                        {/* <p className="text-sm text-gray-600 line-clamp-3">
                           {post.content.replace(/<[^>]+>/g, "")}
-                        </p>
+                        </p> */}
                       </div>
 
                       <div className="flex flex-wrap gap-2">
@@ -546,14 +640,14 @@ export default function MapPage() {
                             {post.user?.name || "匿名"}
                           </span>
                         </div>
-                        <PostDetailDialog
+                        {/* <PostDetailDialog
                           post={post}
                           trigger={
                             <Button size="sm" variant="outline">
                               詳細を見る
                             </Button>
                           }
-                        />
+                        /> */}
                       </div>
                     </div>
                   </CardContent>
@@ -646,10 +740,10 @@ export default function MapPage() {
                   <Button variant="outline" size="sm">
                     共有
                   </Button>
-                  <PostDetailDialog
+                  {/* <PostDetailDialog
                     post={selectedPost}
                     trigger={<Button size="sm">詳細を見る</Button>}
-                  />
+                  /> */}
                 </div>
               </div>
             </CardContent>
@@ -658,7 +752,7 @@ export default function MapPage() {
       )}
 
       {/* 投稿数表示 - レスポンシブ */}
-      <div className="absolute bottom-4 right-4 z-[1000]">
+      <div className="absolute bottom-4 right-12 z-[1000]">
         <Card className="bg-white/95 backdrop-blur-sm border-gray-200/50">
           <CardContent className="p-3">
             <div className="text-center">
