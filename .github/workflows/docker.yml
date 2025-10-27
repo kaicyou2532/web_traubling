@@ -1,3 +1,5 @@
+mkdir -p .github/workflows
+cat > .github/workflows/docker.yml <<'YAML'
 name: Build & Push to GHCR
 on:
   push:
@@ -29,4 +31,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          #
