@@ -80,6 +80,19 @@ export async function POST(
         data: { likeCount: post.likeCount + 1 }
       })
       
+      // 自分の投稿でない場合のみ通知を作成
+      if (post.userId !== user.id) {
+        await prisma.notification.create({
+          data: {
+            userId: post.userId,
+            type: "LIKE",
+            message: `${user.name || "匿名ユーザー"}があなたの投稿「${post.title}」にいいねしました。`,
+            postId: postId,
+            fromUserId: user.id,
+          }
+        })
+      }
+      
       isLiked = true
       likeCount = updatedPost.likeCount
     }

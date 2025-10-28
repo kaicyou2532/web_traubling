@@ -74,6 +74,10 @@ model User {
   posts         Post[]
   Profile       Profile?
   sessions      Session[]
+  followers        Follow[]        @relation("UserFollowers")
+  following        Follow[]        @relation("UserFollowing")
+  notifications    Notification[]
+  sentNotifications Notification[] @relation("NotificationFromUser")
 }
 
 model Post {
@@ -91,12 +95,13 @@ model Post {
   likeCount   Int       @default(0) @map("likeCount")
   latitude    Float?
   longitude   Float?
-  comments    Comment[]
-  likes       Like[]
-  city        City      @relation(fields: [cityId], references: [id])
-  country     Country   @relation(fields: [countryId], references: [id])
-  trouble     Trouble   @relation(fields: [troubleId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
+  comments      Comment[]
+  likes         Like[]
+  notifications Notification[]
+  city          City      @relation(fields: [cityId], references: [id])
+  country       Country   @relation(fields: [countryId], references: [id])
+  trouble       Trouble   @relation(fields: [troubleId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
 }
 
 model Country {
@@ -153,6 +158,39 @@ model Like {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  followerId  String   @map("followerId")
+  followingId String   @map("followingId")
+  createdAt   DateTime @default(now())
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+model Notification {
+  id        Int               @id @default(autoincrement())
+  userId    String            @map("userId")
+  type      NotificationType
+  message   String
+  isRead    Boolean           @default(false) @map("isRead")
+  createdAt DateTime          @default(now()) @map("createdAt")
+  postId    Int?              @map("postId")
+  fromUserId String?          @map("fromUserId")
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post?             @relation(fields: [postId], references: [id], onDelete: Cascade)
+  fromUser  User?             @relation("NotificationFromUser", fields: [fromUserId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
 }
 
 

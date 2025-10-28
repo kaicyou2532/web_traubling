@@ -11,6 +11,7 @@ import {
   PencilSquareIcon,
   UserCircleIcon,
   MapPinIcon,
+  BellIcon,
 } from "@heroicons/react/24/solid";
 import { AuthModal } from "@/app/components/login";
 import { signOutAction } from "@/app/auth";
@@ -35,6 +36,32 @@ export default function Header({
   toggleSidebar,
   isVisible = true, // デフォルト値をtrueに設定
 }: HeaderProps) {
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // 未読通知数を取得
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (session?.user) {
+        try {
+          const response = await fetch('/api/notifications', {
+            method: 'POST',
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setUnreadCount(data.count);
+          }
+        } catch (error) {
+          console.error("未読通知数取得エラー:", error);
+        }
+      }
+    };
+
+    fetchUnreadCount();
+    
+    // 30秒ごとに未読通知数を更新
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [session]);
   return (
     <header
       className={`bg-white shadow-md sticky top-0 z-50 h-16 flex items-center
@@ -169,19 +196,19 @@ export default function Header({
           )}
           {session && (
             <Popover>
-              <PopoverTrigger asChild>
-                <button type="button" aria-label="ユーザーメニュー">
-                  <Avatar className="border rounded-full w-9 h-9">
-                    <AvatarImage
-                      src={session.user?.image as string}
-                      alt="ユーザー"
-                    />
-                    <AvatarFallback>
-                      {session.user?.name?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              </PopoverTrigger>
+                <PopoverTrigger asChild>
+                  <button type="button" aria-label="ユーザーメニュー">
+                    <Avatar className="border rounded-full w-9 h-9">
+                      <AvatarImage
+                        src={session.user?.image as string}
+                        alt="ユーザー"
+                      />
+                      <AvatarFallback>
+                        {session.user?.name?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </PopoverTrigger>
               <PopoverContent className="bg-white w-[200px]" align="end">
                 <div className="py-1">
                   <Link
@@ -190,6 +217,18 @@ export default function Header({
                   >
                     <UserCircleIcon className="h-4 w-4" />
                     マイページ
+                  </Link>
+                  <Link
+                    href="/mypage?tab=notifications"
+                    className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 rounded transition-colors relative"
+                  >
+                    <BellIcon className="h-4 w-4" />
+                    通知
+                    {unreadCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold ml-auto">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
                   </Link>
                   <Link
                     href="/post"

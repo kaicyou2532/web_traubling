@@ -44,13 +44,14 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 // Leafletアイコン設定
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-});
+if (typeof window !== "undefined" && L) {
+  delete (L.Icon.Default.prototype as any)._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "/leaflet/marker-icon-2x.png",
+    iconUrl: "/leaflet/marker-icon.png",
+    shadowUrl: "/leaflet/marker-shadow.png",
+  });
+}
 
 type PostData = {
   id: number;
@@ -413,6 +414,21 @@ export default function MapPage() {
         const res = await fetch("/api/map");
         const data = await res.json();
         setPosts(data.posts || []);
+        
+        // URLパラメータをチェックして特定の投稿を中央に表示
+        const searchParams = new URLSearchParams(window.location.search);
+        const postId = searchParams.get('postId');
+        const lat = searchParams.get('lat');
+        const lng = searchParams.get('lng');
+        
+        if (postId && lat && lng) {
+          const targetPost = data.posts?.find((post: PostData) => post.id === parseInt(postId));
+          if (targetPost) {
+            setSelectedPost(targetPost);
+            setCenter([parseFloat(lat), parseFloat(lng)]);
+            setZoom(14); // より詳細なズームレベル
+          }
+        }
       } catch (error) {
         console.error("投稿の取得に失敗しました:", error);
       } finally {

@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MapPin, Edit, Lock, Heart, MessageSquare, Globe } from "lucide-react";
+import { MapPin, Edit, Lock, Heart, MessageSquare, Globe, Bell } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -62,12 +62,33 @@ interface LikedPost {
   isLiked: boolean;
 }
 
+// 通知の型定義
+interface Notification {
+  id: number;
+  type: "LIKE" | "COMMENT" | "FOLLOW";
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  fromUser: {
+    name: string;
+    email: string;
+    image: string | null;
+  } | null;
+  post: {
+    id: number;
+    title: string;
+  } | null;
+}
+
 // プロフィールの型定義
 interface Profile {
   name: string;
   username: string; // 現在はemailで代用
   location: string;
   website: string;
+  postsCount?: number;
+  followersCount?: number;
+  followingCount?: number;
   bio: string;
   image?: string;
 }
@@ -90,7 +111,9 @@ export default function MyPage() {
   // 投稿のサンプルデータ（初期は空）
   const [posts, setPosts] = useState<Post[]>([]);
   const [likedPosts, setLikedPosts] = useState<LikedPost[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [currentPost, setCurrentPost] = useState<Post | null>(null);
+  const [activeTab, setActiveTab] = useState("posts");
 
   // プロフィール情報の取得
   useEffect(() => {
@@ -116,6 +139,9 @@ export default function MyPage() {
             website: dbProfile.website || "",
             bio: dbProfile.bio || "",
             image: dbProfile.image || session.user.image || "",
+            postsCount: dbProfile.postsCount || 0,
+            followersCount: dbProfile.followersCount || 0,
+            followingCount: dbProfile.followingCount || 0,
           };
 
           setProfile(mergedProfile);
@@ -181,6 +207,67 @@ export default function MyPage() {
 
     fetchLikedPosts();
   }, [status, profile.username]);
+
+  // 通知の取得
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (status === "authenticated" && session?.user) {
+        try {
+          const response = await fetch("/api/notifications");
+          if (response.ok) {
+            const data = await response.json();
+            setNotifications(data);
+          }
+        } catch (error) {
+          console.error("通知フェッチエラー:", error);
+        }
+      }
+    };
+
+    fetchNotifications();
+  }, [status, session]);
+
+  // URL パラメータからタブを設定
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tab = urlParams.get("tab");
+      if (tab && ["posts", "liked", "notifications"].includes(tab)) {
+        setActiveTab(tab);
+      }
+    }
+  }, []);
+
+  // 通知を既読にする処理
+  const markAsRead = async (notificationId?: number) => {
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          notificationId,
+          markAllAsRead: !notificationId,
+        }),
+      });
+
+      if (response.ok) {
+        // 通知リストを更新
+        if (notificationId) {
+          setNotifications(prev => 
+            prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
+          );
+        } else {
+          setNotifications(prev => 
+            prev.map(n => ({ ...n, isRead: true }))
+          );
+        }
+      }
+    } catch (error) {
+      console.error("通知の既読処理エラー:", error);
+    }
+  };
 
   // プロフィール更新処理
   const handleProfileUpdate = async () => {
@@ -377,17 +464,15 @@ export default function MyPage() {
 
               <div className="flex gap-6 mt-4">
                 <div className="text-center">
-                  <p className="font-bold">{posts.length}</p>
+                  <p className="font-bold">{profile.postsCount || posts.length}</p>
                   <p className="text-sm text-gray-600">投稿</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-bold">0</p>{" "}
-                  {/* バックエンドから取得する場合は変更 */}
+                  <p className="font-bold">{profile.followersCount || 0}</p>
                   <p className="text-sm text-gray-600">フォロワー</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-bold">0</p>{" "}
-                  {/* バックエンドから取得する場合は変更 */}
+                  <p className="font-bold">{profile.followingCount || 0}</p>
                   <p className="text-sm text-gray-600">フォロー中</p>
                 </div>
               </div>
@@ -401,7 +486,7 @@ export default function MyPage() {
       </section>
 
       {/* タブナビゲーション */}
-      <Tabs defaultValue="posts" className="container mx-auto px-4 mt-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="container mx-auto px-4 mt-4">
         <TabsList className="w-full bg-white rounded-md border mb-4">
           <TabsTrigger
             value="posts"
@@ -414,6 +499,17 @@ export default function MyPage() {
             className="flex-1 data-[state=active]:text-[#007B63] data-[state=active]:border-b-2 data-[state=active]:border-[#007B63]"
           >
             いいねしたトラブル
+          </TabsTrigger>
+          <TabsTrigger
+            value="notifications"
+            className="flex-1 data-[state=active]:text-[#007B63] data-[state=active]:border-b-2 data-[state=active]:border-[#007B63] relative"
+          >
+            通知
+            {notifications.filter(n => !n.isRead).length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                {notifications.filter(n => !n.isRead).length}
+              </span>
+            )}
           </TabsTrigger>
         </TabsList>
 
@@ -637,6 +733,91 @@ export default function MyPage() {
                   </div>
                 </Card>
               ))
+            )}
+          </div>
+        </TabsContent>
+
+        {/* 通知タブ */}
+        <TabsContent value="notifications">
+          <div className="space-y-4">
+            {notifications.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Bell className="h-8 w-8 text-gray-400" />
+                </div>
+                <p className="text-gray-600">通知はありません</p>
+              </div>
+            ) : (
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">通知</h3>
+                  {notifications.some(n => !n.isRead) && (
+                    <Button
+                      onClick={() => markAsRead()}
+                      variant="outline"
+                      size="sm"
+                      className="text-[#007B63] border-[#007B63] hover:bg-[#007B63] hover:text-white"
+                    >
+                      すべて既読にする
+                    </Button>
+                  )}
+                </div>
+                
+                {notifications.map((notification) => (
+                  <Card
+                    key={notification.id}
+                    className={`p-4 mb-3 cursor-pointer transition-colors ${
+                      !notification.isRead ? 'bg-blue-50 border-l-4 border-l-[#007B63]' : 'bg-white'
+                    }`}
+                    onClick={() => {
+                      if (!notification.isRead) {
+                        markAsRead(notification.id);
+                      }
+                      // 投稿関連の通知の場合、該当投稿に移動
+                      if (notification.post) {
+                        // 投稿詳細ページがあれば移動
+                        // window.location.href = `/posts/${notification.post.id}`;
+                      }
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      {notification.fromUser?.image ? (
+                        <Avatar className="w-10 h-10">
+                          <AvatarImage src={notification.fromUser.image} />
+                          <AvatarFallback className="bg-[#007B63] text-white">
+                            {notification.fromUser.name?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                          <span className="text-gray-600 text-sm">
+                            {notification.fromUser?.name?.charAt(0) || '?'}
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-900">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(notification.createdAt).toLocaleDateString('ja-JP', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      
+                      {!notification.isRead && (
+                        <div className="w-2 h-2 bg-[#007B63] rounded-full"></div>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
         </TabsContent>
