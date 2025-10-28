@@ -131,7 +131,7 @@ export default function CommonIssues({
             const filtered =
               category.id === 0
                 ? posts
-                : posts.filter((post) => post.troubleId === post.trouble.id); // category.id ではなく post.trouble.id を使用してカテゴリをフィルタ
+                : posts.filter((post) => post.troubleId === category.id); // category.id ではなく post.trouble.id を使用してカテゴリをフィルタ
 
             return (
               <Tab.Panel
