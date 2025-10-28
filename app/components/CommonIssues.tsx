@@ -52,9 +52,18 @@ export default function CommonIssues({
     e.stopPropagation(); // 親要素へのクリック伝播を防止
 
     try {
-      // 実際にはバックエンドAPIを呼び出す
+      // 現在のいいね状態を取得
+      const currentPost = posts.find((p) => p.id === postId);
+      if (!currentPost) return;
+
       const res = await fetch(`/api/posts/${postId}/like`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          isLiked: currentPost.isLiked,
+        }),
       });
 
       if (res.ok) {
@@ -68,12 +77,12 @@ export default function CommonIssues({
           )
         );
       } else {
-        console.error("Failed to toggle like");
-        // 失敗時も一時的にUIを更新せず、そのままにする
+        const errorData = await res.json().catch(() => ({}));
+        console.error("Failed to toggle like:", errorData);
+        // エラーメッセージを表示するかもしれません
       }
     } catch (error) {
       console.error("Error toggling like:", error);
-      // 失敗時も一時的にUIを更新せず、そのままにする
     }
   };
 

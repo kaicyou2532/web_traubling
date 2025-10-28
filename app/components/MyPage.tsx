@@ -244,6 +244,39 @@ export default function MyPage() {
     }
   };
 
+  // いいね解除処理
+  const handleUnlikePost = async (e: React.MouseEvent, postId: number) => {
+    e.stopPropagation();
+
+    try {
+      // いいねを取り消すAPIを呼び出し（isLiked: trueで送信）
+      const response = await fetch(`/api/posts/${postId}/like`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isLiked: true }),
+      });
+
+      if (!response.ok) {
+        throw new Error("いいねの取り消しに失敗しました。");
+      }
+
+      const data = await response.json();
+
+      // いいね一覧から該当投稿を削除
+      setLikedPosts((prevPosts) =>
+        prevPosts.filter((post) => post.id !== postId)
+      );
+
+      // 成功メッセージ（オプション）
+      // alert("いいねを取り消しました。");
+    } catch (error) {
+      console.error("いいね解除エラー:", error);
+      alert("いいねの取り消しに失敗しました。");
+    }
+  };
+
   // ローディング中の表示
   if (status === "loading") {
     return (
@@ -578,10 +611,15 @@ export default function MyPage() {
                     </div>
                     <div className="flex justify-between items-center mt-4">
                       <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1 text-red-500">
+                        <button
+                          type="button"
+                          onClick={(e) => handleUnlikePost(e, post.id)}
+                          className="flex items-center gap-1 text-red-500 hover:text-red-600 transition-colors"
+                          title="いいねを取り消す"
+                        >
                           <Heart className="h-4 w-4 fill-current" />
                           <span className="text-sm">{post.likes}</span>
-                        </div>
+                        </button>
                         <button
                           type="button"
                           className="flex items-center gap-1 text-gray-500"

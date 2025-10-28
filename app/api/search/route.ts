@@ -88,8 +88,23 @@ export async function GET(req: NextRequest) {
       prisma.post.count({ where }),
     ]);
 
-    // いいね情報を取得（Likeモデルが利用可能になるまで一時的に無効化）
+    // いいね情報を取得
     let userLikes: Record<number, boolean> = {};
+    
+    if (currentUserId) {
+      const likes = await prisma.like.findMany({
+        where: {
+          userId: currentUserId,
+          postId: { in: posts.map(post => post.id) }
+        },
+        select: { postId: true }
+      });
+      
+      userLikes = likes.reduce((acc, like) => {
+        acc[like.postId] = true;
+        return acc;
+      }, {} as Record<number, boolean>);
+    }
 
     const formattedPosts = posts.map((post) => ({
       id: post.id,

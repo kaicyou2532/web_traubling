@@ -74,6 +74,8 @@ model User {
   posts         Post[]
   Profile       Profile?
   sessions      Session[]
+  following     Follow[]        @relation("UserFollowing")
+  followers     Follow[]        @relation("UserFollowers")
 }
 
 model Post {
@@ -153,4 +155,17 @@ model Like {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  followerId  String   // フォローしているユーザー
+  followingId String   // フォローされているユーザー
+  createdAt   DateTime @default(now())
+  
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
 }
