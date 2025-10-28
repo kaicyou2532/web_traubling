@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   GlobeAsiaAustraliaIcon,
   GlobeAmericasIcon,
@@ -19,11 +19,23 @@ const categories = [
   { id: "overseas", name: "海外", icon: GlobeAmericasIcon },
 ]
 
-const subCategories = ["交通", "宿泊", "食事", "観光", "買い物", "文化", "言語", "安全", "健康", "その他"]
+interface TroubleCategory {
+  id: number;
+  jaName: string;
+  enName: string;
+  postCount: number;
+}
+
+interface City {
+  id: number;
+  jaName: string;
+  enName: string;
+  postCount: number;
+}
 
 interface SearchBarProps {
   isCompact?: boolean
-  onSearch?: (searchTerm: string, category: string, subCategory?: string, countryFilter?: string) => void
+  onSearch?: (searchTerm: string, category: string, subCategory?: string, countryFilter?: string, cityFilter?: string, troubleFilter?: string) => void
   selectedCategory: string
   onCategoryChange?: (category: string) => void
   countryFilter?: string
@@ -41,10 +53,44 @@ export default function SearchBar({
   const [searchTerm, setSearchTerm] = useState("")
   const [currentCategory, setCurrentCategory] = useState(selectedCategory)
   const [selectedSubCategory, setSelectedSubCategory] = useState("")
+  const [selectedCity, setSelectedCity] = useState("")
+  const [selectedTrouble, setSelectedTrouble] = useState("")
+  
+  // フィルターオプション
+  const [troubleCategories, setTroubleCategories] = useState<TroubleCategory[]>([])
+  const [citiesByCountry, setCitiesByCountry] = useState<Record<string, City[]>>({})
+  const [loading, setLoading] = useState(true)
+
+  // フィルターオプションを取得
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const response = await fetch('/api/search/filters')
+        if (response.ok) {
+          const data = await response.json()
+          setTroubleCategories(data.categories)
+          setCitiesByCountry(data.cities)
+        }
+      } catch (error) {
+        console.error("フィルターオプション取得エラー:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFilterOptions()
+  }, [])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    onSearch?.(searchTerm, currentCategory, selectedSubCategory, countryFilter)
+    onSearch?.(
+      searchTerm, 
+      currentCategory, 
+      selectedSubCategory, 
+      countryFilter,
+      selectedCity,
+      selectedTrouble
+    )
   }
 
   return (
@@ -79,7 +125,7 @@ export default function SearchBar({
           <div className="relative flex-grow">
             <input
               type="text"
-              placeholder="観光スポット、アクティビティ、ホテル..."
+              placeholder="観光地、トラブル内容、キーワードで検索"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2 pr-12 border-2 border-white bg-white bg-opacity-20 rounded-full text-white placeholder-gray-200 focus:outline-none focus:border-custom-green transition-colors"
@@ -92,37 +138,61 @@ export default function SearchBar({
             </button>
           </div>
 
-          {/* 都市名・国名の入力（regionカテゴリの時のみ） */}
-          {currentCategory === "region" && (
-            <div className="flex-grow">
-              <input
-                type="text"
-                placeholder="都市名や国名を入力"
-                value={countryFilter}
-                onChange={(e) => onCountryChange?.(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-white bg-white bg-opacity-20 rounded-full text-white placeholder-gray-200 focus:outline-none focus:border-custom-green transition-colors"
-              />
-            </div>
-          )}
+          {/* 詳細フィルター */}
+            <div className="flex flex-wrap gap-2">
+              {/* 都市選択 */}
+              <div className="relative">
+                <select
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  className="appearance-none bg-white bg-opacity-20 border-2 border-white text-white rounded-full px-4 py-2 pr-8 focus:outline-none focus:border-custom-green transition-colors"
+                  disabled={loading}
+                >
+                  <option value="">都市を選択</option>
+                  {Object.entries(citiesByCountry).map(([country, cities]) => (
+                    <optgroup key={country} label={country}>
+                      {cities.map((city) => (
+                        <option key={city.id} value={city.id}>
+                          {city.jaName} ({city.postCount}件)
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white pointer-events-none" />
+              </div>
 
-          {/* サブカテゴリ選択（categoryカテゴリの時のみ） */}
-          {currentCategory === "category" && (
-            <div className="relative">
-              <select
-                value={selectedSubCategory}
-                onChange={(e) => setSelectedSubCategory(e.target.value)}
-                className="appearance-none bg-white bg-opacity-20 border-2 border-white text-white rounded-full px-4 py-2 pr-8 focus:outline-none focus:border-custom-green transition-colors"
-              >
-                <option value="">分野を選択</option>
-                {subCategories.map((subCategory) => (
-                  <option key={subCategory} value={subCategory}>
-                    {subCategory}
-                  </option>
-                ))}
-              </select>
-              <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white pointer-events-none" />
+              {/* カテゴリー選択 */}
+              <div className="relative">
+                <select
+                  value={selectedTrouble}
+                  onChange={(e) => setSelectedTrouble(e.target.value)}
+                  className="appearance-none bg-white bg-opacity-20 border-2 border-white text-white rounded-full px-4 py-2 pr-8 focus:outline-none focus:border-custom-green transition-colors"
+                  disabled={loading}
+                >
+                  <option value="">分野を選択</option>
+                  {troubleCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.jaName} ({category.postCount}件)
+                    </option>
+                  ))}
+                </select>
+                <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white pointer-events-none" />
+              </div>
+
+              {/* 都市名・国名の入力（regionカテゴリの時のみ） */}
+              {currentCategory === "region" && (
+                <div className="flex-grow">
+                  <input
+                    type="text"
+                    placeholder="都市名や国名を入力"
+                    value={countryFilter}
+                    onChange={(e) => onCountryChange?.(e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-white bg-white bg-opacity-20 rounded-full text-white placeholder-gray-200 focus:outline-none focus:border-custom-green transition-colors"
+                  />
+                </div>
+              )}
             </div>
-          )}
         </form>
       </div>
     </div>

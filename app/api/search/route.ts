@@ -15,6 +15,8 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get("category");
     const subCategory = searchParams.get("subCategory");
     const countryFilter = searchParams.get("country")?.toLowerCase() || "";
+    const cityFilter = searchParams.get("city");
+    const troubleFilter = searchParams.get("trouble");
     const page = parseInt(searchParams.get("page") || "1", 10);
 
     // ★ セッション情報を安全に取得
@@ -33,36 +35,69 @@ export async function GET(req: NextRequest) {
 
     const terms = term.split(/\s+/).filter(Boolean);
 
-    const where = {
-      ...(category === "domestic" && { country: { id: 1 } }),
-      ...(category === "overseas" && { country: { NOT: { id: 1 } } }),
-      ...(category === "category" && subCategory && {
+    // フィルター条件を構築
+    const filters: any[] = [];
+
+    // カテゴリーフィルター（国内/海外/カテゴリー/地域）
+    if (category === "domestic") {
+      filters.push({ country: { id: 1 } });
+    } else if (category === "overseas") {
+      filters.push({ country: { NOT: { id: 1 } } });
+    } else if (category === "category" && subCategory) {
+      filters.push({
         trouble: {
           OR: [
             { jaName: subCategory },
             { enName: subCategory },
           ],
         },
-      }),
-      ...(category === "region" && countryFilter && {
+      });
+    } else if (category === "region" && countryFilter) {
+      filters.push({
         country: {
           OR: [
             { jaName: { contains: countryFilter, mode: Prisma.QueryMode.insensitive } },
             { enName: { contains: countryFilter, mode: Prisma.QueryMode.insensitive } },
           ],
         },
-      }),
-      AND: terms.map((word) => ({
-        OR: [
-          { title: { contains: word, mode: Prisma.QueryMode.insensitive } },
-          { content: { contains: word, mode: Prisma.QueryMode.insensitive } },
-          { country: { jaName: { contains: word, mode: Prisma.QueryMode.insensitive } } },
-          { country: { enName: { contains: word, mode: Prisma.QueryMode.insensitive } } },
-          { trouble: { jaName: { contains: word, mode: Prisma.QueryMode.insensitive } } },
-          { trouble: { enName: { contains: word, mode: Prisma.QueryMode.insensitive } } },
-        ],
-      })),
-    };
+      });
+    }
+
+    // 都市フィルター
+    if (cityFilter) {
+      const cityId = parseInt(cityFilter);
+      if (!isNaN(cityId)) {
+        filters.push({ cityId });
+      }
+    }
+
+    // カテゴリー（トラブル）フィルター
+    if (troubleFilter) {
+      const troubleId = parseInt(troubleFilter);
+      if (!isNaN(troubleId)) {
+        filters.push({ troubleId });
+      }
+    }
+
+    // テキスト検索条件
+    if (terms.length > 0) {
+      filters.push({
+        AND: terms.map((word) => ({
+          OR: [
+            { title: { contains: word, mode: Prisma.QueryMode.insensitive } },
+            { content: { contains: word, mode: Prisma.QueryMode.insensitive } },
+            { country: { jaName: { contains: word, mode: Prisma.QueryMode.insensitive } } },
+            { country: { enName: { contains: word, mode: Prisma.QueryMode.insensitive } } },
+            { trouble: { jaName: { contains: word, mode: Prisma.QueryMode.insensitive } } },
+            { trouble: { enName: { contains: word, mode: Prisma.QueryMode.insensitive } } },
+            { city: { jaName: { contains: word, mode: Prisma.QueryMode.insensitive } } },
+            { city: { enName: { contains: word, mode: Prisma.QueryMode.insensitive } } },
+          ],
+        })),
+      });
+    }
+
+    const where = filters.length > 0 ? { AND: filters } : {};
 
     const [posts, totalCount] = await Promise.all([
       prisma.post.findMany({
@@ -91,19 +126,23 @@ export async function GET(req: NextRequest) {
     // いいね情報を取得
     let userLikes: Record<number, boolean> = {};
     
-    if (currentUserId) {
-      const likes = await prisma.like.findMany({
-        where: {
-          userId: currentUserId,
-          postId: { in: posts.map(post => post.id) }
-        },
-        select: { postId: true }
-      });
-      
-      userLikes = likes.reduce((acc, like) => {
-        acc[like.postId] = true;
-        return acc;
-      }, {} as Record<number, boolean>);
+    if (currentUserId && posts.length > 0) {
+      try {
+        // Likeテーブルから直接取得
+        const likeRecords = await prisma.$queryRaw`
+          SELECT "postId" 
+          FROM "Like" 
+          WHERE "userId" = ${currentUserId} 
+          AND "postId" = ANY(${posts.map(post => post.id)})
+        ` as { postId: number }[];
+        
+        userLikes = likeRecords.reduce((acc: Record<number, boolean>, like) => {
+          acc[like.postId] = true;
+          return acc;
+        }, {});
+      } catch (likeError) {
+        console.log("Like情報の取得をスキップ:", likeError);
+      }
     }
 
     const formattedPosts = posts.map((post) => ({

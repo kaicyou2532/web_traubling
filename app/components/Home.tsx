@@ -3,9 +3,6 @@
 import { useState, useEffect } from "react";
 import SearchResults from "./SearchResults";
 import AllContent from "./AllContent";
-import DomesticContent from "./DomesticContent";
-import OverseasContent from "./OverseasContent";
-import CategoryContent from "./CategoryContent";
 import SearchBar from "./SearchBar";
 import type { City } from "@prisma/client";
 
@@ -18,23 +15,45 @@ export default function Home({ japanCities, otherCities }: Props) {
   const [isSearching, setIsSearching] = useState(false);
   const [searchCategory, setSearchCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [subCategory, setSubCategory] = useState<string>();
+  const [countryFilter, setCountryFilter] = useState<string>();
+  const [cityFilter, setCityFilter] = useState<string>();
+  const [troubleFilter, setTroubleFilter] = useState<string>();
 
-  const handleSearch = (term: string, category: string) => {
-    setIsSearching(true);
-    setSearchTerm(term);
-    setSearchCategory(category);
+  const handleSearch = (
+    term: string, 
+    category: string, 
+    subCategory?: string, 
+    countryFilter?: string,
+    cityFilter?: string,
+    troubleFilter?: string
+  ) => {
+    if (term.trim() || category !== "all") {
+      setIsSearching(true);
+      setSearchTerm(term);
+      setSearchCategory(category);
+      setSubCategory(subCategory);
+      setCountryFilter(countryFilter);
+      setCityFilter(cityFilter);
+      setTroubleFilter(troubleFilter);
+    } else {
+      setIsSearching(false);
+      setSearchTerm("");
+    }
   };
 
   const handleCategoryChange = (category: string) => {
     setSearchCategory(category);
-    setIsSearching(false);
-    setSearchTerm("");
   };
 
   const handleClearSearch = () => {
     setIsSearching(false);
     setSearchTerm("");
     setSearchCategory("all");
+    setSubCategory(undefined);
+    setCountryFilter(undefined);
+    setCityFilter(undefined);
+    setTroubleFilter(undefined);
   };
 
   // ヘッダーのロゴクリック用にグローバルに関数を公開
@@ -54,37 +73,18 @@ export default function Home({ japanCities, otherCities }: Props) {
       return (
         <SearchResults 
           searchTerm={searchTerm} 
-          category={searchCategory} 
+          category={searchCategory}
+          subCategory={subCategory}
+          countryFilter={countryFilter}
+          cityFilter={cityFilter}
+          troubleFilter={troubleFilter}
         />
       );
     }
 
-    switch (searchCategory) {
-      case "all":
-        return (
-          <AllContent japanCities={japanCities} otherCities={otherCities} />
-        );
-      case "domestic":
-        return (
-          <DomesticContent
-            japanCities={japanCities}
-            otherCities={otherCities}
-          />
-        );
-      case "overseas":
-        return (
-          <OverseasContent
-            japanCities={japanCities}
-            otherCities={otherCities}
-          />
-        );
-      case "category":
-        return <></>;
-      default:
-        return (
-          <AllContent japanCities={japanCities} otherCities={otherCities} />
-        );
-    }
+    return (
+      <AllContent japanCities={japanCities} otherCities={otherCities} />
+    );
   };
 
   return (
@@ -112,6 +112,8 @@ export default function Home({ japanCities, otherCities }: Props) {
             onSearch={handleSearch}
             selectedCategory={searchCategory}
             onCategoryChange={handleCategoryChange}
+            countryFilter={countryFilter}
+            onCountryChange={setCountryFilter}
           />
         </div>
       </div>

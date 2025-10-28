@@ -66,6 +66,8 @@ interface SearchResultsProps {
   category: string;
   subCategory?: string;
   countryFilter?: string;
+  cityFilter?: string;
+  troubleFilter?: string;
 }
 
 const POSTS_PER_PAGE = 10;
@@ -75,6 +77,8 @@ export default function SearchResults({
   category,
   subCategory,
   countryFilter,
+  cityFilter,
+  troubleFilter,
 }: SearchResultsProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -111,6 +115,8 @@ export default function SearchResults({
           category,
           subCategory: subCategory || "",
           country: countryFilter || "",
+          city: cityFilter || "",
+          trouble: troubleFilter || "",
           page: currentPage.toString(),
         });
 
@@ -184,7 +190,7 @@ export default function SearchResults({
       }
     }
     fetchPosts();
-  }, [searchTerm, category, subCategory, countryFilter, currentPage]);
+  }, [searchTerm, category, subCategory, countryFilter, cityFilter, troubleFilter, currentPage]);
 
   const handleLikeClick = async (e: React.MouseEvent, postId: number) => {
     e.stopPropagation();

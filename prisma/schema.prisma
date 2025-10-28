@@ -59,49 +59,49 @@ model Authenticator {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  name          String?         @map("name")
-  email         String          @unique
-  emailVerified DateTime?       @map("emailVerified")
-  image         String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  profile       String?
-  accounts      Account[]
-  Authenticator Authenticator[]
-  comments      Comment[]
-  likes         Like[]
-  posts         Post[]
-  Profile       Profile?
-  sessions      Session[]
-  followers        Follow[]        @relation("UserFollowers")
-  following        Follow[]        @relation("UserFollowing")
-  notifications    Notification[]
-  sentNotifications Notification[] @relation("NotificationFromUser")
+  id                String          @id @default(cuid())
+  name              String?         @map("name")
+  email             String          @unique
+  emailVerified     DateTime?       @map("emailVerified")
+  image             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  profile           String?
+  accounts          Account[]
+  Authenticator     Authenticator[]
+  comments          Comment[]
+  followers         Follow[]        @relation("UserFollowers")
+  following         Follow[]        @relation("UserFollowing")
+  likes             Like[]
+  sentNotifications Notification[]  @relation("NotificationFromUser")
+  notifications     Notification[]
+  posts             Post[]
+  Profile           Profile?
+  sessions          Session[]
 }
 
 model Post {
-  id          Int       @id @default(autoincrement())
-  countryId   Int       @default(10000) @map("countryId")
-  troubleId   Int       @map("troubleId")
-  title       String
-  content     String
-  createdAt   DateTime  @default(now()) @map("createdAt")
-  updatedAt   DateTime  @updatedAt @map("updatedAt")
-  userId      String    @map("userId")
-  travelMonth Int       @map("travelMonth")
-  travelYear  Int       @map("travelYear")
-  cityId      Int       @default(100) @map("cityId")
-  likeCount   Int       @default(0) @map("likeCount")
-  latitude    Float?
-  longitude   Float?
+  id            Int            @id @default(autoincrement())
+  countryId     Int            @default(10000) @map("countryId")
+  troubleId     Int            @map("troubleId")
+  title         String
+  content       String
+  createdAt     DateTime       @default(now()) @map("createdAt")
+  updatedAt     DateTime       @updatedAt @map("updatedAt")
+  userId        String         @map("userId")
+  travelMonth   Int            @map("travelMonth")
+  travelYear    Int            @map("travelYear")
+  cityId        Int            @default(100) @map("cityId")
+  likeCount     Int            @default(0) @map("likeCount")
+  latitude      Float?
+  longitude     Float?
   comments      Comment[]
   likes         Like[]
   notifications Notification[]
-  city          City      @relation(fields: [cityId], references: [id])
-  country       Country   @relation(fields: [countryId], references: [id])
-  trouble       Trouble   @relation(fields: [troubleId], references: [id])
-  user          User      @relation(fields: [userId], references: [id])
+  city          City           @relation(fields: [cityId], references: [id])
+  country       Country        @relation(fields: [countryId], references: [id])
+  trouble       Trouble        @relation(fields: [troubleId], references: [id])
+  user          User           @relation(fields: [userId], references: [id])
 }
 
 model Country {
@@ -172,17 +172,17 @@ model Follow {
 }
 
 model Notification {
-  id        Int               @id @default(autoincrement())
-  userId    String            @map("userId")
-  type      NotificationType
-  message   String
-  isRead    Boolean           @default(false) @map("isRead")
-  createdAt DateTime          @default(now()) @map("createdAt")
-  postId    Int?              @map("postId")
+  id         Int              @id @default(autoincrement())
+  userId     String           @map("userId")
+  type       NotificationType
+  message    String
+  isRead     Boolean          @default(false) @map("isRead")
+  createdAt  DateTime         @default(now()) @map("createdAt")
+  postId     Int?             @map("postId")
   fromUserId String?          @map("fromUserId")
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post      Post?             @relation(fields: [postId], references: [id], onDelete: Cascade)
-  fromUser  User?             @relation("NotificationFromUser", fields: [fromUserId], references: [id], onDelete: Cascade)
+  fromUser   User?            @relation("NotificationFromUser", fields: [fromUserId], references: [id], onDelete: Cascade)
+  post       Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
 }
@@ -192,5 +192,3 @@ enum NotificationType {
   COMMENT
   FOLLOW
 }
-
-
