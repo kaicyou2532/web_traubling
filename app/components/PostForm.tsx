@@ -26,6 +26,8 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import "react-quill/dist/quill.snow.css";
+
 
 // Leafletコンポーネントを動的にインポート
 const MapContainer = dynamic(
