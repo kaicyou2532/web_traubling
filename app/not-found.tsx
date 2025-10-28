@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Home, Search, MapPin } from "lucide-react"
 
-// 動的レンダリングを強制
+
 export const dynamic = 'force-dynamic';
 
 export default function NotFound() {
