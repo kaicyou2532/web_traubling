@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
           createdAt: true,
           country: { select: { id: true, jaName: true, enName: true } },
           city: { select: { id: true, jaName: true, enName: true } },    // 都市を追加
-          user: { select: { name: true } },
+          user: { select: { name: true, email: true } },
           comments: { select: { id: true } },
           trouble: { select: { jaName: true, enName: true } },
         },

@@ -10,6 +10,7 @@ import { HeartIcon as HeartOutlineIcon } from "@heroicons/react/24/outline";
 import { CommentModal } from "./CommentModal";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import "leaflet/dist/leaflet.css";
 
 // Leafletアイコンの設定
@@ -50,7 +51,10 @@ interface Post {
   country: { id: number; jaName: string; enName: string } | null;
   city: { id: number; jaName: string; enName: string } | null;
   comments: { id: number }[];
-  user: { name: string };
+  user: {
+    name: string;
+    email: string;
+  };
   tags: string[];
   isJapan: boolean;
   likeCount: number;
@@ -351,9 +355,12 @@ export default function SearchResults({
                           <span>{post.comments.length}</span>
                         </div>
                       </div>
-                      <span className="text-sm text-[#007B63]">
+                      <Link 
+                        href={`/user/${encodeURIComponent(post.user.email)}`}
+                        className="text-sm text-[#007B63] hover:text-[#006854] hover:underline cursor-pointer"
+                      >
                         {post.user.name}
-                      </span>
+                      </Link>
                     </div>
                   </div>
                 </div>
