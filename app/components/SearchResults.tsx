@@ -405,21 +405,110 @@ export default function SearchResults({
           ))}
 
           {totalPages > 1 && (
-            <div className="flex justify-center mt-6 space-x-2">
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-1 rounded-full ${
-                    currentPage === i + 1
-                      ? "bg-custom-green text-white"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+            <div className="flex justify-center items-center mt-6 gap-2 px-4">
+              {/* 前のページボタン */}
+              <button
+                type="button"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              {/* ページ番号 */}
+              <div className="flex items-center gap-1 sm:gap-2">
+                {/* 最初のページ */}
+                {currentPage > 3 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(1)}
+                      className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-sm sm:text-base text-gray-700 hover:bg-gray-100 transition-all"
+                    >
+                      1
+                    </button>
+                    {currentPage > 4 && (
+                      <span className="flex items-center justify-center w-6 h-8 sm:w-8 sm:h-10 text-gray-400 text-sm">
+                        ...
+                      </span>
+                    )}
+                  </>
+                )}
+
+                {/* 現在のページ周辺 */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum: number;
+                  
+                  if (totalPages <= 5) {
+                    // 総ページ数が5以下の場合は全て表示
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    // 現在のページが最初の方の場合
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    // 現在のページが最後の方の場合
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    // 現在のページが中間の場合
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  if (pageNum < 1 || pageNum > totalPages) return null;
+
+                  return (
+                    <button
+                      key={pageNum}
+                      type="button"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-sm sm:text-base transition-all ${
+                        currentPage === pageNum
+                          ? "bg-[#007B63] text-white shadow-lg"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                {/* 最後のページ */}
+                {currentPage < totalPages - 2 && totalPages > 5 && (
+                  <>
+                    {currentPage < totalPages - 3 && (
+                      <span className="flex items-center justify-center w-6 h-8 sm:w-8 sm:h-10 text-gray-400 text-sm">
+                        ...
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(totalPages)}
+                      className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-sm sm:text-base text-gray-700 hover:bg-gray-100 transition-all"
+                    >
+                      {totalPages}
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* 次のページボタン */}
+              <button
+                type="button"
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* ページ情報（モバイル用） */}
+              <div className="ml-4 text-sm text-gray-500 hidden sm:block">
+                {currentPage} / {totalPages}
+              </div>
             </div>
           )}
         </div>
