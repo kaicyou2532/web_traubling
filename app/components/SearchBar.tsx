@@ -81,8 +81,37 @@ export default function SearchBar({
     fetchFilterOptions()
   }, [])
 
+  // フィルター変更時に自動検索
+  useEffect(() => {
+    if (!loading) {
+      onSearch?.(
+        searchTerm,
+        currentCategory,
+        selectedSubCategory,
+        countryFilter,
+        selectedCity,
+        selectedTrouble
+      )
+    }
+  }, [currentCategory, selectedCity, selectedTrouble, countryFilter, loading])
+
+  // 初期表示時に「全て」カテゴリで空検索を実行
+  useEffect(() => {
+    if (!loading && currentCategory === "all") {
+      onSearch?.(
+        "",  // 空のワード
+        currentCategory,
+        "",
+        "",
+        "",
+        ""
+      )
+    }
+  }, [loading, currentCategory])
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
+    // 空のワードでも検索可能にする（特に「全て」カテゴリの場合）
     onSearch?.(
       searchTerm, 
       currentCategory, 
@@ -91,6 +120,18 @@ export default function SearchBar({
       selectedCity,
       selectedTrouble
     )
+  }
+
+  // カテゴリ変更時にフィルターをリセット
+  const handleCategoryChange = (categoryId: string) => {
+    setCurrentCategory(categoryId)
+    onCategoryChange?.(categoryId)
+    
+    // カテゴリ変更時にフィルターをクリア
+    setSelectedSubCategory("")
+    setSelectedCity("")
+    setSelectedTrouble("")
+    onCountryChange?.("")
   }
 
   return (
@@ -103,12 +144,7 @@ export default function SearchBar({
               <button
                 type="button"
                 key={category.id}
-                onClick={() => {
-                  setCurrentCategory(category.id)
-                  onCategoryChange?.(category.id)
-                  if (category.id !== "category") setSelectedSubCategory("")
-                  if (category.id !== "region") onCountryChange?.("")
-                }}
+                onClick={() => handleCategoryChange(category.id)}
                 className={`flex items-center justify-center px-2 py-1 rounded-full gap-1 transition-colors flex-1 text-sm ${currentCategory === category.id ? "bg-white text-gray-900" : "text-white hover:bg-white/10"
                   }`}
               >
@@ -125,9 +161,24 @@ export default function SearchBar({
           <div className="relative flex-grow">
             <input
               type="text"
-              placeholder="観光地、トラブル内容、キーワードで検索"
+              placeholder={
+                currentCategory === "all" 
+                  ? "何も入力せずに検索ボタンで全件表示 / キーワードで絞り込み検索" 
+                  : currentCategory === "region"
+                  ? "国・都市名で検索"
+                  : currentCategory === "category"
+                  ? "分野・トラブル内容で検索"
+                  : currentCategory === "domestic"
+                  ? "日本国内のトラブル内容で検索"
+                  : "海外のトラブル内容で検索"
+              }
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch(e as any)
+                }
+              }}
               className="w-full px-4 py-2 pr-12 border-2 border-white bg-white bg-opacity-20 rounded-full text-white placeholder-gray-200 focus:outline-none focus:border-custom-green transition-colors"
             />
             <button
@@ -138,61 +189,156 @@ export default function SearchBar({
             </button>
           </div>
 
-          {/* 詳細フィルター */}
+          {/* 詳細フィルター - カテゴリに応じて表示 */}
+          {currentCategory !== "all" && (
             <div className="flex flex-wrap gap-2">
-              {/* 都市選択 */}
-              <div className="relative">
-                <select
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                  className="appearance-none bg-white bg-opacity-20 border-2 border-white text-white rounded-full px-4 py-2 pr-8 focus:outline-none focus:border-custom-green transition-colors"
-                  disabled={loading}
-                >
-                  <option value="">都市を選択</option>
-                  {Object.entries(citiesByCountry).map(([country, cities]) => (
-                    <optgroup key={country} label={country}>
-                      {cities.map((city) => (
+              {/* 国・都市別の場合 */}
+              {currentCategory === "region" && (
+                <>
+                  {/* 都市選択 */}
+                  <div className="relative">
+                    <select
+                      value={selectedCity}
+                      onChange={(e) => setSelectedCity(e.target.value)}
+                      className="appearance-none bg-white bg-opacity-20 border-2 border-white text-white rounded-full px-4 py-2 pr-8 focus:outline-none focus:border-custom-green transition-colors"
+                      disabled={loading}
+                    >
+                      <option value="">都市を選択</option>
+                      {Object.entries(citiesByCountry).map(([country, cities]) => (
+                        <optgroup key={country} label={country}>
+                          {cities.map((city) => (
+                            <option key={city.id} value={city.id}>
+                              {city.jaName} ({city.postCount}件)
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                    <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white pointer-events-none" />
+                  </div>
+
+                  {/* 都市名・国名の入力 */}
+                  <div className="flex-grow">
+                    <input
+                      type="text"
+                      placeholder="都市名や国名を入力"
+                      value={countryFilter}
+                      onChange={(e) => onCountryChange?.(e.target.value)}
+                      className="w-full px-4 py-2 border-2 border-white bg-white bg-opacity-20 rounded-full text-white placeholder-gray-200 focus:outline-none focus:border-custom-green transition-colors"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* 分野別の場合 */}
+              {currentCategory === "category" && (
+                <div className="relative">
+                  <select
+                    value={selectedTrouble}
+                    onChange={(e) => setSelectedTrouble(e.target.value)}
+                    className="appearance-none bg-white bg-opacity-20 border-2 border-white text-white rounded-full px-4 py-2 pr-8 focus:outline-none focus:border-custom-green transition-colors"
+                    disabled={loading}
+                  >
+                    <option value="">分野を選択</option>
+                    {troubleCategories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.jaName} ({category.postCount}件)
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white pointer-events-none" />
+                </div>
+              )}
+
+              {/* 日本国内の場合 */}
+              {currentCategory === "domestic" && (
+                <>
+                  {/* 日本の都市選択 */}
+                  <div className="relative">
+                    <select
+                      value={selectedCity}
+                      onChange={(e) => setSelectedCity(e.target.value)}
+                      className="appearance-none bg-white bg-opacity-20 border-2 border-white text-white rounded-full px-4 py-2 pr-8 focus:outline-none focus:border-custom-green transition-colors"
+                      disabled={loading}
+                    >
+                      <option value="">都市を選択</option>
+                      {citiesByCountry["日本"]?.map((city) => (
                         <option key={city.id} value={city.id}>
                           {city.jaName} ({city.postCount}件)
                         </option>
                       ))}
-                    </optgroup>
-                  ))}
-                </select>
-                <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white pointer-events-none" />
-              </div>
+                    </select>
+                    <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white pointer-events-none" />
+                  </div>
 
-              {/* カテゴリー選択 */}
-              <div className="relative">
-                <select
-                  value={selectedTrouble}
-                  onChange={(e) => setSelectedTrouble(e.target.value)}
-                  className="appearance-none bg-white bg-opacity-20 border-2 border-white text-white rounded-full px-4 py-2 pr-8 focus:outline-none focus:border-custom-green transition-colors"
-                  disabled={loading}
-                >
-                  <option value="">分野を選択</option>
-                  {troubleCategories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.jaName} ({category.postCount}件)
-                    </option>
-                  ))}
-                </select>
-                <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white pointer-events-none" />
-              </div>
+                  {/* 分野選択 */}
+                  <div className="relative">
+                    <select
+                      value={selectedTrouble}
+                      onChange={(e) => setSelectedTrouble(e.target.value)}
+                      className="appearance-none bg-white bg-opacity-20 border-2 border-white text-white rounded-full px-4 py-2 pr-8 focus:outline-none focus:border-custom-green transition-colors"
+                      disabled={loading}
+                    >
+                      <option value="">分野を選択</option>
+                      {troubleCategories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.jaName} ({category.postCount}件)
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white pointer-events-none" />
+                  </div>
+                </>
+              )}
 
-              {/* 都市名・国名の入力（regionカテゴリの時のみ） */}
-              {currentCategory === "region" && (
-                <div className="flex-grow">
-                  <input
-                    type="text"
-                    placeholder="都市名や国名を入力"
-                    value={countryFilter}
-                    onChange={(e) => onCountryChange?.(e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-white bg-white bg-opacity-20 rounded-full text-white placeholder-gray-200 focus:outline-none focus:border-custom-green transition-colors"
-                  />
-                </div>
+              {/* 海外の場合 */}
+              {currentCategory === "overseas" && (
+                <>
+                  {/* 海外都市選択 */}
+                  <div className="relative">
+                    <select
+                      value={selectedCity}
+                      onChange={(e) => setSelectedCity(e.target.value)}
+                      className="appearance-none bg-white bg-opacity-20 border-2 border-white text-white rounded-full px-4 py-2 pr-8 focus:outline-none focus:border-custom-green transition-colors"
+                      disabled={loading}
+                    >
+                      <option value="">都市を選択</option>
+                      {Object.entries(citiesByCountry)
+                        .filter(([country]) => country !== "日本")
+                        .map(([country, cities]) => (
+                          <optgroup key={country} label={country}>
+                            {cities.map((city) => (
+                              <option key={city.id} value={city.id}>
+                                {city.jaName} ({city.postCount}件)
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                    </select>
+                    <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white pointer-events-none" />
+                  </div>
+
+                  {/* 分野選択 */}
+                  <div className="relative">
+                    <select
+                      value={selectedTrouble}
+                      onChange={(e) => setSelectedTrouble(e.target.value)}
+                      className="appearance-none bg-white bg-opacity-20 border-2 border-white text-white rounded-full px-4 py-2 pr-8 focus:outline-none focus:border-custom-green transition-colors"
+                      disabled={loading}
+                    >
+                      <option value="">分野を選択</option>
+                      {troubleCategories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.jaName} ({category.postCount}件)
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white pointer-events-none" />
+                  </div>
+                </>
               )}
             </div>
+          )}
         </form>
       </div>
     </div>

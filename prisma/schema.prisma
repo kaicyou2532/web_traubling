@@ -21,8 +21,8 @@ model Account {
   id_token          String?
   session_state     String?
   createdAt         DateTime @default(now())
-  updatedAt         DateTime
-  User              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([provider, providerAccountId])
 }
@@ -36,19 +36,19 @@ model Authenticator {
   credentialDeviceType String
   credentialBackedUp   Boolean
   transports           String?
-  User                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
 }
 
 model City {
   id        Int     @id @default(autoincrement())
-  enName    String
-  jaName    String
-  countryId Int     @default(10000)
-  photoUrl  String?
-  Country   Country @relation(fields: [countryId], references: [id])
-  Post      Post[]
+  enName    String  @map("enName")
+  jaName    String  @map("jaName")
+  countryId Int     @default(10000) @map("countryId")
+  photoUrl  String? @map("photoUrl")
+  country   Country @relation(fields: [countryId], references: [id])
+  posts     Post[]
 }
 
 model Comment {
@@ -57,16 +57,16 @@ model Comment {
   postId    Int
   userId    String
   createdAt DateTime @default(now())
-  Post      Post     @relation(fields: [postId], references: [id])
-  User      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Country {
   id     Int    @id @default(autoincrement())
-  enName String
-  jaName String
-  City   City[]
-  Post   Post[]
+  enName String @map("enName")
+  jaName String @map("jaName")
+  cities City[]
+  posts  Post[]
 }
 
 model Follow {
@@ -85,8 +85,8 @@ model Like {
   userId    String
   postId    Int
   createdAt DateTime @default(now())
-  Post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
 }
@@ -122,13 +122,13 @@ model Post {
   likeCount    Int            @default(0) @map("likeCount")
   latitude     Float?
   longitude    Float?
-  Comment      Comment[]
-  Like         Like[]
-  Notification Notification[]
-  City         City           @relation(fields: [cityId], references: [id])
-  Country      Country        @relation(fields: [countryId], references: [id])
-  Trouble      Trouble        @relation(fields: [troubleId], references: [id])
-  User         User           @relation(fields: [userId], references: [id])
+  comments     Comment[]
+  likes        Like[]
+  notifications Notification[]
+  city         City           @relation(fields: [cityId], references: [id])
+  country      Country        @relation(fields: [countryId], references: [id])
+  trouble      Trouble        @relation(fields: [troubleId], references: [id])
+  user         User           @relation(fields: [userId], references: [id])
 }
 
 model Profile {
@@ -138,7 +138,7 @@ model Profile {
   avatarUrl String?
   createdAt DateTime? @default(now()) @db.Timestamp(6)
   updatedAt DateTime? @default(now()) @db.Timestamp(6)
-  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model Session {
@@ -152,9 +152,9 @@ model Session {
 
 model Trouble {
   id     Int    @id @default(autoincrement())
-  enName String
-  jaName String
-  Post   Post[]
+  enName String @map("enName")
+  jaName String @map("jaName")
+  posts  Post[]
 }
 
 model User {
@@ -165,9 +165,8 @@ model User {
   image             String?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
-  profile           String?
   accounts          Account[]
-  Authenticator     Authenticator[]
+  authenticators    Authenticator[]
   comments          Comment[]
   followers         Follow[]        @relation("UserFollowers")
   following         Follow[]        @relation("UserFollowing")
@@ -175,7 +174,7 @@ model User {
   sentNotifications Notification[]  @relation("NotificationFromUser")
   notifications     Notification[]
   posts             Post[]
-  Profile           Profile?
+  profile           Profile?
   sessions          Session[]
 }
 
