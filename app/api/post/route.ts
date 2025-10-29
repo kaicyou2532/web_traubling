@@ -64,6 +64,13 @@ const POST = async (req: NextRequest) => {
       contentLength: content?.length
     });
 
+    // データベース操作を試行する前に、既存のPostテーブルの最新IDを確認
+    const latestPost = await prisma.post.findFirst({
+      orderBy: { id: 'desc' },
+      select: { id: true }
+    });
+    console.log("Latest post ID:", latestPost?.id || "No posts exist");
+
     const post = await prisma.post.create({
       data: {
         userId: user.id,
