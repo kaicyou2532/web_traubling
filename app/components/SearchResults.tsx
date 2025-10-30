@@ -52,6 +52,7 @@ interface Post {
   city: { id: number; jaName: string; enName: string } | null;
   comments: { id: number }[];
   user: {
+    id: string;
     name: string;
     email: string;
   };
