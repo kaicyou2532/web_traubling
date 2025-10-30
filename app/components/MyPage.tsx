@@ -38,7 +38,7 @@ interface Post {
   date: string; // 例: "2025年4月15日"
   likes: number;
   comments: number;
-  tags: string[]; // 例: ["ホテル", "予約"]
+  tags?: string[]; // 例: ["ホテル", "予約"] - オプショナル
 }
 
 // いいねした投稿の型定義
@@ -49,7 +49,7 @@ interface LikedPost {
   date: string;
   likes: number;
   comments: number;
-  tags: string[];
+  tags?: string[];
   user: {
     id: number;
     name: string;
@@ -176,7 +176,11 @@ export default function MyPage() {
             throw new Error("投稿の取得に失敗しました。");
           }
           const data: Post[] = await response.json();
-          setPosts(data);
+          const postsWithTags = data.map(post => ({
+            ...post,
+            tags: post.tags || []
+          }));
+          setPosts(postsWithTags);
         } catch (error) {
           console.error("投稿フェッチエラー:", error);
           // エラー処理
@@ -197,7 +201,11 @@ export default function MyPage() {
             throw new Error("いいねした投稿の取得に失敗しました。");
           }
           const data: LikedPost[] = await response.json();
-          setLikedPosts(data);
+          const likedPostsWithTags = data.map(post => ({
+            ...post,
+            tags: post.tags || []
+          }));
+          setLikedPosts(likedPostsWithTags);
         } catch (error) {
           console.error("いいねした投稿フェッチエラー:", error);
           // エラー処理
@@ -297,7 +305,10 @@ export default function MyPage() {
 
   // 投稿編集処理
   const handleEditPost = (post: Post) => {
-    setCurrentPost(post);
+    setCurrentPost({
+      ...post,
+      tags: post.tags || []
+    });
     setIsEditPostDialogOpen(true);
   };
 
@@ -578,7 +589,7 @@ export default function MyPage() {
                       dangerouslySetInnerHTML={{ __html: post.content }}
                     />
                     <div className="flex gap-2 mb-3">
-                      {post.tags.map((tag) => (
+                      {post.tags?.map((tag) => (
                         <Badge
                           key={`tag-${tag}`}
                           className="bg-[#007B63]/10 text-[#007B63] hover:bg-[#007B63]/20"
@@ -696,7 +707,7 @@ export default function MyPage() {
                       dangerouslySetInnerHTML={{ __html: post.content }}
                     />
                     <div className="flex gap-2 mb-3">
-                      {post.tags.map((tag, index) => (
+                      {post.tags?.map((tag, index) => (
                         <Badge
                           key={`liked-tag-${post.id}-${index}`}
                           className="bg-[#007B63]/10 text-[#007B63] hover:bg-[#007B63]/20"
@@ -1007,7 +1018,7 @@ export default function MyPage() {
                 <Label htmlFor="post-tags">タグ（カンマ区切り）</Label>
                 <Input
                   id="post-tags"
-                  value={currentPost.tags.join(", ")}
+                  value={currentPost.tags?.join(", ") || ""}
                   onChange={(e) =>
                     setCurrentPost({
                       ...currentPost,
