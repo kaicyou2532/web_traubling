@@ -11,6 +11,20 @@ import { CommentModal } from "./CommentModal";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import "leaflet/dist/leaflet.css";
 
 // Leafletアイコンの設定
@@ -88,7 +102,20 @@ export default function SearchResults({
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hoveredPostId, setHoveredPostId] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<string>("newest");
   const router = useRouter();
+
+  // 称号判定の閾値
+  const HELPFUL_THRESHOLD = 10; // 役に立った！数の閾値
+  const COMMENT_THRESHOLD = 5;  // コメント数の閾値
+
+  // 称号を判定する関数
+  const getPostBadge = (post: Post) => {
+    if ((post.likeCount || 0) >= HELPFUL_THRESHOLD || post.comments.length >= COMMENT_THRESHOLD) {
+      return "たくさんのユーザに役に立った投稿";
+    }
+    return null;
+  };
 
   // 有効な座標を持つ投稿をフィルタリング（デバッグ用）
   const postsWithLocation = posts.filter((post) => {
@@ -119,6 +146,7 @@ export default function SearchResults({
           city: cityFilter || "",
           trouble: troubleFilter || "",
           page: currentPage.toString(),
+          sortBy: sortBy,
         });
 
         const res = await fetch(`/api/search?${params.toString()}`);
@@ -191,13 +219,13 @@ export default function SearchResults({
       }
     }
     fetchPosts();
-  }, [searchTerm, category, subCategory, countryFilter, cityFilter, troubleFilter, currentPage]);
+  }, [searchTerm, category, subCategory, countryFilter, cityFilter, troubleFilter, currentPage, sortBy]);
 
   const handleLikeClick = async (e: React.MouseEvent, postId: number) => {
     e.stopPropagation();
 
     try {
-      // 現在のいいね状態を取得
+      // 現在の「役に立った！」状態を取得
       const currentPost = posts.find((p) => p.id === postId);
       if (!currentPost) return;
 
@@ -297,7 +325,22 @@ export default function SearchResults({
       <div className="w-full">
         {/* 検索結果リスト */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold mb-4">検索結果: {totalCount}件</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <h2 className="text-2xl font-bold">検索結果: {totalCount}件</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">並べ替え:</span>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">新しい順</SelectItem>
+                  <SelectItem value="likes">役に立った！数順</SelectItem>
+                  <SelectItem value="comments">コメント数順</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           {posts.map((post) => (
             <div
               key={post.id}
@@ -327,9 +370,16 @@ export default function SearchResults({
                       </button>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold mb-3 text-gray-800">
-                    {post.title}
-                  </h3>
+                  <div className="flex flex-col gap-2 mb-3">
+                    <h3 className="text-xl font-semibold text-gray-800">
+                      {post.title}
+                    </h3>
+                    {getPostBadge(post) && (
+                      <Badge variant="secondary" className="self-start bg-yellow-100 text-yellow-800 border-yellow-300">
+                        ⭐ {getPostBadge(post)}
+                      </Badge>
+                    )}
+                  </div>
                   <div
                     className="text-gray-600 mb-4 line-clamp-3"
                     dangerouslySetInnerHTML={{ __html: post.content }}
@@ -347,19 +397,28 @@ export default function SearchResults({
                     </div>
                     <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                       <div className="flex items-center gap-4 text-gray-500">
-                        <button
-                          onClick={(e) => handleLikeClick(e, post.id)}
-                          className="flex items-center hover:scale-110 transition-transform"
-                        >
-                          {post.isLiked ? (
-                            <HeartIcon className="h-5 w-5 mr-1 text-red-500" />
-                          ) : (
-                            <HeartOutlineIcon className="h-5 w-5 mr-1 text-gray-400 hover:text-red-500" />
-                          )}
-                          <span className={post.isLiked ? "text-red-500" : ""}>
-                            {post.likeCount || 0}
-                          </span>
-                        </button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={(e) => handleLikeClick(e, post.id)}
+                                className="flex items-center hover:scale-110 transition-transform"
+                              >
+                                {post.isLiked ? (
+                                  <HeartIcon className="h-5 w-5 mr-1 text-red-500" />
+                                ) : (
+                                  <HeartOutlineIcon className="h-5 w-5 mr-1 text-gray-400 hover:text-red-500" />
+                                )}
+                                <span className={post.isLiked ? "text-red-500" : ""}>
+                                  {post.likeCount || 0}
+                                </span>
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>役に立った！</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <div className="flex items-center">
                           <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
                           <span>{post.comments.length}</span>
@@ -419,6 +478,11 @@ export default function SearchResults({
                                 <h4 className="font-semibold text-sm mb-1">
                                   {post.title}
                                 </h4>
+                                {getPostBadge(post) && (
+                                  <Badge variant="secondary" className="mb-2 bg-yellow-100 text-yellow-800 border-yellow-300 text-xs">
+                                    ⭐ {getPostBadge(post)}
+                                  </Badge>
+                                )}
                                 <p className="text-xs text-gray-600">
                                   {post.country?.jaName}
                                   {post.city && ` - ${post.city.jaName}`}

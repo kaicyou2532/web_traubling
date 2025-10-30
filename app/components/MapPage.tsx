@@ -41,7 +41,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
 // Leafletアイコン設定
@@ -94,7 +101,7 @@ function ChangeView({
 }) {
   const map = useMap();
   useEffect(() => {
-    map.setView(coords, zoom, { animate: true, duration: 1 });
+    map.flyTo(coords, zoom, { animate: true, duration: 1.5 });
   }, [coords, zoom, map]);
   return null;
 }
@@ -378,6 +385,19 @@ export default function MapPage() {
   const [center, setCenter] = useState<[number, number]>([35.6762, 139.6503]);
   const [zoom, setZoom] = useState(5);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // 称号判定の閾値
+  const HELPFUL_THRESHOLD = 10; // 役に立った！数の閾値
+  const COMMENT_THRESHOLD = 5;  // コメント数の閾値
+
+  // 称号を判定する関数
+  const getPostBadge = (post: PostData) => {
+    if ((post.likeCount || 0) >= HELPFUL_THRESHOLD || (post.commentCount || 0) >= COMMENT_THRESHOLD) {
+      return "たくさんのユーザに役に立った投稿";
+    }
+    return null;
+  };
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -393,6 +413,27 @@ export default function MapPage() {
     };
     fetchPosts();
   }, []);
+
+  // Handle URL parameters for direct navigation from SearchResults
+  useEffect(() => {
+    if (posts.length === 0) return;
+
+    const postId = searchParams.get('postId');
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+
+    if (postId && lat && lng) {
+      const targetPost = posts.find(post => post.id === parseInt(postId));
+      if (targetPost) {
+        // Set map center and zoom to the target post
+        setCenter([parseFloat(lat), parseFloat(lng)]);
+        setZoom(14);
+        
+        // Automatically select and display the post modal
+        setSelectedPost(targetPost);
+      }
+    }
+  }, [posts, searchParams]);
 
   const handleLocationSelect = (lat: number, lng: number) => {
     setCenter([lat, lng]);
@@ -417,7 +458,7 @@ export default function MapPage() {
     e.stopPropagation(); // 親要素へのクリック伝播を防止
 
     try {
-      // 現在のいいね状態を取得
+      // 現在の「役に立った！」状態を取得
       const currentPost = posts.find((p) => p.id === postId);
       if (!currentPost) return;
 
@@ -514,7 +555,10 @@ export default function MapPage() {
         />
 
         <ChangeView coords={center} zoom={zoom} />
-        <MapClickHandler onMapClick={() => setSelectedPost(null)} />
+        <MapClickHandler onMapClick={() => {
+          setSelectedPost(null);
+          router.push('/map', { scroll: false });
+        }} />
         <ZoomControl position="bottomright" />
 
         {posts.map((post) => (
@@ -686,6 +730,12 @@ export default function MapPage() {
                 <h3 className="font-medium text-lg md:text-xl text-gray-900 leading-snug mb-2 truncate">
                   {selectedPost.title}
                 </h3>
+                
+                {getPostBadge(selectedPost) && (
+                  <Badge variant="secondary" className="mb-3 bg-yellow-100 text-yellow-800 border-yellow-300">
+                    ⭐ {getPostBadge(selectedPost)}
+                  </Badge>
+                )}
 
                 <div className="flex flex-wrap gap-2 mb-3">
                   {selectedPost.trouble && (
@@ -722,7 +772,11 @@ export default function MapPage() {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-gray-400 hover:text-gray-600 transition-colors"
-                onClick={() => setSelectedPost(null)}
+                onClick={() => {
+                  setSelectedPost(null);
+                  // Clean up URL parameters when closing the modal
+                  router.push('/map', { scroll: false });
+                }}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -734,17 +788,26 @@ export default function MapPage() {
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-gray-100 gap-3">
               <div className="flex items-center gap-4 text-sm text-gray-500">
-                <button
-                  onClick={(e) => handleLikeClick(e, selectedPost.id)}
-                  className="flex items-center hover:scale-110 transition-transform"
-                >
-                  {selectedPost.isLiked ? (
-                    <HeartIcon className="h-5 w-5 mr-1 text-red-500" />
-                  ) : (
-                    <HeartOutlineIcon className="h-5 w-5 mr-1 text-gray-400 hover:text-red-500" />
-                  )}
-                  <span>{selectedPost.likeCount || 0}</span>
-                </button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={(e) => handleLikeClick(e, selectedPost.id)}
+                        className="flex items-center hover:scale-110 transition-transform"
+                      >
+                        {selectedPost.isLiked ? (
+                          <HeartIcon className="h-5 w-5 mr-1 text-red-500" />
+                        ) : (
+                          <HeartOutlineIcon className="h-5 w-5 mr-1 text-gray-400 hover:text-red-500" />
+                        )}
+                        <span>{selectedPost.likeCount || 0}</span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>役に立った！</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
                 <span className="flex items-center gap-1">
                   <MessageCircle className="h-4 w-4 text-gray-400" />

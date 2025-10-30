@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
     const countryFilter = searchParams.get("country")?.toLowerCase() || "";
     const cityFilter = searchParams.get("city");
     const troubleFilter = searchParams.get("trouble");
+    const sortBy = searchParams.get("sortBy") || "newest";
     const page = parseInt(searchParams.get("page") || "1", 10);
 
     // ★ セッション情報を安全に取得
@@ -99,6 +100,21 @@ export async function GET(req: NextRequest) {
 
     const where = filters.length > 0 ? { AND: filters } : {};
 
+    // ソート条件を決定
+    let orderBy: Prisma.PostOrderByWithRelationInput;
+    switch (sortBy) {
+      case "likes":
+        orderBy = { likeCount: "desc" };
+        break;
+      case "comments":
+        orderBy = { comments: { _count: "desc" } };
+        break;
+      case "newest":
+      default:
+        orderBy = { createdAt: "desc" };
+        break;
+    }
+
     const [posts, totalCount] = await Promise.all([
       prisma.post.findMany({
         where,
@@ -116,7 +132,7 @@ export async function GET(req: NextRequest) {
           comments: { select: { id: true } },
           trouble: { select: { jaName: true, enName: true } },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy,
         skip: (page - 1) * PAGE_SIZE,
         take: PAGE_SIZE,
       }),
