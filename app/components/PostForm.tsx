@@ -129,6 +129,8 @@ function PostForm({ troubleType, countries, cities }: Props) {
   const [textValue, setValue] = useState("");
 
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLocationLoading, setIsLocationLoading] = useState(false);
 
   // --- Map related state ---
   const [showMap, setShowMap] = useState(false);
@@ -139,6 +141,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
   const mapRef = useRef<L.Map>(null);
 
   const handleSetCurrentLocation = () => {
+    setIsLocationLoading(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
@@ -147,6 +150,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
         if (mapRef.current) {
           mapRef.current.flyTo(newPos, 13);
         }
+        setIsLocationLoading(false);
       },
       (error) => {
         console.error("位置情報取得エラー:", {
@@ -164,6 +168,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
           alertMessage += "\nタイムアウトしました。";
         }
         alert(alertMessage);
+        setIsLocationLoading(false);
       }
     );
   };
@@ -212,6 +217,12 @@ function PostForm({ troubleType, countries, cities }: Props) {
   // フォーム送信時
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // 既に送信中の場合は処理をブロック
+    if (isSubmitting) {
+      return;
+    }
+
     const countryId = formData.countryId;
     const cityId = formData.cityId;
     const troubleId = formData.troubleId;
@@ -232,6 +243,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
       window.alert("全ての項目を入力してください");
       return;
     }
+    
     console.log("Submitted form data:", formData);
     console.log("Editor content:", textValue);
     console.log(`"${textValue}"`);
@@ -248,6 +260,8 @@ function PostForm({ troubleType, countries, cities }: Props) {
       longitude: pinPosition?.lng ?? null,
     };
 
+    setIsSubmitting(true); // 送信開始
+
     try {
       const response = await fetch("/api/post", {
         method: "POST",
@@ -256,13 +270,18 @@ function PostForm({ troubleType, countries, cities }: Props) {
       });
 
       if (!response.ok) {
-        throw new Error("APIエラー");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "APIエラー");
       }
+      
       const data = await response.json();
       console.log("API response:", data);
-      setIsConfirmationOpen(true); // Open the confirmation dialog
+      setIsConfirmationOpen(true); // 成功ダイアログを表示
     } catch (error) {
       console.error("Error posting data:", error);
+      window.alert(`投稿に失敗しました: ${error instanceof Error ? error.message : "不明なエラー"}`);
+    } finally {
+      setIsSubmitting(false); // 送信終了
     }
   };
 
@@ -514,9 +533,17 @@ function PostForm({ troubleType, countries, cities }: Props) {
             <Button
               type="button"
               onClick={handleSetCurrentLocation}
-              className="w-full bg-gray-700 hover:bg-custom-green text-white mb-8"
+              disabled={isLocationLoading}
+              className="w-full bg-gray-700 hover:bg-custom-green text-white mb-8 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              現在地にピンを打つ
+              {isLocationLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                  位置情報取得中...
+                </div>
+              ) : (
+                "現在地にピンを打つ"
+              )}
             </Button>
           </div>
         )}
@@ -526,9 +553,10 @@ function PostForm({ troubleType, countries, cities }: Props) {
       <div className="mb-2">
         <Button
           type="submit"
-          className="w-full bg-gray-700 hover:bg-custom-green text-white mb-8"
+          disabled={isSubmitting}
+          className="w-full bg-gray-700 hover:bg-custom-green text-white mb-8 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          投稿する
+          {isSubmitting ? '投稿中...' : '投稿する'}
         </Button>
         {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
         <div className="space-y-2"></div>

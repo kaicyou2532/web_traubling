@@ -15,11 +15,11 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { targetEmail } = body;
+    const { targetUserId } = body;
 
-    if (!targetEmail) {
+    if (!targetUserId || targetUserId === 'undefined') {
       return NextResponse.json(
-        { message: "フォロー対象のユーザーEmailが必要です。" },
+        { message: "フォロー対象のUserIDが必要です。" },
         { status: 400 }
       );
     }
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         select: { id: true },
       }),
       prisma.user.findUnique({
-        where: { email: targetEmail },
+        where: { id: targetUserId },
         select: { id: true },
       }),
     ]);
@@ -118,11 +118,11 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const targetEmail = searchParams.get('targetEmail');
+    const targetUserId = searchParams.get('targetUserId');
 
-    if (!targetEmail) {
+    if (!targetUserId || targetUserId === 'undefined') {
       return NextResponse.json(
-        { message: "対象ユーザーEmailが必要です。" },
+        { message: "対象UserIDが必要です。" },
         { status: 400 }
       );
     }
@@ -133,7 +133,7 @@ export async function GET(request: Request) {
         select: { id: true },
       }),
       prisma.user.findUnique({
-        where: { email: targetEmail },
+        where: { id: targetUserId },
         select: { id: true },
       }),
     ]);

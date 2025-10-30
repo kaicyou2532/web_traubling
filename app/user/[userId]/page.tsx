@@ -49,32 +49,46 @@ export default function UserProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
-  const userEmail = decodeURIComponent(params.email as string);
+  const userId = params.userId ? decodeURIComponent(params.userId as string) : "";
 
   // ユーザー情報とフォロー状態を取得
   useEffect(() => {
     const fetchUserData = async () => {
+      setLoading(true);
       try {
         // ユーザー情報を取得
-        const userResponse = await fetch(`/api/user/profile?email=${encodeURIComponent(userEmail)}`);
+        const userResponse = await fetch(`/api/user/profile?userId=${encodeURIComponent(userId)}`);
         if (userResponse.ok) {
           const userData = await userResponse.json();
           setUser(userData);
+        } else {
+          console.error("ユーザー情報取得エラー:", userResponse.status);
         }
 
         // ユーザーの投稿を取得
-        const postsResponse = await fetch(`/api/user/posts?email=${encodeURIComponent(userEmail)}`);
+        const postsResponse = await fetch(`/api/user/posts?userId=${encodeURIComponent(userId)}`);
         if (postsResponse.ok) {
           const postsData = await postsResponse.json();
           setPosts(postsData);
+        } else {
+          console.error("投稿取得エラー:", postsResponse.status);
         }
 
         // 現在のユーザーがこのユーザーをフォローしているかチェック
-        if (session?.user?.email && session.user.email !== userEmail) {
-          const followResponse = await fetch(`/api/user/follow?targetEmail=${encodeURIComponent(userEmail)}`);
-          if (followResponse.ok) {
-            const followData = await followResponse.json();
-            setIsFollowing(followData.isFollowing);
+        if (session?.user?.email) {
+          // 自分のuserIdを取得
+          const profileResponse = await fetch('/api/user/profile');
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            if (profileData.id !== userId) {
+              const followResponse = await fetch(`/api/user/follow?targetUserId=${encodeURIComponent(userId)}`);
+              if (followResponse.ok) {
+                const followData = await followResponse.json();
+                setIsFollowing(followData.isFollowing);
+              } else {
+                console.error("フォロー状態取得エラー:", followResponse.status);
+              }
+            }
           }
         }
       } catch (error) {
@@ -84,10 +98,12 @@ export default function UserProfilePage() {
       }
     };
 
-    if (userEmail) {
+    if (userId && userId !== 'undefined') {
       fetchUserData();
+    } else {
+      setLoading(false);
     }
-  }, [userEmail, session]);
+  }, [userId, session]);
 
   // フォロー/アンフォロー処理
   const handleFollowToggle = async () => {
@@ -101,7 +117,7 @@ export default function UserProfilePage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          targetEmail: userEmail,
+          targetUserId: userId,
         }),
       });
 
@@ -165,8 +181,8 @@ export default function UserProfilePage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#007B63]"></div>
-          <p className="mt-4 text-gray-600">読み込み中...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#007B63] border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-gray-600 text-lg">ユーザー情報を読み込み中...</p>
         </div>
       </div>
     );
@@ -182,7 +198,7 @@ export default function UserProfilePage() {
     );
   }
 
-  const isOwnProfile = session?.user?.email === userEmail;
+  const isOwnProfile = user?.id && session?.user?.email === user.email;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -220,7 +236,10 @@ export default function UserProfilePage() {
                     } ${followLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     {followLoading ? (
-                      "処理中..."
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                        処理中...
+                      </div>
                     ) : isFollowing ? (
                       <>
                         <UserMinusIcon className="h-5 w-5 inline mr-2" />

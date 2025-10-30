@@ -275,7 +275,10 @@ export default function SearchResults({
   if (isLoading) {
     return (
       <div className="h-[450px] flex items-center justify-center">
-        読み込み中...
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#007B63] border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-gray-600">検索中...</p>
+        </div>
       </div>
     );
   }
@@ -361,12 +364,18 @@ export default function SearchResults({
                           <span>{post.comments.length}</span>
                         </div>
                       </div>
-                      <Link 
-                        href={`/user/${encodeURIComponent(post.user.email)}`}
-                        className="text-sm text-[#007B63] hover:text-[#006854] hover:underline cursor-pointer"
-                      >
-                        {post.user.name}
-                      </Link>
+                      {post.user.id ? (
+                        <Link 
+                          href={`/user/${encodeURIComponent(post.user.id)}`}
+                          className="text-sm text-[#007B63] hover:text-[#006854] hover:underline cursor-pointer"
+                        >
+                          {post.user.name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-gray-500">
+                          {post.user.name}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

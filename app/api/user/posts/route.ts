@@ -8,13 +8,13 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const targetEmail = searchParams.get('email');
+    const targetUserId = searchParams.get('userId');
     
-    // emailパラメータがある場合は他のユーザーの投稿、なければ自分の投稿
-    let userEmail: string;
+    // userIdパラメータがある場合は他のユーザーの投稿、なければ自分の投稿
+    let userId: string;
     
-    if (targetEmail) {
-      userEmail = targetEmail;
+    if (targetUserId && targetUserId !== 'undefined') {
+      userId = targetUserId;
     } else {
       const session = await auth();
       if (!session?.user?.email) {
@@ -23,11 +23,30 @@ export async function GET(request: Request) {
           { status: 401 }
         );
       }
-      userEmail = session.user.email;
+      // セッションからuserIdを取得
+      const sessionUser = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true },
+      });
+      if (!sessionUser) {
+        return NextResponse.json(
+          { message: "ユーザーが見つかりません。" },
+          { status: 404 }
+        );
+      }
+      userId = sessionUser.id;
+    }
+
+    // userIdが無効な場合のバリデーション
+    if (!userId || userId === 'undefined') {
+      return NextResponse.json(
+        { message: "有効なUserIDが必要です。" },
+        { status: 400 }
+      );
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: userEmail },
+      where: { id: userId },
       select: { id: true },
     });
 

@@ -112,7 +112,7 @@ export async function GET(req: NextRequest) {
           createdAt: true,
           country: { select: { id: true, jaName: true, enName: true } },
           city: { select: { id: true, jaName: true, enName: true } },    // 都市を追加
-          user: { select: { name: true, email: true } },
+          user: { select: { id: true, name: true, email: true } },
           comments: { select: { id: true } },
           trouble: { select: { jaName: true, enName: true } },
         },
@@ -158,7 +158,7 @@ export async function GET(req: NextRequest) {
         ? { id: post.city.id, jaName: post.city.jaName, enName: post.city.enName }
         : null,                  // 都市を追加
       comments: post.comments || [],
-      user: post.user ? { name: post.user.name } : { name: "匿名" },
+      user: post.user ? { id: post.user.id, name: post.user.name, email: post.user.email } : { id: "", name: "匿名", email: "" },
       tags: [post.trouble?.jaName || post.trouble?.enName || "不明"],
       isJapan: post.country?.id === 1,
       // いいね情報を追加
