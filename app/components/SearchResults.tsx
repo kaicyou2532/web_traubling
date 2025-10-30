@@ -330,7 +330,7 @@ export default function SearchResults({
                     {post.title}
                   </h3>
                   <div
-                    className="text-gray-600 mb-4 line-clamp-3 flex-1"
+                    className="text-gray-600 mb-4 line-clamp-3"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                   />
                   <div className="mt-auto">
