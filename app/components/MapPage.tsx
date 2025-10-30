@@ -371,7 +371,9 @@ function MapClickHandler({ onMapClick }: { onMapClick: () => void }) {
   useEffect(() => {
     const handleClick = () => onMapClick();
     map.on("click", handleClick);
-    return () => {map.off("click", handleClick);}
+    return () => {
+      map.off("click", handleClick);
+    };
   }, [map, onMapClick]);
   return null;
 }
@@ -388,11 +390,14 @@ export default function MapPage() {
 
   // 称号判定の閾値
   const HELPFUL_THRESHOLD = 10; // 役に立った！数の閾値
-  const COMMENT_THRESHOLD = 5;  // コメント数の閾値
+  const COMMENT_THRESHOLD = 5; // コメント数の閾値
 
   // 称号を判定する関数
   const getPostBadge = (post: PostData) => {
-    if ((post.likeCount || 0) >= HELPFUL_THRESHOLD || (post.commentCount || 0) >= COMMENT_THRESHOLD) {
+    if (
+      (post.likeCount || 0) >= HELPFUL_THRESHOLD ||
+      (post.commentCount || 0) >= COMMENT_THRESHOLD
+    ) {
       return "たくさんのユーザに役に立った投稿";
     }
     return null;
@@ -417,17 +422,17 @@ export default function MapPage() {
   useEffect(() => {
     if (posts.length === 0) return;
 
-    const postId = searchParams.get('postId');
-    const lat = searchParams.get('lat');
-    const lng = searchParams.get('lng');
+    const postId = searchParams.get("postId");
+    const lat = searchParams.get("lat");
+    const lng = searchParams.get("lng");
 
     if (postId && lat && lng) {
-      const targetPost = posts.find(post => post.id === parseInt(postId));
+      const targetPost = posts.find((post) => post.id === parseInt(postId));
       if (targetPost) {
         // Set map center and zoom to the target post
         setCenter([parseFloat(lat), parseFloat(lng)]);
         setZoom(14);
-        
+
         // Automatically select and display the post modal
         setSelectedPost(targetPost);
       }
@@ -492,18 +497,18 @@ export default function MapPage() {
   };
 
   return (
-  <div className="relative h-[calc(100vh-4rem)] w-full bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
-    {/* フィルターボタン - 左上 */}
-    <div className="fixed top-20 left-20 z-[1000] flex gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        className="bg-white/95 backdrop-blur-sm border-gray-200/50"
-      >
-        <AlertTriangle className="h-4 w-4 mr-2" />
-        トラブル種別
-      </Button>
-      {/* 
+    <div className="relative h-[calc(100vh-4rem)] w-full bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
+      {/* フィルターボタン - 左上 */}
+      <div className="fixed top-20 left-20 z-[1000] flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="bg-white/95 backdrop-blur-sm border-gray-200/50"
+        >
+          <AlertTriangle className="h-4 w-4 mr-2" />
+          トラブル種別
+        </Button>
+        {/* 
       <Button
         variant="outline"
         size="sm"
@@ -513,329 +518,332 @@ export default function MapPage() {
         国・地域
       </Button>
       */}
-    </div>
-
-    {/* 検索バー - 右上 */}
-    <div className="fixed top-20 right-4 z-[1000]">
-      <MapSearchComponent
-        posts={posts}
-        onLocationSelect={handleLocationSelect}
-        onPostSelect={handlePostSelect}
-      />
-    </div>
-
-    {/* 地図本体 */}
-    {loading ? (
-      <div className="flex justify-center items-center h-full">
-        <div className="text-center">
-          <Skeleton className="w-24 h-24 rounded-full mx-auto mb-4" />
-          <Skeleton className="w-40 h-6" />
-        </div>
       </div>
-    ) : (
-      <MapContainer
-        center={center}
-        zoom={zoom}
-        minZoom={3}
-        maxBounds={[
-          [-85.0511, -180],
-          [85.0511, 180],
-        ]}
-        worldCopyJump={false}
-        maxBoundsViscosity={1.0}
-        style={{ height: "100%", width: "100%" }}
-        className="z-0"
-        zoomControl={false}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          noWrap={true}
+
+      {/* 検索バー - 右上 */}
+      <div className="fixed top-20 right-4 z-[1000]">
+        <MapSearchComponent
+          posts={posts}
+          onLocationSelect={handleLocationSelect}
+          onPostSelect={handlePostSelect}
         />
+      </div>
 
-        <ChangeView coords={center} zoom={zoom} />
-        <MapClickHandler onMapClick={() => {
-          setSelectedPost(null);
-          router.push('/map', { scroll: false });
-        }} />
-        <ZoomControl position="bottomright" />
+      {/* 地図本体 */}
+      {loading ? (
+        <div className="flex justify-center items-center h-full">
+          <div className="text-center">
+            <Skeleton className="w-24 h-24 rounded-full mx-auto mb-4" />
+            <Skeleton className="w-40 h-6" />
+          </div>
+        </div>
+      ) : (
+        <MapContainer
+          center={center}
+          zoom={zoom}
+          minZoom={3}
+          maxBounds={[
+            [-85.0511, -180],
+            [85.0511, 180],
+          ]}
+          worldCopyJump={false}
+          maxBoundsViscosity={1.0}
+          style={{ height: "100%", width: "100%" }}
+          className="z-0"
+          zoomControl={false}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            noWrap={true}
+          />
 
-        {posts.map((post) => (
-          <Marker
-            key={post.id}
-            position={[post.latitude, post.longitude]}
-            eventHandlers={{
-              click: (e) => {
-                handleMarkerClick(post);
-                // クリック中は popup を維持
-                e.target._keepPopupOpen = true;
-                e.target.openPopup();
-
-                // 数秒後に解除（3秒後）
-                setTimeout(() => {
-                  e.target._keepPopupOpen = false;
-                }, 3000);
-              },
-              mouseover: (e) => {
-                e.target.openPopup();
-              },
-              mouseout: (e) => {
-                const markerEl = e.originalEvent?.relatedTarget as
-                  | HTMLElement
-                  | null;
-
-                // Popup内にマウスがある場合は閉じない
-                if (markerEl && markerEl.closest(".leaflet-popup")) return;
-
-                // 少し遅延して閉じる（誤動作防止）
-                setTimeout(() => {
-                  const activePopup = document.querySelector(
-                    ".leaflet-popup:hover"
-                  );
-                  if (!activePopup) e.target.closePopup();
-                }, 150);
-              },
+          <ChangeView coords={center} zoom={zoom} />
+          <MapClickHandler
+            onMapClick={() => {
+              setSelectedPost(null);
+              router.push("/map", { scroll: false });
             }}
-          >
-            <Popup
-              className="custom-popup"
-              autoClose={false}
-              closeOnClick={false}
-              closeButton={false}
-              eventHandlers={{
-                add: (e) => {
-                  const popupEl = e.target.getElement();
-                  const map = e.target._map;
-                  if (!popupEl || !map) return;
+          />
+          <ZoomControl position="bottomright" />
 
-                  popupEl.addEventListener("mouseenter", () => {
-                    (map as any)._popupStayOpen = true;
-                  });
-                  popupEl.addEventListener("mouseleave", () => {
-                    (map as any)._popupStayOpen = false;
-                    setTimeout(() => {
-                      const markerHovered = document.querySelector(
-                        ".leaflet-marker-icon:hover"
-                      );
-                      if (
-                        !markerHovered &&
-                        !(map as any)._popupStayOpen
-                      ) {
-                        map.closePopup();
-                      }
-                    }, 100);
-                  });
+          {posts.map((post) => (
+            <Marker
+              key={post.id}
+              position={[post.latitude, post.longitude]}
+              eventHandlers={{
+                click: (e) => {
+                  handleMarkerClick(post);
+                  // クリック中は popup を維持
+                  e.target._keepPopupOpen = true;
+                  e.target.openPopup();
+
+                  // 数秒後に解除（3秒後）
+                  setTimeout(() => {
+                    e.target._keepPopupOpen = false;
+                  }, 3000);
+                },
+                mouseover: (e) => {
+                  e.target.openPopup();
+                },
+                mouseout: (e) => {
+                  const markerEl = e.originalEvent
+                    ?.relatedTarget as HTMLElement | null;
+
+                  // Popup内にマウスがある場合は閉じない
+                  if (markerEl && markerEl.closest(".leaflet-popup")) return;
+
+                  // 少し遅延して閉じる（誤動作防止）
+                  setTimeout(() => {
+                    const activePopup = document.querySelector(
+                      ".leaflet-popup:hover"
+                    );
+                    if (!activePopup) e.target.closePopup();
+                  }, 150);
                 },
               }}
             >
-              <Card className="w-80 border-0 shadow-none">
-                {/* ヘッダー画像 */}
-                {post.city?.photoUrl && (
-                  <CardHeader className="p-0">
-                    <div className="relative w-full h-32 rounded-t-lg overflow-hidden">
-                      <Image
-                        src={post.city.photoUrl}
-                        alt={post.city.jaName}
-                        fill
-                        className="object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = "none";
-                        }}
-                      />
-                    </div>
-                  </CardHeader>
-                )}
+              <Popup
+                className="custom-popup"
+                autoClose={false}
+                closeOnClick={false}
+                closeButton={false}
+                eventHandlers={{
+                  add: (e) => {
+                    const popupEl = e.target.getElement();
+                    const map = e.target._map;
+                    if (!popupEl || !map) return;
 
-                <CardContent className="p-4">
-                  <div className="space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-lg text-gray-900 mb-2">
-                        {post.title}
-                      </h3>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {post.trouble && (
-                        <Badge variant="destructive" className="text-xs">
-                          {post.trouble.jaName}
-                        </Badge>
-                      )}
-                      {post.country && (
-                        <Badge variant="outline" className="text-xs">
-                          <Globe className="h-3 w-3 mr-1" />
-                          {post.country.jaName}
-                        </Badge>
-                      )}
-                      {post.city && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs cursor-pointer hover:bg-blue-50"
-                          onClick={() => handleCityClick(post.city!.id)}
-                        >
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {post.city.jaName}
-                          <ExternalLink className="h-3 w-3 ml-1" />
-                        </Badge>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                      <div className="flex items-center gap-3 text-sm text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <MessageCircle className="h-4 w-4" />
-                          {post.commentCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <User className="h-4 w-4" />
-                          {post.user?.name || "匿名"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-    )}
-
-    {/* 選択された投稿の詳細パネル */}
-    {selectedPost && (
-      <div className="absolute bottom-4 left-4 right-4 md:left-4 md:right-auto md:w-96 z-[1000] max-h-[50vh] md:max-h-[60vh]">
-        <Card className="bg-white/90 backdrop-blur-lg border border-gray-100/80 shadow-xl hover:shadow-2xl transition-all duration-200 rounded-2xl overflow-hidden">
-          {/* ヘッダー画像 */}
-          {selectedPost.city?.photoUrl && (
-            <CardHeader className="p-0">
-              <div className="relative w-full h-28 md:h-36 rounded-t-2xl overflow-hidden">
-                <Image
-                  src={selectedPost.city.photoUrl}
-                  alt={selectedPost.city.jaName}
-                  fill
-                  className="object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = "none";
-                  }}
-                />
-              </div>
-            </CardHeader>
-          )}
-
-          <CardContent className="p-5 md:p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-lg md:text-xl text-gray-900 leading-snug mb-2 truncate">
-                  {selectedPost.title}
-                </h3>
-                
-                {getPostBadge(selectedPost) && (
-                  <Badge variant="secondary" className="mb-3 bg-yellow-100 text-yellow-800 border-yellow-300">
-                    ⭐ {getPostBadge(selectedPost)}
-                  </Badge>
-                )}
-
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {selectedPost.trouble && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs border-red-200 text-red-600 bg-red-50/50"
-                    >
-                      {selectedPost.trouble.jaName}
-                    </Badge>
-                  )}
-                  {selectedPost.country && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs border-gray-200 text-gray-600 bg-gray-50/50"
-                    >
-                      <Globe className="h-3 w-3 mr-1 text-gray-400" />
-                      {selectedPost.country.jaName}
-                    </Badge>
-                  )}
-                  {selectedPost.city && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs border-blue-200 text-blue-600 bg-blue-50/50 cursor-pointer hover:bg-blue-100/70 transition-colors"
-                      onClick={() => handleCityClick(selectedPost.city!.id)}
-                    >
-                      <MapPin className="h-3 w-3 mr-1 text-blue-500" />
-                      {selectedPost.city.jaName}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-gray-400 hover:text-gray-600 transition-colors"
-                onClick={() => {
-                  setSelectedPost(null);
-                  // Clean up URL parameters when closing the modal
-                  router.push('/map', { scroll: false });
+                    popupEl.addEventListener("mouseenter", () => {
+                      (map as any)._popupStayOpen = true;
+                    });
+                    popupEl.addEventListener("mouseleave", () => {
+                      (map as any)._popupStayOpen = false;
+                      setTimeout(() => {
+                        const markerHovered = document.querySelector(
+                          ".leaflet-marker-icon:hover"
+                        );
+                        if (!markerHovered && !(map as any)._popupStayOpen) {
+                          map.closePopup();
+                        }
+                      }, 100);
+                    });
+                  },
                 }}
               >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+                <Card className="w-80 border-0 shadow-none">
+                  {/* ヘッダー画像 */}
+                  {post.city?.photoUrl && (
+                    <CardHeader className="p-0">
+                      <div className="relative w-full h-32 rounded-t-lg overflow-hidden">
+                        <Image
+                          src={post.city.photoUrl}
+                          alt={post.city.jaName}
+                          fill
+                          className="object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                          }}
+                        />
+                      </div>
+                    </CardHeader>
+                  )}
 
-            <p className="text-gray-700/90 mb-5 text-sm leading-relaxed line-clamp-4">
-              {selectedPost.content.replace(/<[^>]+>/g, "")}
-            </p>
+                  <CardContent className="p-4">
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="font-semibold text-lg text-gray-900 mb-2">
+                          {post.title}
+                        </h3>
+                      </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-gray-100 gap-3">
-              <div className="flex items-center gap-4 text-sm text-gray-500">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={(e) => handleLikeClick(e, selectedPost.id)}
-                        className="flex items-center hover:scale-110 transition-transform"
-                      >
-                        {selectedPost.isLiked ? (
-                          <HeartIcon className="h-5 w-5 mr-1 text-red-500" />
-                        ) : (
-                          <HeartOutlineIcon className="h-5 w-5 mr-1 text-gray-400 hover:text-red-500" />
+                      <div className="flex flex-wrap gap-2">
+                        {post.trouble && (
+                          <Badge variant="destructive" className="text-xs">
+                            {post.trouble.jaName}
+                          </Badge>
                         )}
-                        <span>{selectedPost.likeCount || 0}</span>
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>役に立った！</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                        {post.country && (
+                          <Badge variant="outline" className="text-xs">
+                            <Globe className="h-3 w-3 mr-1" />
+                            {post.country.jaName}
+                          </Badge>
+                        )}
+                        {post.city && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs cursor-pointer hover:bg-blue-50"
+                            onClick={() => handleCityClick(post.city!.id)}
+                          >
+                            <MapPin className="h-3 w-3 mr-1" />
+                            {post.city.jaName}
+                            <ExternalLink className="h-3 w-3 ml-1" />
+                          </Badge>
+                        )}
+                      </div>
 
-                <span className="flex items-center gap-1">
-                  <MessageCircle className="h-4 w-4 text-gray-400" />
-                  {selectedPost.commentCount}
-                </span>
-                <span className="flex items-center gap-1">
-                  <User className="h-4 w-4 text-gray-400" />
-                  {selectedPost.user?.name || "匿名"}
-                </span>
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="h-4 w-4" />
+                            {post.commentCount}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <User className="h-4 w-4" />
+                            {post.user?.name || "匿名"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      )}
+
+      {/* 選択された投稿の詳細パネル */}
+      {selectedPost && (
+        <div className="absolute bottom-4 left-4 right-4 md:left-4 md:right-auto md:w-96 z-[1000] max-h-[50vh] md:max-h-[60vh]">
+          <Card className="bg-white/90 backdrop-blur-lg border border-gray-100/80 shadow-xl hover:shadow-2xl transition-all duration-200 rounded-2xl overflow-hidden">
+            {/* ヘッダー画像 */}
+            {selectedPost.city?.photoUrl && (
+              <CardHeader className="p-0">
+                <div className="relative w-full h-28 md:h-36 rounded-t-2xl overflow-hidden">
+                  <Image
+                    src={selectedPost.city.photoUrl}
+                    alt={selectedPost.city.jaName}
+                    fill
+                    className="object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = "none";
+                    }}
+                  />
+                </div>
+              </CardHeader>
+            )}
+
+            <CardContent className="p-5 md:p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-lg md:text-xl text-gray-900 leading-snug mb-2 truncate">
+                    {selectedPost.title}
+                  </h3>
+
+                  {getPostBadge(selectedPost) && (
+                    <Badge
+                      variant="secondary"
+                      className="mb-3 bg-yellow-100 text-yellow-800 border-yellow-300"
+                    >
+                      ⭐ {getPostBadge(selectedPost)}
+                    </Badge>
+                  )}
+
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {selectedPost.trouble && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs border-red-200 text-red-600 bg-red-50/50"
+                      >
+                        {selectedPost.trouble.jaName}
+                      </Badge>
+                    )}
+                    {selectedPost.country && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs border-gray-200 text-gray-600 bg-gray-50/50"
+                      >
+                        <Globe className="h-3 w-3 mr-1 text-gray-400" />
+                        {selectedPost.country.jaName}
+                      </Badge>
+                    )}
+                    {selectedPost.city && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs border-blue-200 text-blue-600 bg-blue-50/50 cursor-pointer hover:bg-blue-100/70 transition-colors"
+                        onClick={() => handleCityClick(selectedPost.city!.id)}
+                      >
+                        <MapPin className="h-3 w-3 mr-1 text-blue-500" />
+                        {selectedPost.city.jaName}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => {
+                    setSelectedPost(null);
+                    // Clean up URL parameters when closing the modal
+                    router.push("/map", { scroll: false });
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
+
+              <div className="text-gray-700/90 mb-5 text-sm leading-relaxed overflow-y-auto h-24">
+                <div
+                  dangerouslySetInnerHTML={{ __html: selectedPost.content }}
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-gray-100 gap-3">
+                <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={(e) => handleLikeClick(e, selectedPost.id)}
+                          className="flex items-center hover:scale-110 transition-transform"
+                        >
+                          {selectedPost.isLiked ? (
+                            <HeartIcon className="h-5 w-5 mr-1 text-red-500" />
+                          ) : (
+                            <HeartOutlineIcon className="h-5 w-5 mr-1 text-gray-400 hover:text-red-500" />
+                          )}
+                          <span>{selectedPost.likeCount || 0}</span>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>役に立った！</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <span className="flex items-center gap-1">
+                    <MessageCircle className="h-4 w-4 text-gray-400" />
+                    {selectedPost.commentCount}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <User className="h-4 w-4 text-gray-400" />
+                    {selectedPost.user?.name || "匿名"}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* 投稿数表示 */}
+      <div className="absolute bottom-4 right-12 z-[1000]">
+        <Card className="bg-white/95 backdrop-blur-sm border-gray-200/50">
+          <CardContent className="p-3">
+            <div className="text-center">
+              <div className="text-xl md:text-2xl font-bold text-gray-900">
+                {posts.length}
+              </div>
+              <div className="text-xs md:text-sm text-gray-500">件の投稿</div>
             </div>
           </CardContent>
         </Card>
       </div>
-    )}
-
-    {/* 投稿数表示 */}
-    <div className="absolute bottom-4 right-12 z-[1000]">
-      <Card className="bg-white/95 backdrop-blur-sm border-gray-200/50">
-        <CardContent className="p-3">
-          <div className="text-center">
-            <div className="text-xl md:text-2xl font-bold text-gray-900">
-              {posts.length}
-            </div>
-            <div className="text-xs md:text-sm text-gray-500">件の投稿</div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
-  </div>
-);
+  );
 }
