@@ -318,7 +318,7 @@ async function main() {
   // いいね（重複避けて createMany + バッチ）
   const likesTarget = 6000; // ★必要なら増減
   const likeSet = new Set<string>();
-  const likeRows: { postId: number; userId: number; createdAt: Date }[] = [];
+  const likeRows: { postId: number; userId: string; createdAt: Date }[] = [];
   while (likeRows.length < likesTarget) {
     const postId = randint(1, postsCount);
     const user = pick(users);

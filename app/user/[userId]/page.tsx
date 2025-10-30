@@ -32,7 +32,7 @@ interface Post {
   country: { id: number; jaName: string; enName: string } | null;
   city: { id: number; jaName: string; enName: string } | null;
   category: { id: number; name: string } | null;
-  likes: { userId: number }[];
+  likes: { userId: string }[];
   comments: { id: number; content: string }[];
   _count: {
     likes: number;
@@ -48,6 +48,7 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
 
   const userId = params.userId ? decodeURIComponent(params.userId as string) : "";
 
@@ -80,6 +81,7 @@ export default function UserProfilePage() {
           const profileResponse = await fetch('/api/user/profile');
           if (profileResponse.ok) {
             const profileData = await profileResponse.json();
+            setCurrentUserId(profileData.id);
             if (profileData.id !== userId) {
               const followResponse = await fetch(`/api/user/follow?targetUserId=${encodeURIComponent(userId)}`);
               if (followResponse.ok) {
@@ -140,7 +142,7 @@ export default function UserProfilePage() {
 
   // いいね処理
   const handleLikeToggle = async (postId: number) => {
-    if (!session?.user?.email) return;
+    if (!session?.user?.email || !currentUserId) return;
 
     try {
       const response = await fetch('/api/post/like', {
@@ -156,12 +158,12 @@ export default function UserProfilePage() {
         setPosts(prevPosts =>
           prevPosts.map(post => {
             if (post.id === postId) {
-              const isLiked = post.likes.some(like => like.userId === session.user?.id);
+              const isLiked = post.likes.some(like => like.userId === currentUserId);
               return {
                 ...post,
                 likes: result.isLiked 
-                  ? [...post.likes, { userId: session.user?.id || 0 }]
-                  : post.likes.filter(like => like.userId !== session.user?.id),
+                  ? [...post.likes, { userId: currentUserId }]
+                  : post.likes.filter(like => like.userId !== currentUserId),
                 _count: {
                   ...post._count,
                   likes: post._count.likes + (result.isLiked ? 1 : -1)
@@ -198,7 +200,7 @@ export default function UserProfilePage() {
     );
   }
 
-  const isOwnProfile = user?.id && session?.user?.email === user.email;
+  const isOwnProfile = currentUserId && currentUserId === userId;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -310,7 +312,7 @@ export default function UserProfilePage() {
           {posts.length > 0 ? (
             <div className="divide-y divide-gray-200">
               {posts.map((post) => {
-                const isLiked = session?.user && post.likes.some(like => like.userId === session.user.id);
+                const isLiked = currentUserId && post.likes.some(like => like.userId === currentUserId);
                 
                 return (
                   <div key={post.id} className="p-6 hover:bg-gray-50 transition-colors">
