@@ -726,7 +726,7 @@ export default function MapPage() {
           <CardContent className="p-5 md:p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-lg md:text-xl text-gray-900 leading-snug mb-2 truncate">
+                <h3 className="font-medium text-lg md:text-xl text-gray-900 leading-snug mb-2">
                   {selectedPost.title}
                 </h3>
                 
@@ -781,9 +781,10 @@ export default function MapPage() {
               </Button>
             </div>
 
-            <p className="text-gray-700/90 mb-5 text-sm leading-relaxed line-clamp-4">
-              {selectedPost.content.replace(/<[^>]+>/g, "")}
-            </p>
+            <div
+              className="text-gray-600 mb-4 h-24 overflow-y-auto" 
+              dangerouslySetInnerHTML={{ __html: selectedPost.content }}
+            />
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-gray-100 gap-3">
               <div className="flex items-center gap-4 text-sm text-gray-500">
