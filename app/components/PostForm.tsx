@@ -44,17 +44,12 @@ const Marker = dynamic(
 );
 
 // ReactQuillとleafletを動的にインポートしてSSRを無効化
-const ReactQuill = dynamic(
-  () => {
-    // Quill CSSを動的にインポート
-    import("react-quill/dist/quill.snow.css");
-    return import("react-quill");
-  }, 
-  { 
-    ssr: false,
-    loading: () => <div className="border rounded p-4 min-h-[200px]">エディターを読み込み中...</div>
-  }
-);
+const ReactQuill = dynamic(() => import("react-quill"), { 
+  ssr: false,
+  loading: () => <div className="border rounded p-4 min-h-[200px]">エディターを読み込み中...</div>
+});
+
+
 
 // LocationMarkerコンポーネントを動的に作成
 const LocationMarker = dynamic(() => 
@@ -147,6 +142,19 @@ function PostForm({ troubleType, countries, cities }: Props) {
       setValue(formData.content);
     }
   }, [formData.content, textValue]);
+
+  // ReactQuill CSSを動的にロード
+  useEffect(() => {
+    const loadQuillCSS = () => {
+      if (typeof document !== "undefined" && !document.querySelector('link[href*="quill.snow.css"]')) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "https://cdn.quilljs.com/1.3.6/quill.snow.css";
+        document.head.appendChild(link);
+      }
+    };
+    loadQuillCSS();
+  }, []);
 
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -263,10 +271,6 @@ function PostForm({ troubleType, countries, cities }: Props) {
       window.alert("全ての項目を入力してください");
       return;
     }
-    
-
-
-        }
     
     // 送信直前にtextValueをformData.contentに確実に反映
     const finalContent = textValue || formData.content;
