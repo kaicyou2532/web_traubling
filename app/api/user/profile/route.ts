@@ -67,13 +67,22 @@ export async function GET(request: Request) {
       where: { followerId: user.id },
     });
 
-    // プロフィールデータの整形（profileフィールドはUserモデル内の文字列フィールド）
+    // プロフィールデータの整形（profileフィールドはJSONとして保存されている）
+    let profileData: any = {};
+    try {
+      profileData = user.profile ? JSON.parse(user.profile) : {};
+    } catch {
+      profileData = { bio: user.profile || "" }; // 既存データの互換性
+    }
+
     const profile = {
       id: user.id,
       name: user.name,
       email: user.email,
       image: user.image,
-      bio: user.profile || "",
+      bio: profileData.bio || "",
+      location: profileData.location || "",
+      website: profileData.website || "",
       avatarUrl: user.image,
       postsCount,
       followersCount,
@@ -104,7 +113,15 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { bio, name } = body;
+    const { bio, name, location, website } = body;
+
+    // 文字数制限チェック
+    if (bio && bio.length > 50) {
+      return NextResponse.json(
+        { message: "自己紹介は50文字以内で入力してください。" },
+        { status: 400 }
+      );
+    }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -117,19 +134,27 @@ export async function PUT(request: Request) {
       );
     }
 
-    // ユーザー名を更新
-    if (name !== undefined) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { name },
-      });
+    // プロフィール情報の構造化（JSONとして保存）
+    let currentProfile: any = {};
+    try {
+      currentProfile = user.profile ? JSON.parse(user.profile) : {};
+    } catch {
+      currentProfile = {};
     }
 
-    // Userテーブルのprofileフィールドを更新
+    const updatedProfile = {
+      ...currentProfile,
+      bio: bio || "",
+      location: location || "",
+      website: website || "",
+    };
+
+    // ユーザー名と構造化されたプロフィール情報を更新
     await prisma.user.update({
       where: { id: user.id },
       data: { 
-        profile: bio || "",
+        name: name || user.name,
+        profile: JSON.stringify(updatedProfile),
       },
     });
 

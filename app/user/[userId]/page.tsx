@@ -10,15 +10,13 @@ import { HeartIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/solid";
 import { HeartIcon as HeartOutlineIcon } from "@heroicons/react/24/outline";
 
 interface User {
-  id: number;
+  id: string;
   name: string | null;
   email: string;
   image: string | null;
-  profile: {
-    bio: string | null;
-    location: string | null;
-    website: string | null;
-  } | null;
+  bio: string;
+  location: string;
+  website: string;
   postsCount: number;
   followersCount: number;
   followingCount: number;
@@ -214,7 +212,7 @@ export default function UserProfilePage() {
                 alt={user.name || "ユーザー"}
                 width={120}
                 height={120}
-                className="rounded-full mx-auto md:mx-0"
+                className="rounded-full mx-auto md:mx-0 object-cover aspect-square"
               />
             </div>
             
@@ -272,27 +270,27 @@ export default function UserProfilePage() {
                 </div>
               </div>
 
-              {user.profile?.bio && (
-                <p className="mt-4 text-gray-700">{user.profile.bio}</p>
+              {user.bio && (
+                <p className="mt-4 text-gray-700">{user.bio}</p>
               )}
 
               <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-600 justify-center md:justify-start">
-                {user.profile?.location && (
+                {user.location && (
                   <div className="flex items-center">
                     <MapPinIcon className="h-4 w-4 mr-1" />
-                    {user.profile.location}
+                    {user.location}
                   </div>
                 )}
-                {user.profile?.website && (
+                {user.website && (
                   <div className="flex items-center">
                     <GlobeAltIcon className="h-4 w-4 mr-1" />
                     <a 
-                      href={user.profile.website}
+                      href={user.website.startsWith("http") ? user.website : `https://${user.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#007B63] hover:underline"
                     >
-                      {user.profile.website}
+                      {user.website}
                     </a>
                   </div>
                 )}

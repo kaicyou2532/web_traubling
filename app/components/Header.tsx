@@ -77,7 +77,7 @@ export default function Header({
     }`}
       >
         {/* 左側：ロゴやナビ */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {isHomePage && (
             <button
               type="button"
@@ -85,7 +85,7 @@ export default function Header({
               className="text-gray-700 hover:text-custom-green"
               aria-label="サイドバーを開閉"
             >
-              <Bars3Icon className="w-8 h-8" />
+              <Bars3Icon className="w-6 h-6 sm:w-8 sm:h-8" />
             </button>
           )}
 
@@ -102,79 +102,79 @@ export default function Header({
               <Image
                 src="/traubling_logo.png"
                 alt="Traubling ロゴ"
-                height={40}
-                width={160}
+                height={32}
+                width={120}
                 priority
-                className="mr-6"
+                className="h-8 w-auto sm:h-10 mr-2 sm:mr-6"
               />
             </button>
           ) : (
             <Link
               href="/"
-              className={`flex items-center flex-shrink-0 -ml-2`}
+              className={`flex items-center flex-shrink-0 -ml-1 sm:-ml-2`}
             >
               <Image
                 src="/traubling_logo.png"
                 alt="Traubling ロゴ"
-                height={40}
-                width={160}
+                height={32}
+                width={120}
                 priority
-                className="mr-6"
+                className="h-8 w-auto sm:h-10 mr-2 sm:mr-6"
               />
             </Link>
           )}
 
           {!isHomePage && (
-            <nav className="flex items-center gap-6">
+            <nav className="flex items-center gap-3 sm:gap-4 lg:gap-6">
               <Link
                 href="/"
-                className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
+                className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-1 sm:gap-2"
               >
-                <MagnifyingGlassIcon className="h-6 w-6" />
-                <span className="hidden xl:inline ml-1">探す</span>
+                <MagnifyingGlassIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <span className="hidden lg:inline ml-1">探す</span>
               </Link>
               <Link
                 href="/cities/international"
-                className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
+                className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-1 sm:gap-2"
               >
-                <GlobeAsiaAustraliaIcon className="h-6 w-6" />
-                <span className="hidden xl:inline ml-1">
+                <GlobeAsiaAustraliaIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <span className="hidden lg:inline ml-1">
                   海外で気をつけること
                 </span>
               </Link>
               <Link
                 href="/cities/japan"
-                className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
+                className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-1 sm:gap-2"
               >
-                <MapIcon className="h-6 w-6" />
-                <span className="hidden xl:inline ml-1">
+                <MapIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <span className="hidden lg:inline ml-1">
                   国内で気をつけること
                 </span>
               </Link>
               <Link
                 href="/map"
-                className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
+                className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-1 sm:gap-2"
               >
-                <MapPinIcon className="h-6 w-6" />
-                <span className="hidden xl:inline ml-1">地図から探す</span>
+                <MapPinIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <span className="hidden lg:inline ml-1">地図から探す</span>
               </Link>
               {session && (
                 <>
                   <Link
                     href="/post"
-                    className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
+                    className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-1 sm:gap-2"
                   >
-                    <PencilSquareIcon className="h-6 w-6" />
-                    <span className="hidden xl:inline ml-1">
+                    <PencilSquareIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                    <span className="hidden lg:inline ml-1">
                       トラブルを共有する
                     </span>
                   </Link>
                   <Link
                     href="/mypage"
-                    className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-2"
+                    className="text-gray-700 hover:text-custom-green transition-colors font-medium flex items-center gap-1 sm:gap-2"
                   >
-                    <UserCircleIcon className="h-6 w-6" />
-                    <span className="hidden xl:inline ml-1">マイページ</span>
+                    <UserCircleIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                    <span className="hidden lg:inline ml-1">マイページ</span>
                   </Link>
                 </>
               )}
@@ -183,14 +183,14 @@ export default function Header({
         </div>
 
         {/* 右側：ログイン関連 */}
-        <div className="flex items-center justify-end gap-3 pr-2 sm:pr-4 lg:pr-8">
+        <div className="flex items-center justify-end gap-2 sm:gap-3 pr-1 sm:pr-2 lg:pr-4">
           {!session && (
             <AuthModal>
               <button
                 type="button"
                 className="text-gray-700 hover:text-custom-green"
               >
-                <UserCircleIcon className="h-8 w-8" />
+                <UserCircleIcon className="h-7 w-7 sm:h-8 sm:w-8" />
               </button>
             </AuthModal>
           )}
@@ -198,10 +198,11 @@ export default function Header({
             <Popover>
                 <PopoverTrigger asChild>
                   <button type="button" aria-label="ユーザーメニュー">
-                    <Avatar className="border rounded-full w-9 h-9">
+                    <Avatar className="border rounded-full w-8 h-8 sm:w-9 sm:h-9 aspect-square">
                       <AvatarImage
                         src={session.user?.image as string}
                         alt="ユーザー"
+                        className="object-cover"
                       />
                       <AvatarFallback>
                         {session.user?.name?.charAt(0)}
@@ -209,7 +210,7 @@ export default function Header({
                     </Avatar>
                   </button>
                 </PopoverTrigger>
-              <PopoverContent className="bg-white w-[200px]" align="end">
+              <PopoverContent className="bg-white w-[180px] sm:w-[200px]" align="end">
                 <div className="py-1">
                   <Link
                     href="/mypage"

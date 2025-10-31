@@ -298,11 +298,11 @@ export default function SearchResults({
         {/* 検索結果リスト */}
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-            <h2 className="text-2xl font-bold">検索結果: {totalCount}件</h2>
+            <h2 className="text-xl sm:text-2xl font-bold">検索結果: {totalCount}件</h2>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">並べ替え:</span>
+              <span className="text-sm text-gray-600 hidden sm:inline">並べ替え:</span>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-36 sm:w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -323,52 +323,54 @@ export default function SearchResults({
                 hoveredPostId === post.id ? "ring-2 ring-blue-300" : ""
               }`}
             >
-              <div className="flex h-auto">
-                {/* 左側：投稿コンテンツ */}
-                <div className="flex-1 p-6 flex flex-col">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                    <MapPinIcon className="h-4 w-4" />
-                    <span>{post.country?.jaName || "不明"}</span>
-                    {post.city && <span>・{post.city.jaName}</span>}
+              <div className="flex flex-col lg:flex-row h-auto">
+                {/* 上側/左側：投稿コンテンツ */}
+                <div className="flex-1 p-4 sm:p-6 flex flex-col">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <MapPinIcon className="h-4 w-4" />
+                      <span>{post.country?.jaName || "不明"}</span>
+                      {post.city && <span>・{post.city.jaName}</span>}
+                    </div>
                     {post.latitude && post.longitude && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleMarkerClick(post);
                         }}
-                        className="ml-auto text-blue-600 hover:text-blue-800 text-xs underline"
+                        className="ml-auto text-blue-600 hover:text-blue-800 text-xs underline whitespace-nowrap"
                       >
                         地図で確認する
                       </button>
                     )}
                   </div>
                   <div className="flex flex-col gap-2 mb-3">
-                    <h3 className="text-xl font-semibold text-gray-800">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-800 line-clamp-2">
                       {post.title}
                     </h3>
                     {getPostBadge(post) && (
-                      <Badge variant="secondary" className="self-start bg-yellow-100 text-yellow-800 border-yellow-300">
+                      <Badge variant="secondary" className="self-start bg-yellow-100 text-yellow-800 border-yellow-300 text-xs">
                         ⭐ {getPostBadge(post)}
                       </Badge>
                     )}
                   </div>
                   <div
-                    className="text-gray-600 mb-4 line-clamp-3"
+                    className="text-gray-600 mb-4 text-sm sm:text-base line-clamp-2 sm:line-clamp-3"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                   />
                   <div className="mt-auto">
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
                       {post.tags.map((tag, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
+                          className="px-2 sm:px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs sm:text-sm"
                         >
                           {tag}
                         </span>
                       ))}
                     </div>
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                      <div className="flex items-center gap-4 text-gray-500">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pt-3 sm:pt-4 border-t border-gray-100">
+                      <div className="flex items-center gap-3 sm:gap-4 text-gray-500">
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -377,11 +379,11 @@ export default function SearchResults({
                                 className="flex items-center hover:scale-110 transition-transform"
                               >
                                 {post.isLiked ? (
-                                  <HeartIcon className="h-5 w-5 mr-1 text-red-500" />
+                                  <HeartIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 text-red-500" />
                                 ) : (
-                                  <HeartOutlineIcon className="h-5 w-5 mr-1 text-gray-400 hover:text-red-500" />
+                                  <HeartOutlineIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 text-gray-400 hover:text-red-500" />
                                 )}
-                                <span className={post.isLiked ? "text-red-500" : ""}>
+                                <span className={`text-sm ${post.isLiked ? "text-red-500" : ""}`}>
                                   {post.likeCount || 0}
                                 </span>
                               </button>
@@ -392,19 +394,19 @@ export default function SearchResults({
                           </Tooltip>
                         </TooltipProvider>
                         <div className="flex items-center">
-                          <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
-                          <span>{post.comments.length}</span>
+                          <ChatBubbleLeftIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1" />
+                          <span className="text-sm">{post.comments.length}</span>
                         </div>
                       </div>
                       {post.user.id ? (
                         <Link 
                           href={`/user/${encodeURIComponent(post.user.id)}`}
-                          className="text-sm text-[#007B63] hover:text-[#006854] hover:underline cursor-pointer"
+                          className="text-sm text-[#007B63] hover:text-[#006854] hover:underline cursor-pointer truncate"
                         >
                           {post.user.name}
                         </Link>
                       ) : (
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-500 truncate">
                           {post.user.name}
                         </span>
                       )}
@@ -412,10 +414,10 @@ export default function SearchResults({
                   </div>
                 </div>
 
-                {/* 右側：地図 */}
+                {/* 下側/右側：地図 */}
                 {post.latitude && post.longitude && (
-                  <div className="w-80 border-l border-gray-200 relative z-0">
-                    <div className="p-4 bg-gray-50 border-b">
+                  <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-gray-200 relative z-0">
+                    <div className="p-3 sm:p-4 bg-gray-50 border-b">
                       <h4 className="text-sm font-semibold text-gray-800 flex items-center">
                         <MapPinIcon className="h-4 w-4 mr-2" />
                         投稿位置
@@ -426,7 +428,7 @@ export default function SearchResults({
                       </p>
                     </div>
                     <div
-                      className="h-64 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                      className="h-48 sm:h-56 lg:h-64 cursor-pointer hover:bg-gray-50 transition-colors relative"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleMarkerClick(post);
@@ -465,7 +467,7 @@ export default function SearchResults({
                         </MapContainer>
                       )}
                       {/* 地図クリック促進オーバーレイ */}
-                      <div className="absolute top-2 right-2 bg-white bg-opacity-90 rounded-md px-3 py-1 text-xs text-gray-700 pointer-events-none shadow-md">
+                      <div className="absolute top-2 right-2 bg-white bg-opacity-90 rounded-md px-2 sm:px-3 py-1 text-xs text-gray-700 pointer-events-none shadow-md">
                         クリックで詳細地図へ
                       </div>
                     </div>

@@ -279,27 +279,40 @@ export default function MyPage() {
 
   // プロフィール更新処理
   const handleProfileUpdate = async () => {
+    // 文字数制限チェック
+    if (profile.bio && profile.bio.length > 50) {
+      alert("自己紹介は50文字以内で入力してください。");
+      return;
+    }
+
     try {
       const response = await fetch("/api/user/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(profile),
+        body: JSON.stringify({
+          name: profile.name,
+          bio: profile.bio,
+          location: profile.location,
+          website: profile.website,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("プロフィールの更新に失敗しました。");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "プロフィールの更新に失敗しました。");
       }
 
-      const updatedProfile: Profile = await response.json();
-      setProfile(updatedProfile);
       setIsProfileDialogOpen(false);
       // 成功メッセージ表示などの追加処理
       alert("プロフィールが更新されました！");
+      
+      // プロフィール情報を再取得
+      window.location.reload();
     } catch (error) {
       console.error("プロフィール更新エラー:", error);
-      alert("プロフィールの更新に失敗しました。");
+      alert(error instanceof Error ? error.message : "プロフィールの更新に失敗しました。");
     }
   };
 
@@ -415,23 +428,20 @@ export default function MyPage() {
           <div className="flex items-start gap-4">
             <div className="relative">
               {profile.image ? (
-                <Avatar className="w-24 h-24 border-4 border-white shadow-md">
+                <Avatar className="w-24 h-24 aspect-square border-4 border-white shadow-md">
                   <AvatarImage
                     src={profile.image || "/placeholder.svg"}
                     alt={profile.name}
+                    className="object-cover"
                   />
                   <AvatarFallback className="text-2xl bg-[#007B63] text-white">
                     {profile.name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
               ) : (
-                <Image
-                  src="/placeholder.svg?height=100&width=100"
-                  alt="プロフィール画像"
-                  width={100}
-                  height={100}
-                  className="rounded-full border-4 border-white shadow-md object-cover"
-                />
+                <div className="w-24 h-24 rounded-full border-4 border-white shadow-md bg-gray-200 flex items-center justify-center">
+                  <span className="text-2xl text-gray-500">👤</span>
+                </div>
               )}
             </div>
             <div className="flex-1">
@@ -558,23 +568,20 @@ export default function MyPage() {
                   <div className="p-4 border-b">
                     <div className="flex items-center gap-3">
                       {profile.image ? (
-                        <Avatar className="w-10 h-10">
+                        <Avatar className="w-10 h-10 aspect-square">
                           <AvatarImage
-                            src={profile.image || "/placeholder.svg"}
+                            src={profile.image || "/default-avatar.png"}
                             alt={profile.name}
+                            className="object-cover"
                           />
                           <AvatarFallback className="bg-[#007B63] text-white">
                             {profile.name?.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <Image
-                          src="/placeholder.svg?height=40&width=40"
-                          alt="ユーザーアイコン"
-                          width={40}
-                          height={40}
-                          className="rounded-full"
-                        />
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-500 text-sm">👤</span>
+                        </div>
                       )}
                       <div>
                         <p className="font-semibold">{profile.name}</p>
@@ -669,23 +676,20 @@ export default function MyPage() {
                   <div className="p-4 border-b">
                     <div className="flex items-center gap-3">
                       {post.user.image ? (
-                        <Avatar className="w-10 h-10">
+                        <Avatar className="w-10 h-10 aspect-square">
                           <AvatarImage
-                            src={post.user.image || "/placeholder.svg"}
+                            src={post.user.image || "/default-avatar.png"}
                             alt={post.user.name}
+                            className="object-cover"
                           />
                           <AvatarFallback className="bg-[#007B63] text-white">
                             {post.user.name?.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <Image
-                          src="/placeholder.svg?height=40&width=40"
-                          alt="ユーザーアイコン"
-                          width={40}
-                          height={40}
-                          className="rounded-full"
-                        />
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-500 text-sm">👤</span>
+                        </div>
                       )}
                       <div>
                         <p className="font-semibold">{post.user.name}</p>
@@ -793,14 +797,17 @@ export default function MyPage() {
                   >
                     <div className="flex items-start gap-3">
                       {notification.fromUser?.image ? (
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={notification.fromUser.image} />
+                        <Avatar className="w-10 h-10 aspect-square">
+                          <AvatarImage 
+                            src={notification.fromUser.image} 
+                            className="object-cover"
+                          />
                           <AvatarFallback className="bg-[#007B63] text-white">
                             {notification.fromUser.name?.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 aspect-square bg-gray-200 rounded-full flex items-center justify-center">
                           <span className="text-gray-600 text-sm">
                             {notification.fromUser?.name?.charAt(0) || '?'}
                           </span>
@@ -846,23 +853,20 @@ export default function MyPage() {
             <div className="flex items-center justify-center">
               <div className="relative">
                 {profile.image ? (
-                  <Avatar className="w-24 h-24 border-4 border-white shadow-md">
+                  <Avatar className="w-24 h-24 aspect-square border-4 border-white shadow-md">
                     <AvatarImage
-                      src={profile.image || "/placeholder.svg"}
+                      src={profile.image || "/default-avatar.png"}
                       alt={profile.name}
+                      className="object-cover"
                     />
                     <AvatarFallback className="text-2xl bg-[#007B63] text-white">
                       {profile.name?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                 ) : (
-                  <Image
-                    src="/placeholder.svg?height=100&width=100"
-                    alt="プロフィール画像"
-                    width={100}
-                    height={100}
-                    className="rounded-full border-4 border-white shadow-md object-cover"
-                  />
+                  <div className="w-24 h-24 rounded-full border-4 border-white shadow-md bg-gray-200 flex items-center justify-center">
+                    <span className="text-2xl text-gray-500">👤</span>
+                  </div>
                 )}
                 <Button
                   type="button"
@@ -943,12 +947,13 @@ export default function MyPage() {
                 className="resize-none"
                 rows={4}
                 value={profile.bio}
+                maxLength={50}
                 onChange={(e) =>
                   setProfile({ ...profile, bio: e.target.value })
                 }
               />
               <div className="text-right text-sm text-gray-500">
-                {profile.bio.length}/160文字
+                {profile.bio.length}/50文字
               </div>
             </div>
 
