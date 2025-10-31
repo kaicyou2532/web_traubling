@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     // フィルター条件を構築
     const filters: any[] = [];
 
-    // カテゴリーフィルター（国内/海外/カテゴリー/地域）
+    // カテゴリーフィルター（国内/海外/カテゴリー/地域/相談）
     if (category === "domestic") {
       filters.push({ country: { id: 1 } });
     } else if (category === "overseas") {

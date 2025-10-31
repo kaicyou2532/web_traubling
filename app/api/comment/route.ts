@@ -126,7 +126,27 @@ export async function POST(req: NextRequest) {
         postId: Number(postId),
         userId: user.id, // String IDをそのまま使用
       },
-    })
+    });
+
+    // 投稿者に通知を送信（自分の投稿にコメントした場合は除く）
+    if (post.userId !== user.id) {
+      try {
+        // Prismaクライアント更新後に有効化
+        // await prisma.notification.create({
+        //   data: {
+        //     userId: post.userId,
+        //     type: "COMMENT",
+        //     message: `${user.name}さんが「${post.title}」にコメントしました`,
+        //     postId: post.id,
+        //     fromUserId: user.id,
+        //   }
+        // });
+        console.log("コメント通知機能は開発中です");
+      } catch (notificationError) {
+        console.error("通知作成エラー:", notificationError);
+        // 通知エラーはコメント投稿の成功を阻害しない
+      }
+    }
 
     return NextResponse.json({ 
       ...comment, 

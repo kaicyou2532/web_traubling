@@ -99,23 +99,25 @@ type Props = {
 };
 
 // フォームで管理したいデータの型
-type FormDataType = {
-  countryId: number;
-  cityId: number;
-  troubleId: number;
+interface FormDataType {
+  countryId: number | null;
+  cityId: number | null;
+  troubleId: number | null;
   travelMonth: number;
   travelYear: number;
+  content: string;
   title: string;
-};
+}
 
 function PostForm({ troubleType, countries, cities }: Props) {
   // フォーム入力内容
   const [formData, setFormData] = useState<FormDataType>({
-    countryId: 0,
-    cityId: 0,
-    troubleId: 0,
-    travelMonth: 0,
-    travelYear: 0,
+    countryId: null,
+    cityId: null,
+    troubleId: null,
+    travelMonth: 1,
+    travelYear: 2025,
+    content: "",
     title: "",
   });
 
@@ -248,13 +250,11 @@ function PostForm({ troubleType, countries, cities }: Props) {
     console.log("Editor content:", textValue);
     console.log(`"${textValue}"`);
 
-    const payload = {
+    const postData = {
       countryId: formData.countryId,
       cityId: formData.cityId,
       troubleId: formData.troubleId,
-      travelMonth: formData.travelMonth,
-      travelYear: formData.travelYear,
-      content: textValue,
+      content: formData.content,
       title: formData.title,
       latitude: pinPosition?.lat ?? null,
       longitude: pinPosition?.lng ?? null,
@@ -477,7 +477,8 @@ function PostForm({ troubleType, countries, cities }: Props) {
         />
       </div>
 
-      {/* --- MAP FEATURE UI（Leaflet対応版） --- */}
+      {/* 相談投稿チェックボックス - マイグレーション後に有効化 */}
+      {/* 送信ボタン */}
       <div className="space-y-4 rounded-md border border-gray-200 p-4 bg-gray-50">
         <div className="flex items-center space-x-3">
           <Input

@@ -108,37 +108,27 @@ model Notification {
 }
 
 model Post {
-  id           Int            @id @default(autoincrement())
-  countryId    Int            @default(10000) @map("countryId")
-  troubleId    Int            @map("troubleId")
-  title        String
-  content      String
-  createdAt    DateTime       @default(now()) @map("createdAt")
-  updatedAt    DateTime       @updatedAt @map("updatedAt")
-  userId       String         @map("userId")
-  travelMonth  Int            @map("travelMonth")
-  travelYear   Int            @map("travelYear")
-  cityId       Int            @default(100) @map("cityId")
-  likeCount    Int            @default(0) @map("likeCount")
-  latitude     Float?
-  longitude    Float?
-  comments     Comment[]
-  likes        Like[]
+  id            Int            @id @default(autoincrement())
+  countryId     Int            @default(10000) @map("countryId")
+  troubleId     Int            @map("troubleId")
+  title         String
+  content       String
+  createdAt     DateTime       @default(now()) @map("createdAt")
+  updatedAt     DateTime       @updatedAt @map("updatedAt")
+  userId        String         @map("userId")
+  travelMonth   Int            @map("travelMonth")
+  travelYear    Int            @map("travelYear")
+  cityId        Int            @default(100) @map("cityId")
+  likeCount     Int            @default(0) @map("likeCount")
+  latitude      Float?
+  longitude     Float?
+  comments      Comment[]
+  likes         Like[]
   notifications Notification[]
-  city         City           @relation(fields: [cityId], references: [id])
-  country      Country        @relation(fields: [countryId], references: [id])
-  trouble      Trouble        @relation(fields: [troubleId], references: [id])
-  user         User           @relation(fields: [userId], references: [id])
-}
-
-model Profile {
-  id        String    @id @default(dbgenerated("gen_random_uuid()"))
-  userId    String    @unique
-  bio       String?
-  avatarUrl String?
-  createdAt DateTime? @default(now()) @db.Timestamp(6)
-  updatedAt DateTime? @default(now()) @db.Timestamp(6)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  city          City           @relation(fields: [cityId], references: [id])
+  country       Country        @relation(fields: [countryId], references: [id])
+  trouble       Trouble        @relation(fields: [troubleId], references: [id])
+  user          User           @relation(fields: [userId], references: [id])
 }
 
 model Session {
@@ -165,6 +155,7 @@ model User {
   image             String?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+  profile           String?
   accounts          Account[]
   authenticators    Authenticator[]
   comments          Comment[]
@@ -174,7 +165,7 @@ model User {
   sentNotifications Notification[]  @relation("NotificationFromUser")
   notifications     Notification[]
   posts             Post[]
-  profile           Profile?
+  Profile           Profile?
   sessions          Session[]
 }
 
@@ -184,6 +175,16 @@ model VerificationToken {
   expires    DateTime
 
   @@id([identifier, token])
+}
+
+model Profile {
+  id        String    @id @default(dbgenerated("gen_random_uuid()"))
+  userId    String    @unique
+  bio       String?
+  avatarUrl String?
+  createdAt DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @db.Timestamp(6)
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 enum NotificationType {
