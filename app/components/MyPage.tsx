@@ -163,7 +163,7 @@ export default function MyPage() {
     };
 
     fetchProfile();
-  }, [status, session]);
+  }, [status, session?.user?.email]);
 
   // 投稿の取得
   useEffect(() => {
@@ -233,7 +233,7 @@ export default function MyPage() {
     };
 
     fetchNotifications();
-  }, [status, session]);
+  }, [status, session?.user?.email]);
 
   // URL パラメータからタブを設定
   useEffect(() => {

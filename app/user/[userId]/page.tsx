@@ -103,7 +103,7 @@ export default function UserProfilePage() {
     } else {
       setLoading(false);
     }
-  }, [userId, session]);
+  }, [userId, session?.user?.email]); // sessionオブジェクト全体ではなく、emailプロパティのみを依存に
 
   // フォロー/アンフォロー処理
   const handleFollowToggle = async () => {

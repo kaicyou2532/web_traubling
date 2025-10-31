@@ -61,7 +61,7 @@ export default function Header({
     // 30秒ごとに未読通知数を更新
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
-  }, [session]);
+  }, [session?.user?.email]);
   return (
     <header
       className={`bg-white shadow-md sticky top-0 z-50 h-16 flex items-center
