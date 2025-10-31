@@ -28,21 +28,14 @@ export default function Home({ japanCities, otherCities }: Props) {
     cityFilter?: string,
     troubleFilter?: string
   ) => {
-    // 検索条件があるかチェック
-    const hasSearchCriteria = term.trim() || subCategory || countryFilter || cityFilter || troubleFilter;
-    
-    if (hasSearchCriteria) {
-      setIsSearching(true);
-      setSearchTerm(term);
-      setSearchCategory(category);
-      setSubCategory(subCategory);
-      setCountryFilter(countryFilter);
-      setCityFilter(cityFilter);
-      setTroubleFilter(troubleFilter);
-    } else {
-      setIsSearching(false);
-      setSearchTerm("");
-    }
+    // 常に検索を実行する（条件がなくても全件表示として扱う）
+    setIsSearching(true);
+    setSearchTerm(term);
+    setSearchCategory(category);
+    setSubCategory(subCategory);
+    setCountryFilter(countryFilter);
+    setCityFilter(cityFilter);
+    setTroubleFilter(troubleFilter);
   };
 
   const handleCategoryChange = (category: string) => {

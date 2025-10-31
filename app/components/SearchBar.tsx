@@ -81,32 +81,36 @@ export default function SearchBar({
     fetchFilterOptions()
   }, [])
 
-  // 自動検索は無効化 - ユーザーが明示的に検索ボタンを押すかフィルターを選択した時のみ検索実行
+  // フィルター選択時の自動検索
   useEffect(() => {
-    if (!loading && (selectedSubCategory || selectedCity || selectedTrouble)) {
-      // フィルターが選択された場合のみ自動検索
-      onSearch?.(
-        searchTerm,
-        currentCategory,
-        selectedSubCategory,
+    if (!loading && onSearch) {
+      // フィルターが選択されたら自動検索実行
+      if (selectedSubCategory || selectedCity || selectedTrouble || countryFilter) {
+        onSearch(
+          searchTerm,
+          currentCategory,
+          selectedSubCategory,
+          countryFilter,
+          selectedCity,
+          selectedTrouble
+        )
+      }
+    }
+  }, [selectedSubCategory, selectedCity, selectedTrouble, countryFilter, loading])
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    // フォームからの検索実行
+    if (onSearch) {
+      onSearch(
+        searchTerm, 
+        currentCategory, 
+        selectedSubCategory, 
         countryFilter,
         selectedCity,
         selectedTrouble
       )
     }
-  }, [selectedSubCategory, selectedCity, selectedTrouble])
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    // フォームからの検索実行
-    onSearch?.(
-      searchTerm, 
-      currentCategory, 
-      selectedSubCategory, 
-      countryFilter,
-      selectedCity,
-      selectedTrouble
-    )
   }
 
   // カテゴリ変更時にフィルターをリセット
@@ -120,7 +124,17 @@ export default function SearchBar({
     setSelectedTrouble("")
     onCountryChange?.("")
     
-    // カテゴリ変更時は検索実行しない（ユーザーが明示的に検索する必要がある）
+    // カテゴリ変更時に検索実行
+    if (onSearch) {
+      onSearch(
+        searchTerm,
+        categoryId,
+        "", // subCategory
+        "", // countryFilter
+        "", // cityFilter
+        ""  // troubleFilter
+      )
+    }
   }
 
   return (

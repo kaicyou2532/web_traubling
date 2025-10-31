@@ -184,34 +184,6 @@ export default function SearchResults({
 
         setPosts(processedPosts);
         setTotalCount(data.totalCount || 0);
-
-        // ★★★ デバッグログを追加 ★★★
-        console.log("--- 投稿データデバッグ ---");
-        console.log("全投稿数:", data.posts.length);
-        const debugLocationPosts = (data.posts || []).filter(
-          (post: { latitude: number; longitude: number }) => {
-            const lat = post.latitude;
-            const lng = post.longitude;
-            return (
-              typeof lat === "number" &&
-              isFinite(lat) &&
-              lat >= -90 &&
-              lat <= 90 &&
-              typeof lng === "number" &&
-              isFinite(lng) &&
-              lng >= -180 &&
-              lng <= 180
-            );
-          }
-        );
-        console.log(
-          "フィルタリング後の位置情報付き投稿数:",
-          debugLocationPosts.length
-        );
-        if (debugLocationPosts.length === 0) {
-          console.error("有効な位置情報を持つ投稿がゼロです。");
-        }
-        // ★★★ デバッグログ終了 ★★★
       } catch (error) {
         console.error("Error fetching posts:", error);
       } finally {

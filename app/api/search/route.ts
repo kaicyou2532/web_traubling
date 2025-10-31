@@ -39,32 +39,52 @@ export async function GET(req: NextRequest) {
     // フィルター条件を構築
     const filters: any[] = [];
 
-    // カテゴリーフィルター（国内/海外/カテゴリー/地域/相談）
+    // カテゴリーフィルター（国内/海外/カテゴリー/地域）
     if (category === "domestic") {
+      // 日本国内の投稿のみ
       filters.push({ country: { id: 1 } });
     } else if (category === "overseas") {
+      // 海外の投稿のみ
       filters.push({ country: { NOT: { id: 1 } } });
-    } else if (category === "category" && subCategory) {
-      filters.push({
-        trouble: {
+    } else if (category === "category") {
+      // 分野別フィルター - subCategoryやtroubleFilterがあれば適用
+      if (subCategory) {
+        filters.push({
+          trouble: {
+            OR: [
+              { jaName: subCategory },
+              { enName: subCategory },
+            ],
+          },
+        });
+      }
+    } else if (category === "region") {
+      // 地域別フィルター - countryFilterがあれば適用
+      if (countryFilter) {
+        filters.push({
           OR: [
-            { jaName: subCategory },
-            { enName: subCategory },
-          ],
-        },
-      });
-    } else if (category === "region" && countryFilter) {
-      filters.push({
-        country: {
-          OR: [
-            { jaName: { contains: countryFilter, mode: Prisma.QueryMode.insensitive } },
-            { enName: { contains: countryFilter, mode: Prisma.QueryMode.insensitive } },
-          ],
-        },
-      });
+            {
+              country: {
+                OR: [
+                  { jaName: { contains: countryFilter, mode: Prisma.QueryMode.insensitive } },
+                  { enName: { contains: countryFilter, mode: Prisma.QueryMode.insensitive } },
+                ],
+              }
+            },
+            {
+              city: {
+                OR: [
+                  { jaName: { contains: countryFilter, mode: Prisma.QueryMode.insensitive } },
+                  { enName: { contains: countryFilter, mode: Prisma.QueryMode.insensitive } },
+                ],
+              }
+            }
+          ]
+        });
+      }
     }
 
-    // 都市フィルター
+    // 都市フィルター（カテゴリに関係なく適用）
     if (cityFilter) {
       const cityId = parseInt(cityFilter);
       if (!isNaN(cityId)) {
@@ -72,7 +92,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // カテゴリー（トラブル）フィルター
+    // トラブルカテゴリーフィルター（カテゴリに関係なく適用）
     if (troubleFilter) {
       const troubleId = parseInt(troubleFilter);
       if (!isNaN(troubleId)) {
