@@ -287,11 +287,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
       longitude: pinPosition?.lng ?? null,
     };
 
-    // 送信データをデバッグ用に表示
-    console.log("送信するデータ:", postData);
-    console.log("コンテンツの長さ:", postData.content?.length);
-    console.log("textValue:", textValue);
-    console.log("formData.content:", formData.content);
+
 
     setIsSubmitting(true); // 送信開始
 
