@@ -44,9 +44,6 @@ export async function GET(request: Request) {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        profile: true,
-      },
     });
 
     if (!user) {
@@ -70,14 +67,14 @@ export async function GET(request: Request) {
       where: { followerId: user.id },
     });
 
-    // プロフィールデータの整形
+    // プロフィールデータの整形（profileフィールドはUserモデル内の文字列フィールド）
     const profile = {
       id: user.id,
       name: user.name,
       email: user.email,
       image: user.image,
-      bio: user.profile?.bio || "",
-      avatarUrl: user.profile?.avatarUrl || user.image,
+      bio: user.profile || "",
+      avatarUrl: user.image,
       postsCount,
       followersCount,
       followingCount,
@@ -128,17 +125,11 @@ export async function PUT(request: Request) {
       });
     }
 
-    // プロフィールを更新（存在しない場合は作成）
-    await prisma.profile.upsert({
-      where: { userId: user.id },
-      update: {
-        bio: bio || "",
-        updatedAt: new Date(),
-      },
-      create: {
-        userId: user.id,
-        bio: bio || "",
-        avatarUrl: user.image,
+    // Userテーブルのprofileフィールドを更新
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { 
+        profile: bio || "",
       },
     });
 

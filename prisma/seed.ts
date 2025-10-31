@@ -191,7 +191,6 @@ async function main() {
   await prisma.like.deleteMany();
   await prisma.comment.deleteMany();
   await prisma.post.deleteMany();
-  await prisma.profile.deleteMany();
   await prisma.city.deleteMany();
   await prisma.country.deleteMany();
   await prisma.trouble.deleteMany();
@@ -233,15 +232,15 @@ async function main() {
     select: { id: true, name: true, image: true, email: true },
   });
 
-  // Profiles を createMany
-  await prisma.profile.createMany({
-    data: users.map(u => ({
-      userId: u.id,
-      bio: `こんにちは！${u.name}です。🌍 ${randint(6, 22)}カ国を訪問。公共交通とローカル飯が好き。`,
-      avatarUrl: u.image,
-    })),
-    skipDuplicates: true,
-  });
+  // Userのprofileフィールドを更新
+  for (const user of users) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        profile: `こんにちは！${user.name}です。🌍 ${randint(6, 22)}カ国を訪問。公共交通とローカル飯が好き。`,
+      },
+    });
+  }
 
   // 投稿（増量 & createMany）
   const postsCount = 800; // ★必要なら増減
