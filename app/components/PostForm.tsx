@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,12 +44,17 @@ const Marker = dynamic(
 );
 
 // ReactQuillとleafletを動的にインポートしてSSRを無効化
-const ReactQuill = dynamic(() => import("react-quill"), { 
-  ssr: false,
-  loading: () => <div className="border rounded p-4 min-h-[200px]">エディターを読み込み中...</div>
-});
-
-// react-quillのスタイルは必要に応じて動的にインポート
+const ReactQuill = dynamic(
+  () => {
+    // Quill CSSを動的にインポート
+    import("react-quill/dist/quill.snow.css");
+    return import("react-quill");
+  }, 
+  { 
+    ssr: false,
+    loading: () => <div className="border rounded p-4 min-h-[200px]">エディターを読み込み中...</div>
+  }
+);
 
 // LocationMarkerコンポーネントを動的に作成
 const LocationMarker = dynamic(() => 
@@ -129,6 +134,19 @@ function PostForm({ troubleType, countries, cities }: Props) {
 
   // エディター
   const [textValue, setValue] = useState("");
+
+  // テキストエディタの値を更新する関数
+  const handleTextChange = (value: string) => {
+    setValue(value);
+    setFormData({ ...formData, content: value });
+  };
+
+  // formData.contentとtextValueの同期を維持
+  useEffect(() => {
+    if (formData.content !== textValue) {
+      setValue(formData.content);
+    }
+  }, [formData.content, textValue]);
 
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -231,7 +249,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
     const travelMonth = formData.travelMonth;
     const travelYear = formData.travelYear;
     const titleLength = formData.title.length;
-    const contentLength = textValue.length;
+    const contentLength = formData.content.length;
 
     if (
       countryId === 0 ||
@@ -246,19 +264,30 @@ function PostForm({ troubleType, countries, cities }: Props) {
       return;
     }
     
-    console.log("Submitted form data:", formData);
-    console.log("Editor content:", textValue);
-    console.log(`"${textValue}"`);
+
+
+        }
+    
+    // 送信直前にtextValueをformData.contentに確実に反映
+    const finalContent = textValue || formData.content;
 
     const postData = {
       countryId: formData.countryId,
       cityId: formData.cityId,
       troubleId: formData.troubleId,
-      content: formData.content,
+      travelMonth: formData.travelMonth,
+      travelYear: formData.travelYear,
+      content: finalContent,
       title: formData.title,
       latitude: pinPosition?.lat ?? null,
       longitude: pinPosition?.lng ?? null,
     };
+
+    // 送信データをデバッグ用に表示
+    console.log("送信するデータ:", postData);
+    console.log("コンテンツの長さ:", postData.content?.length);
+    console.log("textValue:", textValue);
+    console.log("formData.content:", formData.content);
 
     setIsSubmitting(true); // 送信開始
 
@@ -275,7 +304,6 @@ function PostForm({ troubleType, countries, cities }: Props) {
       }
       
       const data = await response.json();
-      console.log("API response:", data);
       setIsConfirmationOpen(true); // 成功ダイアログを表示
     } catch (error) {
       console.error("Error posting data:", error);
@@ -462,7 +490,7 @@ function PostForm({ troubleType, countries, cities }: Props) {
         <Label className="text-xl md:text-2xl font-semibold text-custom-green">
           経験したトラブルの詳細
         </Label>
-        <ReactQuill theme="snow" value={textValue} onChange={setValue} />
+        <ReactQuill theme="snow" value={textValue} onChange={handleTextChange} />
       </div>
 
       {/* タイトル */}
@@ -581,8 +609,6 @@ function PostForm({ troubleType, countries, cities }: Props) {
       </Dialog>
     </form>
   );
-
-
 }
 
 export default PostForm;
