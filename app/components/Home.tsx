@@ -28,9 +28,10 @@ export default function Home({ japanCities, otherCities }: Props) {
     cityFilter?: string,
     troubleFilter?: string
   ) => {
-    // 「全て」カテゴリの場合は空のワードでも検索を実行
-    // その他のカテゴリでは何かしらのフィルターまたはワードがある場合に検索実行
-    if (category === "all" || term.trim() || subCategory || countryFilter || cityFilter || troubleFilter) {
+    // 検索条件があるかチェック
+    const hasSearchCriteria = term.trim() || subCategory || countryFilter || cityFilter || troubleFilter;
+    
+    if (hasSearchCriteria) {
       setIsSearching(true);
       setSearchTerm(term);
       setSearchCategory(category);

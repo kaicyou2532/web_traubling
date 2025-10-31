@@ -81,9 +81,10 @@ export default function SearchBar({
     fetchFilterOptions()
   }, [])
 
-  // フィルター変更時に自動検索
+  // 自動検索は無効化 - ユーザーが明示的に検索ボタンを押すかフィルターを選択した時のみ検索実行
   useEffect(() => {
-    if (!loading) {
+    if (!loading && (selectedSubCategory || selectedCity || selectedTrouble)) {
+      // フィルターが選択された場合のみ自動検索
       onSearch?.(
         searchTerm,
         currentCategory,
@@ -93,25 +94,11 @@ export default function SearchBar({
         selectedTrouble
       )
     }
-  }, [currentCategory, selectedCity, selectedTrouble, countryFilter, loading])
-
-  // 初期表示時に「全て」カテゴリで空検索を実行
-  useEffect(() => {
-    if (!loading && currentCategory === "all") {
-      onSearch?.(
-        "",  // 空のワード
-        currentCategory,
-        "",
-        "",
-        "",
-        ""
-      )
-    }
-  }, [loading, currentCategory])
+  }, [selectedSubCategory, selectedCity, selectedTrouble])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    // 空のワードでも検索可能にする（特に「全て」カテゴリの場合）
+    // フォームからの検索実行
     onSearch?.(
       searchTerm, 
       currentCategory, 
@@ -132,6 +119,8 @@ export default function SearchBar({
     setSelectedCity("")
     setSelectedTrouble("")
     onCountryChange?.("")
+    
+    // カテゴリ変更時は検索実行しない（ユーザーが明示的に検索する必要がある）
   }
 
   return (
